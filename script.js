@@ -19,7 +19,10 @@ async function loadCalendars() {
 
         for (const calendar of calendars) {
             console.log(`A carregar calendário: ${calendar.name}...`);
-            const response = await fetch(calendar.url);
+            
+            // Usamos o proxy CORS para evitar o erro 'Failed to fetch'
+            const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(calendar.url);
+            const response = await fetch(proxyUrl);
             
             if (!response.ok) {
                 throw new Error(`Falha ao carregar ${calendar.name} (Status: ${response.status})`);
@@ -100,24 +103,24 @@ function getCleaningDay(reservation, allReservations) {
         .filter(r => r.room === reservation.room && r.checkIn.getTime() >= checkout.getTime())
         .sort((a, b) => a.checkIn - b.checkIn)[0];
 
-    // Se não houver próxima reserva, limpa no checkout (ou segunda se for domingo)
+    // Se não houver próxima reserva, limpa logo no checkout (ou segunda se for domingo)
     if (!nextReservation) {
         return isSunday(checkout) ? addDays(checkout, 1) : checkout;
     }
 
     const gapDays = getDaysBetween(checkout, nextReservation.checkIn);
 
-    // Regra 1: Intervalo de 3 dias ou mais -> Limpa logo no checkout
+    // Regra 1: Intervalo de 3 dias ou mais -> Limpeza feita logo no checkout (respeitando domingo)
     if (gapDays >= 3) {
         return isSunday(checkout) ? addDays(checkout, 1) : checkout;
     }
 
-    // Regra 2: Intervalo de 2 dias ou menos -> Escolher o dia entre checkout e checkIn com mais saídas/movimento
+    // Regra 2: Intervalo de 2 dias ou menos -> Escolher o dia mais ótimo para agrupar o máximo de limpezas
     let bestDay = checkout;
     let maxCleaningsOnDay = -1;
 
     for (let d = new Date(checkout); d.getTime() <= nextReservation.checkIn.getTime(); d = addDays(d, 1)) {
-        // Evitar domingos, exceto se houver entrada no próprio domingo nesse quarto
+        // Evitar domingos, exceto se houver entrada obrigatória nesse domingo
         if (isSunday(d)) {
             const hasArrivalOnSunday = allReservations.some(r => r.room === reservation.room && sameDay(r.checkIn, d));
             if (!hasArrivalOnSunday) {
@@ -125,7 +128,7 @@ function getCleaningDay(reservation, allReservations) {
             }
         }
 
-        // Contar quantas saídas/limpezas já acontecem neste dia 'd' nos outros quartos
+        // Contar quantas saídas/movimentos ocorrem neste dia 'd' nos vários quartos
         const countOnDay = allReservations.filter(r => sameDay(r.checkOut, d)).length;
 
         if (countOnDay > maxCleaningsOnDay) {
@@ -213,4 +216,5 @@ function showReservations(reservations) {
     }
 }
 
+// Executar
 loadCalendars();
