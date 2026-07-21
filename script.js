@@ -11,54 +11,44 @@ const calendars = [
 
 const result = document.getElementById("result");
 
-async function loadCalendars() {
+async function loadCalendars(){
     result.innerHTML = "Loading...";
 
-    try {
+    try{
         let reservations = [];
 
-        for (const calendar of calendars) {
-            console.log(`A carregar calendário: ${calendar.name}...`);
-            
-            // Usamos o proxy CORS para evitar o erro 'Failed to fetch'
-            const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(calendar.url);
-            const response = await fetch(proxyUrl);
-            
-            if (!response.ok) {
-                throw new Error(`Falha ao carregar ${calendar.name} (Status: ${response.status})`);
-            }
-
+        for(const calendar of calendars){
+            const response = await fetch(calendar.url);
             const text = await response.text();
             const events = parseICS(text, calendar.name);
-            console.log(`${calendar.name}: ${events.length} reservas encontradas.`);
+
             reservations.push(...events);
         }
 
         showReservations(reservations);
 
-    } catch (error) {
-        console.error("Erro ao carregar calendários:", error);
-        result.innerHTML = `<b style="color:red">Erro ao carregar calendários:</b> ${error.message || error}`;
+    }catch(error){
+        result.innerHTML = error;
     }
 }
 
-function parseDate(icsDate) {
-    const year = Number(icsDate.substring(0, 4));
-    const month = Number(icsDate.substring(4, 6)) - 1;
-    const day = Number(icsDate.substring(6, 8));
+function parseDate(icsDate){
+    const year = Number(icsDate.substring(0,4));
+    const month = Number(icsDate.substring(4,6)) - 1;
+    const day = Number(icsDate.substring(6,8));
 
     return new Date(year, month, day);
 }
 
-function parseICS(text, roomName) {
+function parseICS(text, roomName){
     const reservations = [];
     const events = text.split("BEGIN:VEVENT");
 
-    for (const event of events) {
-        const start = event.match(/DTSTART.*?:(\d{8})/);
-        const end = event.match(/DTEND.*?:(\d{8})/);
+    for(const event of events){
+        const start = event.match(/DTSTART;VALUE=DATE:(\d{8})/);
+        const end = event.match(/DTEND;VALUE=DATE:(\d{8})/);
 
-        if (!start || !end) {
+        if(!start || !end){
             continue;
         }
 
@@ -72,7 +62,7 @@ function parseICS(text, roomName) {
     return reservations;
 }
 
-function sameDay(a, b) {
+function sameDay(a,b){
     return (
         a.getFullYear() === b.getFullYear() &&
         a.getMonth() === b.getMonth() &&
@@ -80,59 +70,74 @@ function sameDay(a, b) {
     );
 }
 
-function addDays(date, amount) {
+function addDays(date, amount){
     const d = new Date(date);
     d.setDate(d.getDate() + amount);
     return d;
 }
 
-function isSunday(date) {
+function isSunday(date){
     return date.getDay() === 0;
 }
 
-function getDaysBetween(dateA, dateB) {
+// NOVA FUNÇÃO: Calcula a diferença de dias entre duas datas
+function getDaysBetween(dateA, dateB){
     const diffTime = dateB.getTime() - dateA.getTime();
     return Math.round(diffTime / (1000 * 60 * 60 * 24));
 }
 
-function getCleaningDay(reservation, allReservations) {
+// FUNÇÃO ATUALIZADA: Lógica das limpezas
+function getCleaningDay(reservation, allReservations){
     const checkout = reservation.checkOut;
 
-    // Procurar a próxima reserva no mesmo quarto
+    // Procura a próxima reserva no mesmo quarto
     const nextReservation = allReservations
-        .filter(r => r.room === reservation.room && r.checkIn.getTime() >= checkout.getTime())
+        .filter(r => r.room === reservation.room && r.checkIn >= checkout)
         .sort((a, b) => a.checkIn - b.checkIn)[0];
 
-    // Se não houver próxima reserva, limpa logo no checkout (ou segunda se for domingo)
-    if (!nextReservation) {
-        return isSunday(checkout) ? addDays(checkout, 1) : checkout;
+    // Se não houver próxima reserva, limpa no checkout (ou segunda, se for domingo)
+    if(!nextReservation){
+        if(isSunday(checkout)){
+            const sameDayArrival = allReservations.some(r => r.room === reservation.room && sameDay(r.checkIn, checkout));
+            if(sameDayArrival) return checkout;
+            return addDays(checkout, 1);
+        }
+        return checkout;
     }
 
     const gapDays = getDaysBetween(checkout, nextReservation.checkIn);
 
-    // Regra 1: Intervalo de 3 dias ou mais -> Limpeza feita logo no checkout (respeitando domingo)
-    if (gapDays >= 3) {
-        return isSunday(checkout) ? addDays(checkout, 1) : checkout;
+    // REGRA 1: Se o intervalo for 3 dias ou mais, a limpeza é feita logo (respeitando os domingos)
+    if(gapDays >= 3){
+        if(isSunday(checkout)){
+            const sameDayArrival = allReservations.some(r => r.room === reservation.room && sameDay(r.checkIn, checkout));
+            if(sameDayArrival) return checkout;
+            return addDays(checkout, 1);
+        }
+        return checkout;
     }
 
-    // Regra 2: Intervalo de 2 dias ou menos -> Escolher o dia mais ótimo para agrupar o máximo de limpezas
+    // REGRA 2: Se forem 2 dias ou menos, escolher o dia mais ótimo (maior concorrência de limpezas)
     let bestDay = checkout;
     let maxCleaningsOnDay = -1;
 
-    for (let d = new Date(checkout); d.getTime() <= nextReservation.checkIn.getTime(); d = addDays(d, 1)) {
-        // Evitar domingos, exceto se houver entrada obrigatória nesse domingo
-        if (isSunday(d)) {
+    for(let d = new Date(checkout); d <= nextReservation.checkIn; d = addDays(d, 1)){
+        
+        // Mantemos a regra de evitar limpar ao domingo, exceto se houver entrada estrita nesse dia
+        if(isSunday(d)){
             const hasArrivalOnSunday = allReservations.some(r => r.room === reservation.room && sameDay(r.checkIn, d));
-            if (!hasArrivalOnSunday) {
-                continue;
+            if(!hasArrivalOnSunday){
+                continue; 
             }
         }
 
-        // Contar quantas saídas/movimentos ocorrem neste dia 'd' nos vários quartos
-        const countOnDay = allReservations.filter(r => sameDay(r.checkOut, d)).length;
+        // Conta quantas saídas existem globalmente (em qualquer quarto) neste dia
+        let count = allReservations.filter(r => sameDay(r.checkOut, d)).length;
 
-        if (countOnDay > maxCleaningsOnDay) {
-            maxCleaningsOnDay = countOnDay;
+        // Se houver empate de saídas (ex: sai a dia 1 num quarto, e sai a dia 2 noutro),
+        // o >= empurra a limpeza para o dia mais à frente (dia 2), para juntar as duas.
+        if(count >= maxCleaningsOnDay){
+            maxCleaningsOnDay = count;
             bestDay = new Date(d);
         }
     }
@@ -140,67 +145,88 @@ function getCleaningDay(reservation, allReservations) {
     return bestDay;
 }
 
-function showReservations(reservations) {
+function showReservations(reservations){
     let html = "";
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    today.setHours(0,0,0,0);
 
-    for (let i = 0; i < 30; i++) {
-        const day = addDays(today, i);
+    for(let i = 0; i < 30; i++){
+        const day = addDays(today,i);
 
-        const arrivals = reservations.filter(r => sameDay(r.checkIn, day));
-        const departures = reservations.filter(r => sameDay(r.checkOut, day));
+        const arrivals = reservations.filter(r => 
+            sameDay(r.checkIn, day)
+        );
+
+        const departures = reservations.filter(r => 
+            sameDay(r.checkOut, day)
+        );
+
         const cleanings = reservations.filter(r => {
             const cleaningDay = getCleaningDay(r, reservations);
             return sameDay(cleaningDay, day);
         });
 
-        if (arrivals.length === 0 && departures.length === 0 && cleanings.length === 0) {
+        if(
+            arrivals.length === 0 &&
+            departures.length === 0 &&
+            cleanings.length === 0
+        ){
             continue;
         }
 
-        let title = day.toLocaleDateString("pt-PT", {
-            weekday: "long",
-            day: "numeric",
-            month: "long"
-        });
-
-        const sundayRequired = cleanings.some(c =>
-            isSunday(day) && sameDay(getCleaningDay(c, reservations), day)
+        let title = day.toLocaleDateString(
+            "pt-PT",
+            {
+                weekday:"long",
+                day:"numeric",
+                month:"long"
+            }
         );
 
-        if (sundayRequired) {
+        // Domingo obrigatório fica vermelho
+        const sundayRequired = cleanings.some(c =>
+            isSunday(day) &&
+            sameDay(getCleaningDay(c,reservations),day)
+        );
+
+        if(sundayRequired){
             title = "🔴 " + title;
         }
 
         html += `<h2>${title}</h2>`;
 
         html += "<b>⬇ Saídas</b><br>";
-        if (departures.length === 0) {
+        if(departures.length === 0){
             html += "Nenhuma<br>";
-        } else {
-            departures.forEach(r => { html += "• " + r.room + "<br>"; });
+        }else{
+            departures.forEach(r=>{
+                html += "• " + r.room + "<br>";
+            });
         }
 
         html += "<br><b>⬆ Entradas</b><br>";
-        if (arrivals.length === 0) {
+        if(arrivals.length === 0){
             html += "Nenhuma<br>";
-        } else {
-            arrivals.forEach(r => { html += "• " + r.room + "<br>"; });
+        }else{
+            arrivals.forEach(r=>{
+                html += "• " + r.room + "<br>";
+            });
         }
 
         html += "<br><b>🧹 Limpezas</b><br>";
-        if (cleanings.length === 0) {
+
+        if(cleanings.length === 0){
             html += "Nenhuma<br>";
-        } else {
-            cleanings.forEach(r => {
+        }else{
+            cleanings.forEach(r=>{
                 const hasArrivalSameDay = reservations.some(a =>
-                    a.room === r.room && sameDay(a.checkIn, day)
+                    a.room === r.room &&
+                    sameDay(a.checkIn,day)
                 );
 
-                if (hasArrivalSameDay) {
+                if(hasArrivalSameDay){
                     html += "• " + r.room + " (entrada hoje)<br>";
-                } else {
+                }else{
                     html += "• " + r.room + "<br>";
                 }
             });
@@ -209,12 +235,7 @@ function showReservations(reservations) {
         html += "<hr>";
     }
 
-    if (html === "") {
-        result.innerHTML = "Nenhuma reserva encontrada para os próximos 30 dias.";
-    } else {
-        result.innerHTML = html;
-    }
+    result.innerHTML = html;
 }
 
-// Executar
 loadCalendars();
