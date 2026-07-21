@@ -2,12 +2,10 @@ const calendars = [
 
     {
         name: "Achada 1",
-        url: "https://al.tracosdeoutono.workers.dev?room=1"
         url: "https://al.tracosdeoutono.workers.dev?room=achada1"
     },
     {
         name: "Achada 2",
-        url: "https://al.tracosdeoutono.workers.dev?room=2"
         url: "https://al.tracosdeoutono.workers.dev?room=achada2"
     },
     {
@@ -66,7 +64,6 @@ const result = document.getElementById("result");
 
 async function loadCalendars(){
 
-    result.innerHTML = "Loading...";
     result.innerHTML = "A carregar...";
 
 
@@ -85,7 +82,6 @@ async function loadCalendars(){
             const text = await response.text();
 
 
-            const events = parseICS(text, calendar.name);
             const events = parseICS(
                 text,
                 calendar.name
@@ -98,20 +94,19 @@ async function loadCalendars(){
         }
 
 
-        showReservations(reservations);
         showCleaningPlan(reservations);
 
 
-    }catch(error){
     }
     catch(err){
 
-        result.innerHTML = error;
         result.innerHTML = err;
 
     }
 
-@@ -53,34 +110,55 @@ async function loadCalendars(){
+}
+
+
 function parseDate(icsDate){
 
     const year = Number(icsDate.substring(0,4));
@@ -120,7 +115,6 @@ function parseDate(icsDate){
 
     const day = Number(icsDate.substring(6,8));
 
-    return new Date(year, month, day);
 
     return new Date(
         year,
@@ -145,9 +139,7 @@ function parseICS(text, roomName){
 
     for(const event of events){
 
-        const start = event.match(/DTSTART;VALUE=DATE:(\d{8})/);
 
-        const end = event.match(/DTEND;VALUE=DATE:(\d{8})/);
         const start = event.match(
             /DTSTART;VALUE=DATE:(\d{8})/
         );
@@ -170,7 +162,10 @@ function parseICS(text, roomName){
         reservations.push({
 
             room: roomName,
-@@ -91,11 +169,14 @@ function parseICS(text, roomName){
+
+            checkIn: parseDate(start[1]),
+
+            checkOut: parseDate(end[1])
 
         });
 
@@ -185,25 +180,38 @@ function parseICS(text, roomName){
 }
 
 
-@@ -111,11 +192,11 @@ function sameDay(a,b){
+function sameDay(a,b){
+
+    return (
+        a.getFullYear() === b.getFullYear() &&
+        a.getMonth() === b.getMonth() &&
+        a.getDate() === b.getDate()
+    );
+
+}
 
 
 
-function addDays(date, amount){
 function addDays(date,days){
 
     const d = new Date(date);
 
-    d.setDate(d.getDate() + amount);
     d.setDate(d.getDate() + days);
 
     return d;
 
-@@ -131,205 +212,283 @@ function isSunday(date){
+}
 
 
 
-function getCleaningDay(reservation, allReservations){
+function isSunday(date){
+
+    return date.getDay() === 0;
+
+}
+
+
+
 
 function hasSameDayArrival(reservation, reservations){
 
@@ -229,12 +237,10 @@ function getCleaningInfo(reservation, reservations){
     const checkout = reservation.checkOut;
 
 
-    // Se não for domingo, limpa nesse dia
 
     // Se não for domingo, limpa normalmente
     if(!isSunday(checkout)){
 
-        return checkout;
 
         return {
 
@@ -250,13 +256,8 @@ function getCleaningInfo(reservation, reservations){
     }
 
 
-    // Verifica se existe entrada no mesmo quarto nesse domingo
-    const sameDayArrival = allReservations.some(r =>
 
-        r.room === reservation.room &&
-        sameDay(r.checkIn, checkout)
 
-    );
 
     // Se há entrada nesse domingo,
     // a limpeza tem de ser feita nesse dia
@@ -266,8 +267,6 @@ function getCleaningInfo(reservation, reservations){
 
         return {
 
-    // Se há entrada no domingo, limpeza obrigatória no domingo
-    if(sameDayArrival){
             date: checkout,
 
             sunday: true,
@@ -276,39 +275,28 @@ function getCleaningInfo(reservation, reservations){
 
         };
 
-        return checkout;
 
     }
 
 
-    // Caso contrário passa para segunda-feira
-    return addDays(checkout,1);
-
-}
 
 
-function showReservations(reservations){
+
     // Caso contrário passa para segunda
 
     return {
 
-    let html = "";
         date: addDays(checkout,1),
 
-    const today = new Date();
         sunday: false,
 
-    today.setHours(0,0,0,0);
         urgent: false
 
     };
 
 
-    for(let i = 0; i < 30; i++){
 }
 
-
-        const day = addDays(today,i);
 function showCleaningPlan(reservations){
 
 
@@ -318,13 +306,8 @@ function showCleaningPlan(reservations){
 
     reservations.forEach(reservation => {
 
-        const arrivals = reservations.filter(r => 
-            sameDay(r.checkIn, day)
-        );
 
 
-        const departures = reservations.filter(r => 
-            sameDay(r.checkOut, day)
         const info = getCleaningInfo(
             reservation,
             reservations
@@ -332,13 +315,10 @@ function showCleaningPlan(reservations){
 
 
 
-        const cleanings = reservations.filter(r => {
         cleanings.push({
 
-            const cleaningDay = getCleaningDay(r, reservations);
             room: reservation.room,
 
-            return sameDay(cleaningDay, day);
             date: info.date,
 
             sunday: info.sunday,
@@ -349,72 +329,40 @@ function showCleaningPlan(reservations){
 
 
 
-        if(
-            arrivals.length === 0 &&
-            departures.length === 0 &&
-            cleanings.length === 0
-        ){
-            continue;
-        }
     });
 
 
 
-        let title = day.toLocaleDateString(
-            "pt-PT",
-            {
-                weekday:"long",
-                day:"numeric",
-                month:"long"
-            }
-        );
 
 
     cleanings.sort((a,b)=>a.date-b.date);
 
-        // Domingo obrigatório fica vermelho
-        const sundayRequired = cleanings.some(c =>
-            isSunday(day) &&
-            sameDay(getCleaningDay(c,reservations),day)
-        );
 
 
 
-        if(sundayRequired){
 
-            title = "🔴 " + title;
     let grouped = {};
 
-        }
 
 
 
-        html += `<h2>${title}</h2>`;
 
     cleanings.forEach(clean => {
 
 
-        html += "<b>⬇ Saídas</b><br>";
 
         const key = clean.date
             .toISOString()
             .split("T")[0];
 
-        if(departures.length === 0){
 
-            html += "Nenhuma<br>";
 
-        }else{
 
-            departures.forEach(r=>{
         if(!grouped[key]){
 
-                html += "• " + r.room + "<br>";
 
-            });
             grouped[key] = {
 
-        }
                 date: clean.date,
 
                 rooms: [],
@@ -427,57 +375,38 @@ function showCleaningPlan(reservations){
         }
 
 
-        html += "<br><b>⬆ Entradas</b><br>";
 
 
-        if(arrivals.length === 0){
         grouped[key].rooms.push(clean);
 
-            html += "Nenhuma<br>";
 
-        }else{
 
-            arrivals.forEach(r=>{
 
-                html += "• " + r.room + "<br>";
         if(clean.sunday){
 
-            });
             grouped[key].sunday = true;
 
         }
 
 
 
-        html += "<br><b>🧹 Limpezas</b><br>";
     });
 
 
 
-        if(cleanings.length === 0){
 
-            html += "Nenhuma<br>";
 
-        }else{
 
-            cleanings.forEach(r=>{
     let html = "<h1>🧹 Plano de Limpezas</h1>";
 
 
-                const hasArrivalSameDay = reservations.some(a =>
 
-                    a.room === r.room &&
-                    sameDay(a.checkIn,day)
 
-                );
 
     Object.values(grouped).forEach(day => {
 
-                if(hasArrivalSameDay){
 
-                    html += "• " + r.room + " (entrada hoje)<br>";
 
-                }else{
         let title = day.date.toLocaleDateString(
             "pt-PT",
             {
@@ -487,13 +416,10 @@ function showCleaningPlan(reservations){
             }
         );
 
-                    html += "• " + r.room + "<br>";
 
-                }
 
         if(day.sunday){
 
-            });
             title = "🔴 " + title;
 
         }
@@ -552,7 +478,6 @@ function showCleaningPlan(reservations){
 
         html += "<hr>";
 
-    }
 
 
     });
@@ -564,5 +489,7 @@ function showCleaningPlan(reservations){
 
 
 }
+
+
 
 loadCalendars();
