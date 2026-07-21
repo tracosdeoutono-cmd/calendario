@@ -31,7 +31,7 @@ async function loadCalendars(){
         result.innerHTML = error;
     }
 }
-Parte 2: Leitura de Datas e ICS (Mantém-se igual)
+
 JavaScript
 function parseDate(icsDate){
     const year = Number(icsDate.substring(0,4));
@@ -85,7 +85,7 @@ function getDaysBetween(dateA, dateB){
     const diffTime = dateB.getTime() - dateA.getTime();
     return Math.round(diffTime / (1000 * 60 * 60 * 24));
 }
-Parte 3: Nova Lógica de Limpeza Otimizada
+
 JavaScript
 function getCleaningDay(reservation, allReservations){
     const checkout = reservation.checkOut;
@@ -154,7 +154,7 @@ function getCleaningDay(reservation, allReservations){
 
     return bestDay;
 }
-Parte 4: Exibição e Execução (Mantém-se igual)
+
 JavaScript
 function showReservations(reservations){
     let html = "";
