@@ -70,7 +70,7 @@ async function saveToCloudHistory(newEntries) {
 }
 
 async function loadCalendars() {
-    result.innerHTML = "<p style='font-size: 18px; font-weight: bold;'>⏳ A carregar calendários e histórico...</p>";
+    result.innerHTML = "<p style='font-size: 18px; font-weight: bold;'>⏳ Esta quase...</p>";
 
     try {
         const historyPromise = fetchCloudHistory();
