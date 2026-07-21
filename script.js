@@ -1,83 +1,38 @@
-const WORKER_BASE_URL = "https://al.tracosdeoutono.workers.dev";
-
 const calendars = [
-    { name: "Achada 1", url: `${WORKER_BASE_URL}?room=achada1` },
-    { name: "Achada 2", url: `${WORKER_BASE_URL}?room=achada2` },
-    { name: "Achada 3", url: `${WORKER_BASE_URL}?room=achada3` },
-    { name: "Achada 4", url: `${WORKER_BASE_URL}?room=achada4` },
-    { name: "Achada 5", url: `${WORKER_BASE_URL}?room=achada5` },
-    { name: "Achada 6", url: `${WORKER_BASE_URL}?room=achada6` },
-    { name: "Impasse 2", url: `${WORKER_BASE_URL}?room=impasse2` },
-    { name: "Impasse 3", url: `${WORKER_BASE_URL}?room=impasse3` },
-    { name: "Impasse 4", url: `${WORKER_BASE_URL}?room=impasse4` },
-    { name: "Impasse Villa", url: `${WORKER_BASE_URL}?room=impassevilla` },
-    { name: "Vizinho 1", url: `${WORKER_BASE_URL}?room=vizinho1` },
-    { name: "Vizinho 2", url: `${WORKER_BASE_URL}?room=vizinho2` },
-    { name: "Vizinho 3", url: `${WORKER_BASE_URL}?room=vizinho3` }
+    { name: "Achada 1", url: "https://al.tracosdeoutono.workers.dev?room=achada1" },
+    { name: "Achada 2", url: "https://al.tracosdeoutono.workers.dev?room=achada2" },
+    { name: "Achada 3", url: "https://al.tracosdeoutono.workers.dev?room=achada3" },
+    { name: "Achada 4", url: "https://al.tracosdeoutono.workers.dev?room=achada4" },
+    { name: "Achada 5", url: "https://al.tracosdeoutono.workers.dev?room=achada5" },
+    { name: "Achada 6", url: "https://al.tracosdeoutono.workers.dev?room=achada6" },
+    { name: "Impasse 2", url: "https://al.tracosdeoutono.workers.dev?room=impasse2" },
+    { name: "Impasse 3", url: "https://al.tracosdeoutono.workers.dev?room=impasse3" },
+    { name: "Impasse 4", url: "https://al.tracosdeoutono.workers.dev?room=impasse4" },
+    { name: "Impasse Villa", url: "https://al.tracosdeoutono.workers.dev?room=impassevilla" },
+    { name: "Vizinho 1", url: "https://al.tracosdeoutono.workers.dev?room=vizinho1" },
+    { name: "Vizinho 2", url: "https://al.tracosdeoutono.workers.dev?room=vizinho2" },
+    { name: "Vizinho 3", url: "https://al.tracosdeoutono.workers.dev?room=vizinho3" }
 ];
 
 const result = document.getElementById("result");
 
-let globalReservations = [];
-let cloudHistory = {};
-let showHistoryMode = false;
-
-// Função global para alternar entre Futuro e Histórico
-window.toggleView = function() {
-    showHistoryMode = !showHistoryMode;
-    showCleaningPlan();
-};
-
-// Ler histórico guardado no Cloudflare KV
-async function fetchCloudHistory() {
-    try {
-        const res = await fetch(`${WORKER_BASE_URL}?action=getHistory`);
-        cloudHistory = await res.json();
-    } catch (e) {
-        console.error("Erro ao carregar histórico da cloud:", e);
-    }
-}
-
-// Guardar novas limpezas passadas no Cloudflare KV
-async function saveToCloudHistory(newEntries) {
-    try {
-        await fetch(`${WORKER_BASE_URL}?action=saveHistory`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(newEntries)
-        });
-    } catch (e) {
-        console.error("Erro ao guardar histórico na cloud:", e);
-    }
-}
-
 async function loadCalendars() {
-    result.innerHTML = "<p style='font-size: 18px; font-weight: bold;'>⏳ A carregar calendários e histórico...</p>";
+    result.innerHTML = "A carregar...";
 
     try {
-        const historyPromise = fetchCloudHistory();
-        
-        const calendarPromises = calendars.map(async (calendar) => {
-            try {
-                const response = await fetch(calendar.url);
-                const text = await response.text();
-                return parseICS(text, calendar.name);
-            } catch (e) {
-                console.error("Erro ao carregar: " + calendar.name, e);
-                return [];
-            }
-        });
+        let reservations = [];
 
-        const [_, results] = await Promise.all([historyPromise, Promise.all(calendarPromises)]);
-        globalReservations = results.flat();
+        for (const calendar of calendars) {
+            const response = await fetch(calendar.url);
+            const text = await response.text();
+            const events = parseICS(text, calendar.name);
+            reservations.push(...events);
+        }
 
-        // Sincroniza limpezas passadas/de hoje na Cloudflare
-        updateCloudHistory();
-
-        showCleaningPlan();
+        showCleaningPlan(reservations);
 
     } catch (err) {
-        result.innerHTML = "Erro ao carregar dados: " + err.message;
+        result.innerHTML = "Erro: " + err.message;
     }
 }
 
@@ -94,10 +49,12 @@ function parseICS(text, roomName) {
     const events = text.split("BEGIN:VEVENT");
 
     for (const event of events) {
-        const start = event.match(/DTSTART.*?:(\d{8})/);
-        const end = event.match(/DTEND.*?:(\d{8})/);
+        const start = event.match(/DTSTART;VALUE=DATE:(\d{8})/);
+        const end = event.match(/DTEND;VALUE=DATE:(\d{8})/);
 
-        if (!start || !end) continue;
+        if (!start || !end) {
+            continue;
+        }
 
         reservations.push({
             room: roomName,
@@ -135,43 +92,58 @@ function getDaysBetween(dateA, dateB) {
 function getCleaningInfo(reservation, allReservations) {
     const checkout = reservation.checkOut;
 
+    // Encontrar a próxima reserva para este quarto específico
     const nextReservation = allReservations
         .filter(r => r.room === reservation.room && r.checkIn >= checkout)
         .sort((a, b) => a.checkIn - b.checkIn)[0];
 
+    // Verifica se entra alguém no preciso dia em que o hóspede atual sai
     const sameDayArrival = nextReservation && sameDay(checkout, nextReservation.checkIn);
 
     let bestDay = checkout;
     let isForcedSunday = false;
 
+    // REGRA 1: Domingo obrigatório APENAS se checkout e checkin forem no mesmo domingo
     if (isSunday(checkout) && sameDayArrival) {
         bestDay = checkout;
         isForcedSunday = true;
     } else {
+        // A janela de procura começa logo na 2ª feira se hoje for domingo e não houver entrada
         let startDay = isSunday(checkout) ? addDays(checkout, 1) : checkout;
         let endDay = startDay;
 
+        // Se houver próxima reserva, vemos se está a 1 ou 2 dias de distância
         if (nextReservation) {
             const gap = getDaysBetween(checkout, nextReservation.checkIn);
-            if (gap <= 2) endDay = nextReservation.checkIn;
+            if (gap <= 2) {
+                endDay = nextReservation.checkIn;
+            }
         }
 
         let bestScore = -1;
 
+        // REGRA 2: Procurar o melhor dia na janela temporal
         for (let d = new Date(startDay); d <= endDay; d = addDays(d, 1)) {
-            if (isSunday(d)) continue;
+            if (isSunday(d)) continue; // Evita domingos sempre que possível
 
             let score = 0;
 
+            // Avalia todas as outras saídas neste dia 'd'
             allReservations.forEach(r => {
                 if (sameDay(r.checkOut, d)) {
-                    score += 1;
+                    score += 1; // Ponto base: juntar com qualquer outra limpeza
+
+                    // Verifica se ambos são da "Achada"
                     const currentIsAchada = reservation.room.toLowerCase().includes("achada");
                     const otherIsAchada = r.room.toLowerCase().includes("achada");
-                    if (currentIsAchada && otherIsAchada) score += 10;
+
+                    if (currentIsAchada && otherIsAchada) {
+                        score += 10; // Super bónus: atrai as limpezas Achada para o mesmo dia
+                    }
                 }
             });
 
+            // O >= garante que agrupa e, em caso de empate de score, empurra a limpeza para a frente
             if (score >= bestScore) {
                 bestScore = score;
                 bestDay = new Date(d);
@@ -179,6 +151,7 @@ function getCleaningInfo(reservation, allReservations) {
         }
     }
 
+    // A limpeza é "urgente" se calhar exatamente no dia em que o próximo hóspede entra
     const urgent = nextReservation ? sameDay(bestDay, nextReservation.checkIn) : false;
 
     return {
@@ -188,128 +161,71 @@ function getCleaningInfo(reservation, allReservations) {
     };
 }
 
-// Guarda apenas limpezas que já ocorreram ou ocorrem hoje no histórico permanente
-function updateCloudHistory() {
-    const newHistoryEntries = {};
+function showCleaningPlan(reservations) {
+    let cleanings = [];
+    
+    // Configura o "hoje" à meia noite para não mostrar limpezas antigas
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    globalReservations.forEach(reservation => {
-        const info = getCleaningInfo(reservation, globalReservations);
-        
-        if (info.date <= today) {
-            const dateKey = info.date.getFullYear() + "-" +
-                (info.date.getMonth() + 1).toString().padStart(2, '0') + "-" +
-                info.date.getDate().toString().padStart(2, '0');
+    // Calcular o dia ótimo de limpeza para cada reserva
+    reservations.forEach(reservation => {
+        const info = getCleaningInfo(reservation, reservations);
 
-            if (!newHistoryEntries[dateKey]) {
-                newHistoryEntries[dateKey] = { dateIso: info.date.toISOString(), rooms: [] };
-            }
-
-            const exists = newHistoryEntries[dateKey].rooms.some(r => r.room === reservation.room);
-            if (!exists) {
-                newHistoryEntries[dateKey].rooms.push({
-                    room: reservation.room,
-                    sunday: info.sunday,
-                    urgent: info.urgent
-                });
-            }
+        // Só queremos guardar limpezas que sejam hoje ou no futuro
+        if (info.date >= today) {
+            cleanings.push({
+                room: reservation.room,
+                date: info.date,
+                sunday: info.sunday,
+                urgent: info.urgent
+            });
         }
     });
 
-    if (Object.keys(newHistoryEntries).length > 0) {
-        saveToCloudHistory(newHistoryEntries);
-    }
-}
-
-function showCleaningPlan() {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
     let grouped = {};
 
-    if (showHistoryMode) {
-        // MODO HISTÓRICO: Mostra o que está guardado no Cloudflare KV
-        Object.keys(cloudHistory).forEach(dateKey => {
-            const itemDate = new Date(cloudHistory[dateKey].dateIso);
-            if (itemDate < today) {
-                grouped[dateKey] = {
-                    date: itemDate,
-                    rooms: cloudHistory[dateKey].rooms
-                };
-            }
-        });
-    } else {
-        // MODO PRÓXIMAS LIMPEZAS: Calcula em tempo real para hoje e futuro
-        globalReservations.forEach(reservation => {
-            const info = getCleaningInfo(reservation, globalReservations);
-            
-            if (info.date >= today) {
-                const dateKey = info.date.getFullYear() + "-" +
-                    (info.date.getMonth() + 1).toString().padStart(2, '0') + "-" +
-                    info.date.getDate().toString().padStart(2, '0');
+    // Ordenar cronologicamente e agrupar por data
+    cleanings.sort((a, b) => a.date - b.date).forEach(clean => {
+        // Criar chave à prova de fusos horários (YYYY-MM-DD)
+        const key = clean.date.getFullYear() + "-" +
+            (clean.date.getMonth() + 1).toString().padStart(2, '0') + "-" +
+            clean.date.getDate().toString().padStart(2, '0');
 
-                if (!grouped[dateKey]) {
-                    grouped[dateKey] = { date: info.date, rooms: [] };
-                }
+        if (!grouped[key]) {
+            grouped[key] = { date: clean.date, rooms: [], sunday: false };
+        }
+        grouped[key].rooms.push(clean);
+        if (clean.sunday) {
+            grouped[key].sunday = true;
+        }
+    });
 
-                grouped[dateKey].rooms.push({
-                    room: reservation.room,
-                    sunday: info.sunday,
-                    urgent: info.urgent
-                });
-            }
-        });
-    }
+    let html = "<h1>🧹 Plano de Limpezas</h1>";
 
-    let sortedKeys = Object.keys(grouped).sort();
-    if (showHistoryMode) {
-        sortedKeys.reverse(); // Do mais recente ao mais antigo no histórico
-    }
-
-    let buttonText = showHistoryMode ? "📅 Ver Próximas Limpezas" : "📜 Ver Dias Anteriores";
-    let mainTitle = showHistoryMode ? "📜 Histórico de Limpezas (Cloud)" : "🧹 Plano de Limpezas";
-
-    let html = `
-        <div style="margin-bottom: 25px; margin-top: 10px;">
-            <button onclick="window.toggleView()" style="
-                padding: 12px 20px; 
-                font-size: 16px; 
-                cursor: pointer; 
-                border-radius: 8px; 
-                border: 2px solid #007bff; 
-                background-color: #007bff; 
-                color: white; 
-                font-weight: bold;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            ">
-                ${buttonText}
-            </button>
-        </div>
-        <h1>${mainTitle}</h1>
-    `;
+    const sortedKeys = Object.keys(grouped).sort();
 
     if (sortedKeys.length === 0) {
-        html += `<p>Não há limpezas registadas ${showHistoryMode ? 'anteriores a hoje no histórico' : 'agendadas'}.</p>`;
+        html += "<p>Não há limpezas agendadas.</p>";
     }
 
+    // Gerar o HTML agrupado por dias
     sortedKeys.forEach(key => {
         const day = grouped[key];
         
         let title = day.date.toLocaleDateString("pt-PT", {
             weekday: "long",
             day: "numeric",
-            month: "long",
-            year: "numeric"
+            month: "long"
         });
 
-        const isSundayDay = day.rooms.some(r => r.sunday);
-        if (isSundayDay) {
+        if (day.sunday) {
             title = "🔴 " + title;
         }
 
         html += `<h2>${title}</h2>`;
 
+        // Opcional: ordenar as limpezas do dia para mostrar as "Achada" primeiro
         day.rooms.sort((a, b) => a.room.localeCompare(b.room)).forEach(clean => {
             let extra = clean.urgent ? " <b>(entrada hoje)</b>" : "";
             html += `🧹 ${clean.room}${extra}<br>`;
