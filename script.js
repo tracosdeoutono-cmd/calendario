@@ -1,13 +1,59 @@
+
 const calendars = [
     {
         name: "Achada 1",
-        url: "https://al.tracosdeoutono.workers.dev?room=1"
+        url: "https://al.tracosdeoutono.workers.dev?room=achada1"
     },
     {
         name: "Achada 2",
-        url: "https://al.tracosdeoutono.workers.dev?room=2"
+        url: "https://al.tracosdeoutono.workers.dev?room=achada2"
+    },
+    {
+        name: "Achada 3",
+        url: "https://al.tracosdeoutono.workers.dev?room=achada3"
+    },
+    {
+        name: "Achada 4",
+        url: "https://al.tracosdeoutono.workers.dev?room=achada4"
+    },
+    {
+        name: "Achada 5",
+        url: "https://al.tracosdeoutono.workers.dev?room=achada5"
+    },
+    {
+        name: "Achada 6",
+        url: "https://al.tracosdeoutono.workers.dev?room=achada6"
+    },
+    {
+        name: "Impasse 2",
+        url: "https://al.tracosdeoutono.workers.dev?room=impasse2"
+    },
+    {
+        name: "Impasse 3",
+        url: "https://al.tracosdeoutono.workers.dev?room=impasse3"
+    },
+    {
+        name: "Impasse 4",
+        url: "https://al.tracosdeoutono.workers.dev?room=impasse4"
+    },
+    {
+        name: "Impasse Villa",
+        url: "https://al.tracosdeoutono.workers.dev?room=impassevilla"
+    },
+    {
+        name: "Vizinho 1",
+        url: "https://al.tracosdeoutono.workers.dev?room=vizinho1"
+    },
+    {
+        name: "Vizinho 2",
+        url: "https://al.tracosdeoutono.workers.dev?room=vizinho2"
+    },
+    {
+        name: "Vizinho 3",
+        url: "https://al.tracosdeoutono.workers.dev?room=vizinho3"
     }
 ];
+
 
 const result = document.getElementById("result");
 
