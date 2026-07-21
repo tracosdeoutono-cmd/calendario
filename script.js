@@ -19,7 +19,7 @@ const result = document.getElementById("result");
 let globalReservations = [];
 let showHistoryMode = false;
 
-// Tornar a função do botão acessível globalmente ao HTML
+// Função global para alternar a vista
 window.toggleView = function() {
     showHistoryMode = !showHistoryMode;
     showCleaningPlan();
@@ -29,7 +29,6 @@ async function loadCalendars() {
     result.innerHTML = "<p style='font-size: 18px; font-weight: bold;'>⏳ A carregar calendários...</p>";
 
     try {
-        // Dispara todos os pedidos em simultâneo para ser ultra rápido
         const promises = calendars.map(async (calendar) => {
             try {
                 const response = await fetch(calendar.url);
@@ -37,12 +36,12 @@ async function loadCalendars() {
                 return parseICS(text, calendar.name);
             } catch (e) {
                 console.error("Erro ao carregar: " + calendar.name, e);
-                return []; // Se um falhar, ignora e continua os outros
+                return [];
             }
         });
 
         const results = await Promise.all(promises);
-        globalReservations = results.flat(); // Junta todas as reservas num só array
+        globalReservations = results.flat();
 
         showCleaningPlan();
 
@@ -59,13 +58,15 @@ function parseDate(icsDate) {
     return new Date(year, month, day);
 }
 
+// PARSER MELHORADO: Apanha datas passadas em qualquer formato iCal
 function parseICS(text, roomName) {
     const reservations = [];
     const events = text.split("BEGIN:VEVENT");
 
     for (const event of events) {
-        const start = event.match(/DTSTART;VALUE=DATE:(\d{8})/);
-        const end = event.match(/DTEND;VALUE=DATE:(\d{8})/);
+        // Aceita qualquer formato DTSTART / DTEND que contenha 8 dígitos numéricos
+        const start = event.match(/DTSTART.*?:(\d{8})/);
+        const end = event.match(/DTEND.*?:(\d{8})/);
 
         if (!start || !end) {
             continue;
@@ -204,6 +205,7 @@ function showCleaningPlan() {
 
     let sortedKeys = Object.keys(grouped).sort();
     if (showHistoryMode) {
+        // Ordena do mais recente para o mais antigo no histórico
         sortedKeys.reverse();
     }
 
