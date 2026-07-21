@@ -20,11 +20,32 @@ const result = document.getElementById("result");
 
 let globalReservations = [];
 let cloudHistory = {};
-let showHistoryMode = false;
 
-window.toggleView = function() {
+// Estados da Aplicação
+let currentView = "cleaning"; // "cleaning" ou "occupancy"
+let showHistoryMode = false;  // modo histórico das limpezas
+let selectedHouse = "achada";  // "achada", "impasse", "vizinho"
+
+// Alternar entre Vistas Principais
+window.switchMainView = function(view) {
+    currentView = view;
+    if (currentView === "cleaning") {
+        showCleaningPlan();
+    } else {
+        showOccupancyPlan();
+    }
+};
+
+// Alternar Histórico no modo Limpezas
+window.toggleHistoryView = function() {
     showHistoryMode = !showHistoryMode;
     showCleaningPlan();
+};
+
+// Selecionar Casa no modo Disponibilidade
+window.selectHouse = function(house) {
+    selectedHouse = house;
+    showOccupancyPlan();
 };
 
 async function fetchCloudHistory() {
@@ -92,7 +113,6 @@ function parseICS(text, roomName) {
     const events = text.split("BEGIN:VEVENT");
 
     for (const event of events) {
-        // Expressão regular flexível para apanhar datas de check-in e check-out
         const start = event.match(/DTSTART(?:;[^:]*)?:(\d{8})/);
         const end = event.match(/DTEND(?:;[^:]*)?:(\d{8})/);
 
@@ -220,6 +240,34 @@ function updateCloudHistory() {
     }
 }
 
+// Cabeçalho de Navegação Principal
+function renderNavigation() {
+    const isCleaning = currentView === "cleaning";
+    const isOccupancy = currentView === "occupancy";
+
+    return `
+        <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+            <button onclick="window.switchMainView('cleaning')" style="
+                padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px;
+                border: 2px solid #007bff; background-color: ${isCleaning ? '#007bff' : '#ffffff'};
+                color: ${isCleaning ? '#ffffff' : '#007bff'}; font-weight: bold;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            ">
+                🧹 Plano de Limpezas
+            </button>
+            <button onclick="window.switchMainView('occupancy')" style="
+                padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px;
+                border: 2px solid #28a745; background-color: ${isOccupancy ? '#28a745' : '#ffffff'};
+                color: ${isOccupancy ? '#ffffff' : '#28a745'}; font-weight: bold;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            ">
+                📊 Disponibilidade da Casa
+            </button>
+        </div>
+    `;
+}
+
+// VISTA 1: PLANO DE LIMPEZAS & HISTÓRICO
 function showCleaningPlan() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -259,25 +307,17 @@ function showCleaningPlan() {
     }
 
     let sortedKeys = Object.keys(grouped).sort();
-    if (showHistoryMode) {
-        sortedKeys.reverse();
-    }
+    if (showHistoryMode) sortedKeys.reverse();
 
     let buttonText = showHistoryMode ? "📅 Ver Próximas Limpezas" : "📜 Ver Dias Anteriores";
     let mainTitle = showHistoryMode ? "📜 Histórico de Limpezas (Cloud)" : "🧹 Plano de Limpezas";
 
-    let html = `
-        <div style="margin-bottom: 25px; margin-top: 10px;">
-            <button onclick="window.toggleView()" style="
-                padding: 12px 20px; 
-                font-size: 16px; 
-                cursor: pointer; 
-                border-radius: 8px; 
-                border: 2px solid #007bff; 
-                background-color: #007bff; 
-                color: white; 
-                font-weight: bold;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    let html = renderNavigation();
+    html += `
+        <div style="margin-bottom: 25px;">
+            <button onclick="window.toggleHistoryView()" style="
+                padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px;
+                border: 1px solid #6c757d; background-color: #6c757d; color: white; font-weight: bold;
             ">
                 ${buttonText}
             </button>
@@ -293,16 +333,10 @@ function showCleaningPlan() {
         const day = grouped[key];
         
         let title = day.date.toLocaleDateString("pt-PT", {
-            weekday: "long",
-            day: "numeric",
-            month: "long",
-            year: "numeric"
+            weekday: "long", day: "numeric", month: "long", year: "numeric"
         });
 
-        const isSundayDay = day.rooms.some(r => r.sunday);
-        if (isSundayDay) {
-            title = "🔴 " + title;
-        }
+        if (day.rooms.some(r => r.sunday)) title = "🔴 " + title;
 
         html += `<h2>${title}</h2>`;
 
@@ -313,6 +347,103 @@ function showCleaningPlan() {
 
         html += "<hr>";
     });
+
+    result.innerHTML = html;
+}
+
+// Retorna os quartos de cada casa
+function getHouseRooms(houseKey) {
+    if (houseKey === "achada") {
+        return ["Achada 1", "Achada 2", "Achada 3", "Achada 4", "Achada 5", "Achada 6"];
+    } else if (houseKey === "impasse") {
+        // Apenas Impasse 2, 3 e 4 (exclui Impasse Villa)
+        return ["Impasse 2", "Impasse 3", "Impasse 4"];
+    } else if (houseKey === "vizinho") {
+        return ["Vizinho 1", "Vizinho 2", "Vizinho 3"];
+    }
+    return [];
+}
+
+// VISTA 2: DISPONIBILIDADE DA CASA
+function showOccupancyPlan() {
+    const houseRooms = getHouseRooms(selectedHouse);
+    const totalRooms = houseRooms.length;
+
+    const houseLabels = {
+        achada: "Achada (6 Quartos)",
+        impasse: "Impasse (3 Quartos)",
+        vizinho: "Vizinho (3 Quartos)"
+    };
+
+    let html = renderNavigation();
+
+    // Botões para escolher a Casa
+    html += `
+        <div style="margin-bottom: 25px; display: flex; gap: 8px; flex-wrap: wrap;">
+            <button onclick="window.selectHouse('achada')" style="
+                padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px;
+                border: 2px solid #17a2b8; background-color: ${selectedHouse === 'achada' ? '#17a2b8' : '#ffffff'};
+                color: ${selectedHouse === 'achada' ? '#ffffff' : '#17a2b8'}; font-weight: bold;
+            ">
+                🏡 Achada
+            </button>
+            <button onclick="window.selectHouse('impasse')" style="
+                padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px;
+                border: 2px solid #17a2b8; background-color: ${selectedHouse === 'impasse' ? '#17a2b8' : '#ffffff'};
+                color: ${selectedHouse === 'impasse' ? '#ffffff' : '#17a2b8'}; font-weight: bold;
+            ">
+                🏡 Impasse
+            </button>
+            <button onclick="window.selectHouse('vizinho')" style="
+                padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px;
+                border: 2px solid #17a2b8; background-color: ${selectedHouse === 'vizinho' ? '#17a2b8' : '#ffffff'};
+                color: ${selectedHouse === 'vizinho' ? '#ffffff' : '#17a2b8'}; font-weight: bold;
+            ">
+                🏡 Vizinho
+            </button>
+        </div>
+        <h1>📊 Ocupação - ${houseLabels[selectedHouse]}</h1>
+        <hr>
+    `;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Mostra a disponibilidade para os próximos 30 dias a contar de hoje
+    for (let i = 0; i < 30; i++) {
+        const currentDate = addDays(today, i);
+
+        // Encontra quais os quartos desta casa que estão ocupados nesta data
+        const occupiedRooms = houseRooms.filter(roomName => {
+            return globalReservations.some(reservation => {
+                if (reservation.room !== roomName) return false;
+
+                const checkIn = new Date(reservation.checkIn); checkIn.setHours(0, 0, 0, 0);
+                const checkOut = new Date(reservation.checkOut); checkOut.setHours(0, 0, 0, 0);
+
+                // Quarto está ocupado entre o check-in e o dia anterior ao check-out
+                return currentDate >= checkIn && currentDate < checkOut;
+            });
+        });
+
+        const count = occupiedRooms.length;
+        const dateFormatted = currentDate.toLocaleDateString("pt-PT", {
+            weekday: "long", day: "numeric", month: "long", year: "numeric"
+        });
+
+        html += `<h2>${dateFormatted}</h2>`;
+
+        if (count === 0) {
+            html += `<div style="font-size: 18px; font-weight: bold; color: #28a745; margin-bottom: 5px;">0 🟢</div>`;
+        } else {
+            html += `<div style="font-size: 18px; font-weight: bold; color: #dc3545; margin-bottom: 5px;">
+                ${count} / ${totalRooms} 🔴
+            </div>`;
+            html += `<div style="font-size: 14px; color: #555;">Ocupados: <b>${occupiedRooms.join(", ")}</b></div>`;
+        }
+
+        html += "<hr>";
+    }
 
     result.innerHTML = html;
 }
