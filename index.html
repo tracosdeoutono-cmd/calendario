@@ -1,55 +1,20 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calendário AL</title>
-
-<style>
-body{
-    font-family: Arial, sans-serif;
-    max-width:900px;
-    margin:auto;
-    padding:40px;
-    background:#f5f5f5;
-}
-
-h1{
-    text-align:center;
-}
-
-pre{
-    background:white;
-    border-radius:10px;
-    padding:20px;
-    white-space:pre-wrap;
-    word-wrap:break-word;
-    border:1px solid #ddd;
-}
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AL Calendar</title>
 </head>
+
 <body>
 
-<h1>Calendário AL</h1>
+<h1>Upcoming Check-ins & Check-outs</h1>
 
-<p>Se aparecer o conteúdo do calendário abaixo, está tudo a funcionar.</p>
+<div id="result">
+Loading...
+</div>
 
-<pre id="calendar">A carregar...</pre>
-
-<script>
-
-fetch("https://al.tracosdeoutono.workers.dev")
-.then(r => r.text())
-.then(text => {
-    document.getElementById("calendar").textContent = text;
-})
-.catch(err => {
-    document.getElementById("calendar").textContent =
-        "Erro:\n\n" + err;
-});
-
-</script>
+<script src="script.js"></script>
 
 </body>
 </html>
