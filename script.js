@@ -16,28 +16,38 @@ const calendars = [
 
 const result = document.getElementById("result");
 
-// Variáveis de estado global para permitir a alternância de vistas
 let globalReservations = [];
 let showHistoryMode = false;
 
+// Tornar a função do botão acessível globalmente ao HTML
+window.toggleView = function() {
+    showHistoryMode = !showHistoryMode;
+    showCleaningPlan();
+};
+
 async function loadCalendars() {
-    result.innerHTML = "A carregar...";
+    result.innerHTML = "<p style='font-size: 18px; font-weight: bold;'>⏳ A carregar calendários...</p>";
 
     try {
-        let reservations = [];
+        // Dispara todos os pedidos em simultâneo para ser ultra rápido
+        const promises = calendars.map(async (calendar) => {
+            try {
+                const response = await fetch(calendar.url);
+                const text = await response.text();
+                return parseICS(text, calendar.name);
+            } catch (e) {
+                console.error("Erro ao carregar: " + calendar.name, e);
+                return []; // Se um falhar, ignora e continua os outros
+            }
+        });
 
-        for (const calendar of calendars) {
-            const response = await fetch(calendar.url);
-            const text = await response.text();
-            const events = parseICS(text, calendar.name);
-            reservations.push(...events);
-        }
+        const results = await Promise.all(promises);
+        globalReservations = results.flat(); // Junta todas as reservas num só array
 
-        globalReservations = reservations;
         showCleaningPlan();
 
     } catch (err) {
-        result.innerHTML = "Erro: " + err.message;
+        result.innerHTML = "Erro ao carregar dados: " + err.message;
     }
 }
 
@@ -156,23 +166,14 @@ function getCleaningInfo(reservation, allReservations) {
     };
 }
 
-// Função para alternar a vista entre Próximas e Anteriores
-function toggleView() {
-    showHistoryMode = !showHistoryMode;
-    showCleaningPlan();
-}
-
 function showCleaningPlan() {
     let cleanings = [];
     
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Calcular datas de limpeza
     globalReservations.forEach(reservation => {
         const info = getCleaningInfo(reservation, globalReservations);
-
-        // Filtra conforme o modo (Histórico ou Futuro)
         const isPast = info.date < today;
 
         if ((showHistoryMode && isPast) || (!showHistoryMode && !isPast)) {
@@ -201,21 +202,27 @@ function showCleaningPlan() {
         }
     });
 
-    // Ordenação das chaves de data:
-    // Se for histórico: da mais recente para a mais antiga (descendente)
-    // Se for futuro: da mais antiga para a mais recente (ascendente)
     let sortedKeys = Object.keys(grouped).sort();
     if (showHistoryMode) {
         sortedKeys.reverse();
     }
 
-    // Botão de topo e Título
     let buttonText = showHistoryMode ? "📅 Ver Próximas Limpezas" : "📜 Ver Dias Anteriores";
     let mainTitle = showHistoryMode ? "📜 Histórico de Limpezas (Dias Anteriores)" : "🧹 Plano de Limpezas";
 
     let html = `
-        <div style="margin-bottom: 20px;">
-            <button onclick="toggleView()" style="padding: 10px 16px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 1px solid #ccc; background-color: #f0f0f0; font-weight: bold;">
+        <div style="margin-bottom: 25px; margin-top: 10px;">
+            <button onclick="window.toggleView()" style="
+                padding: 12px 20px; 
+                font-size: 16px; 
+                cursor: pointer; 
+                border-radius: 8px; 
+                border: 2px solid #007bff; 
+                background-color: #007bff; 
+                color: white; 
+                font-weight: bold;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            ">
                 ${buttonText}
             </button>
         </div>
@@ -223,10 +230,9 @@ function showCleaningPlan() {
     `;
 
     if (sortedKeys.length === 0) {
-        html += `<p>Não há limpezas registradas ${showHistoryMode ? 'anteriores a hoje' : 'agendadas'}.</p>`;
+        html += `<p>Não há limpezas registadas ${showHistoryMode ? 'anteriores a hoje' : 'agendadas'}.</p>`;
     }
 
-    // Gerar a lista por dias
     sortedKeys.forEach(key => {
         const day = grouped[key];
         
