@@ -1,4 +1,3 @@
-
 const calendars = [
     {
         name: "Achada 1",
@@ -57,9 +56,10 @@ const calendars = [
 
 const result = document.getElementById("result");
 
+
 async function loadCalendars(){
 
-    result.innerHTML = "Loading...";
+    result.innerHTML = "A carregar...";
 
     try{
 
@@ -77,7 +77,7 @@ async function loadCalendars(){
 
         }
 
-        showReservations(reservations);
+        showCleaningPlan(reservations);
 
     }catch(err){
 
@@ -86,6 +86,8 @@ async function loadCalendars(){
     }
 
 }
+
+
 
 
 
@@ -99,20 +101,24 @@ function parseDate(icsDate){
 
 }
 
+
 function parseICS(text, roomName){
 
     const reservations = [];
 
     const events = text.split("BEGIN:VEVENT");
 
+
     for(const event of events){
 
         const start = event.match(/DTSTART;VALUE=DATE:(\d{8})/);
         const end = event.match(/DTEND;VALUE=DATE:(\d{8})/);
 
+
         if(!start || !end){
             continue;
         }
+
 
         reservations.push({
 
@@ -126,13 +132,14 @@ function parseICS(text, roomName){
 
     }
 
+
     return reservations;
 
 }
 
 
 
-function sameDay(a, b){
+function sameDay(a,b){
 
     return (
         a.getFullYear() === b.getFullYear() &&
@@ -142,81 +149,142 @@ function sameDay(a, b){
 
 }
 
-function addDays(date, days){
+
+function addDays(date,days){
 
     const d = new Date(date);
 
-    d.setDate(d.getDate() + days);
+    d.setDate(d.getDate()+days);
 
     return d;
 
 }
 
-function showReservations(reservations){
 
-    reservations.sort((a,b)=>a.checkIn-b.checkIn);
+function isSunday(date){
 
-    let html = "";
+    return date.getDay() === 0;
 
-    const today = new Date();
+}
 
-    today.setHours(0,0,0,0);
 
-    for(let i=0;i<30;i++){
+function moveIfSunday(date){
 
-        const day = addDays(today,i);
+    const d = new Date(date);
 
-        const arrivals = reservations.filter(r=>sameDay(r.checkIn,day));
+    while(isSunday(d)){
 
-        const departures = reservations.filter(r=>sameDay(r.checkOut,day));
+        d.setDate(d.getDate()+1);
 
-        if(arrivals.length===0 && departures.length===0){
-            continue;
+    }
+
+    return d;
+
+}
+
+
+function showCleaningPlan(reservations){
+
+    let cleanings = [];
+
+
+    reservations.forEach(room => {
+
+        let cleanDate = new Date(room.checkOut);
+
+
+        // nunca limpar domingo
+        cleanDate = moveIfSunday(cleanDate);
+
+
+        cleanings.push({
+
+            room: room.room,
+
+            date: cleanDate
+
+        });
+
+    });
+
+
+
+    // ordenar por data
+
+    cleanings.sort((a,b)=>a.date-b.date);
+
+
+
+    // juntar quartos no mesmo dia
+
+    let grouped = {};
+
+
+    cleanings.forEach(clean=>{
+
+        const key = clean.date.toISOString().split("T")[0];
+
+
+        if(!grouped[key]){
+
+            grouped[key] = {
+
+                date: clean.date,
+
+                rooms: []
+
+            };
+
         }
 
-        html += `<h2>${day.toLocaleDateString()}</h2>`;
 
-        html += "<b>⬇ Check-outs</b><br>";
+        grouped[key].rooms.push(clean.room);
 
-        if(departures.length===0){
 
-            html += "None<br>";
+    });
 
-        }else{
 
-            departures.forEach(r=>{
 
-                html += "• " + r.room + "<br>";
+    let html = "<h1>🧹 Plano de Limpezas</h1>";
 
-            });
 
-        }
 
-        html += "<br>";
+    Object.values(grouped).forEach(day=>{
 
-        html += "<b>⬆ Check-ins</b><br>";
 
-        if(arrivals.length===0){
+        html += `
 
-            html += "None<br>";
+        <h2>
 
-        }else{
+        ${day.date.toLocaleDateString("pt-PT")}
 
-            arrivals.forEach(r=>{
+        </h2>
 
-                html += "• " + r.room + "<br>";
+        `;
 
-            });
 
-        }
+        day.rooms.forEach(room=>{
+
+            html += `
+
+            🧹 ${room}<br>
+
+            `;
+
+        });
+
 
         html += "<hr>";
 
-    }
+
+    });
+
+
 
     result.innerHTML = html;
 
 }
+
 
 
 loadCalendars();
