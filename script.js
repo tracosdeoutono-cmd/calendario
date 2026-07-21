@@ -1,35 +1,63 @@
+const WORKER_BASE_URL = "https://al.tracosdeoutono.workers.dev";
+
 const calendars = [
-    { name: "Achada 1", url: "https://al.tracosdeoutono.workers.dev?room=achada1" },
-    { name: "Achada 2", url: "https://al.tracosdeoutono.workers.dev?room=achada2" },
-    { name: "Achada 3", url: "https://al.tracosdeoutono.workers.dev?room=achada3" },
-    { name: "Achada 4", url: "https://al.tracosdeoutono.workers.dev?room=achada4" },
-    { name: "Achada 5", url: "https://al.tracosdeoutono.workers.dev?room=achada5" },
-    { name: "Achada 6", url: "https://al.tracosdeoutono.workers.dev?room=achada6" },
-    { name: "Impasse 2", url: "https://al.tracosdeoutono.workers.dev?room=impasse2" },
-    { name: "Impasse 3", url: "https://al.tracosdeoutono.workers.dev?room=impasse3" },
-    { name: "Impasse 4", url: "https://al.tracosdeoutono.workers.dev?room=impasse4" },
-    { name: "Impasse Villa", url: "https://al.tracosdeoutono.workers.dev?room=impassevilla" },
-    { name: "Vizinho 1", url: "https://al.tracosdeoutono.workers.dev?room=vizinho1" },
-    { name: "Vizinho 2", url: "https://al.tracosdeoutono.workers.dev?room=vizinho2" },
-    { name: "Vizinho 3", url: "https://al.tracosdeoutono.workers.dev?room=vizinho3" }
+    { name: "Achada 1", url: `${WORKER_BASE_URL}?room=achada1` },
+    { name: "Achada 2", url: `${WORKER_BASE_URL}?room=achada2` },
+    { name: "Achada 3", url: `${WORKER_BASE_URL}?room=achada3` },
+    { name: "Achada 4", url: `${WORKER_BASE_URL}?room=achada4` },
+    { name: "Achada 5", url: `${WORKER_BASE_URL}?room=achada5` },
+    { name: "Achada 6", url: `${WORKER_BASE_URL}?room=achada6` },
+    { name: "Impasse 2", url: `${WORKER_BASE_URL}?room=impasse2` },
+    { name: "Impasse 3", url: `${WORKER_BASE_URL}?room=impasse3` },
+    { name: "Impasse 4", url: `${WORKER_BASE_URL}?room=impasse4` },
+    { name: "Impasse Villa", url: `${WORKER_BASE_URL}?room=impassevilla` },
+    { name: "Vizinho 1", url: `${WORKER_BASE_URL}?room=vizinho1` },
+    { name: "Vizinho 2", url: `${WORKER_BASE_URL}?room=vizinho2` },
+    { name: "Vizinho 3", url: `${WORKER_BASE_URL}?room=vizinho3` }
 ];
 
 const result = document.getElementById("result");
 
 let globalReservations = [];
+let cloudHistory = {};
 let showHistoryMode = false;
 
-// Função global para alternar a vista
+// Função global para alternar entre Futuro e Histórico
 window.toggleView = function() {
     showHistoryMode = !showHistoryMode;
     showCleaningPlan();
 };
 
+// Ler histórico guardado no Cloudflare KV
+async function fetchCloudHistory() {
+    try {
+        const res = await fetch(`${WORKER_BASE_URL}?action=getHistory`);
+        cloudHistory = await res.json();
+    } catch (e) {
+        console.error("Erro ao carregar histórico da cloud:", e);
+    }
+}
+
+// Guardar novas limpezas passadas no Cloudflare KV
+async function saveToCloudHistory(newEntries) {
+    try {
+        await fetch(`${WORKER_BASE_URL}?action=saveHistory`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(newEntries)
+        });
+    } catch (e) {
+        console.error("Erro ao guardar histórico na cloud:", e);
+    }
+}
+
 async function loadCalendars() {
-    result.innerHTML = "<p style='font-size: 18px; font-weight: bold;'>⏳ A carregar calendários...</p>";
+    result.innerHTML = "<p style='font-size: 18px; font-weight: bold;'>⏳ A carregar calendários e histórico...</p>";
 
     try {
-        const promises = calendars.map(async (calendar) => {
+        const historyPromise = fetchCloudHistory();
+        
+        const calendarPromises = calendars.map(async (calendar) => {
             try {
                 const response = await fetch(calendar.url);
                 const text = await response.text();
@@ -40,8 +68,11 @@ async function loadCalendars() {
             }
         });
 
-        const results = await Promise.all(promises);
+        const [_, results] = await Promise.all([historyPromise, Promise.all(calendarPromises)]);
         globalReservations = results.flat();
+
+        // Sincroniza limpezas passadas/de hoje na Cloudflare
+        updateCloudHistory();
 
         showCleaningPlan();
 
@@ -58,19 +89,15 @@ function parseDate(icsDate) {
     return new Date(year, month, day);
 }
 
-// PARSER MELHORADO: Apanha datas passadas em qualquer formato iCal
 function parseICS(text, roomName) {
     const reservations = [];
     const events = text.split("BEGIN:VEVENT");
 
     for (const event of events) {
-        // Aceita qualquer formato DTSTART / DTEND que contenha 8 dígitos numéricos
         const start = event.match(/DTSTART.*?:(\d{8})/);
         const end = event.match(/DTEND.*?:(\d{8})/);
 
-        if (!start || !end) {
-            continue;
-        }
+        if (!start || !end) continue;
 
         reservations.push({
             room: roomName,
@@ -126,9 +153,7 @@ function getCleaningInfo(reservation, allReservations) {
 
         if (nextReservation) {
             const gap = getDaysBetween(checkout, nextReservation.checkIn);
-            if (gap <= 2) {
-                endDay = nextReservation.checkIn;
-            }
+            if (gap <= 2) endDay = nextReservation.checkIn;
         }
 
         let bestScore = -1;
@@ -141,13 +166,9 @@ function getCleaningInfo(reservation, allReservations) {
             allReservations.forEach(r => {
                 if (sameDay(r.checkOut, d)) {
                     score += 1;
-
                     const currentIsAchada = reservation.room.toLowerCase().includes("achada");
                     const otherIsAchada = r.room.toLowerCase().includes("achada");
-
-                    if (currentIsAchada && otherIsAchada) {
-                        score += 10;
-                    }
+                    if (currentIsAchada && otherIsAchada) score += 10;
                 }
             });
 
@@ -167,50 +188,87 @@ function getCleaningInfo(reservation, allReservations) {
     };
 }
 
-function showCleaningPlan() {
-    let cleanings = [];
-    
+// Guarda apenas limpezas que já ocorreram ou ocorrem hoje no histórico permanente
+function updateCloudHistory() {
+    const newHistoryEntries = {};
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     globalReservations.forEach(reservation => {
         const info = getCleaningInfo(reservation, globalReservations);
-        const isPast = info.date < today;
+        
+        if (info.date <= today) {
+            const dateKey = info.date.getFullYear() + "-" +
+                (info.date.getMonth() + 1).toString().padStart(2, '0') + "-" +
+                info.date.getDate().toString().padStart(2, '0');
 
-        if ((showHistoryMode && isPast) || (!showHistoryMode && !isPast)) {
-            cleanings.push({
-                room: reservation.room,
-                date: info.date,
-                sunday: info.sunday,
-                urgent: info.urgent
-            });
+            if (!newHistoryEntries[dateKey]) {
+                newHistoryEntries[dateKey] = { dateIso: info.date.toISOString(), rooms: [] };
+            }
+
+            const exists = newHistoryEntries[dateKey].rooms.some(r => r.room === reservation.room);
+            if (!exists) {
+                newHistoryEntries[dateKey].rooms.push({
+                    room: reservation.room,
+                    sunday: info.sunday,
+                    urgent: info.urgent
+                });
+            }
         }
     });
+
+    if (Object.keys(newHistoryEntries).length > 0) {
+        saveToCloudHistory(newHistoryEntries);
+    }
+}
+
+function showCleaningPlan() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
     let grouped = {};
 
-    cleanings.forEach(clean => {
-        const key = clean.date.getFullYear() + "-" +
-            (clean.date.getMonth() + 1).toString().padStart(2, '0') + "-" +
-            clean.date.getDate().toString().padStart(2, '0');
+    if (showHistoryMode) {
+        // MODO HISTÓRICO: Mostra o que está guardado no Cloudflare KV
+        Object.keys(cloudHistory).forEach(dateKey => {
+            const itemDate = new Date(cloudHistory[dateKey].dateIso);
+            if (itemDate < today) {
+                grouped[dateKey] = {
+                    date: itemDate,
+                    rooms: cloudHistory[dateKey].rooms
+                };
+            }
+        });
+    } else {
+        // MODO PRÓXIMAS LIMPEZAS: Calcula em tempo real para hoje e futuro
+        globalReservations.forEach(reservation => {
+            const info = getCleaningInfo(reservation, globalReservations);
+            
+            if (info.date >= today) {
+                const dateKey = info.date.getFullYear() + "-" +
+                    (info.date.getMonth() + 1).toString().padStart(2, '0') + "-" +
+                    info.date.getDate().toString().padStart(2, '0');
 
-        if (!grouped[key]) {
-            grouped[key] = { date: clean.date, rooms: [], sunday: false };
-        }
-        grouped[key].rooms.push(clean);
-        if (clean.sunday) {
-            grouped[key].sunday = true;
-        }
-    });
+                if (!grouped[dateKey]) {
+                    grouped[dateKey] = { date: info.date, rooms: [] };
+                }
+
+                grouped[dateKey].rooms.push({
+                    room: reservation.room,
+                    sunday: info.sunday,
+                    urgent: info.urgent
+                });
+            }
+        });
+    }
 
     let sortedKeys = Object.keys(grouped).sort();
     if (showHistoryMode) {
-        // Ordena do mais recente para o mais antigo no histórico
-        sortedKeys.reverse();
+        sortedKeys.reverse(); // Do mais recente ao mais antigo no histórico
     }
 
     let buttonText = showHistoryMode ? "📅 Ver Próximas Limpezas" : "📜 Ver Dias Anteriores";
-    let mainTitle = showHistoryMode ? "📜 Histórico de Limpezas (Dias Anteriores)" : "🧹 Plano de Limpezas";
+    let mainTitle = showHistoryMode ? "📜 Histórico de Limpezas (Cloud)" : "🧹 Plano de Limpezas";
 
     let html = `
         <div style="margin-bottom: 25px; margin-top: 10px;">
@@ -232,7 +290,7 @@ function showCleaningPlan() {
     `;
 
     if (sortedKeys.length === 0) {
-        html += `<p>Não há limpezas registadas ${showHistoryMode ? 'anteriores a hoje' : 'agendadas'}.</p>`;
+        html += `<p>Não há limpezas registadas ${showHistoryMode ? 'anteriores a hoje no histórico' : 'agendadas'}.</p>`;
     }
 
     sortedKeys.forEach(key => {
@@ -245,7 +303,8 @@ function showCleaningPlan() {
             year: "numeric"
         });
 
-        if (day.sunday) {
+        const isSundayDay = day.rooms.some(r => r.sunday);
+        if (isSundayDay) {
             title = "🔴 " + title;
         }
 
