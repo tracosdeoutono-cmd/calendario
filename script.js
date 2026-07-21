@@ -16,6 +16,10 @@ const calendars = [
 
 const result = document.getElementById("result");
 
+// Variáveis de estado global para permitir a alternância de vistas
+let globalReservations = [];
+let showHistoryMode = false;
+
 async function loadCalendars() {
     result.innerHTML = "A carregar...";
 
@@ -29,7 +33,8 @@ async function loadCalendars() {
             reservations.push(...events);
         }
 
-        showCleaningPlan(reservations);
+        globalReservations = reservations;
+        showCleaningPlan();
 
     } catch (err) {
         result.innerHTML = "Erro: " + err.message;
@@ -92,27 +97,22 @@ function getDaysBetween(dateA, dateB) {
 function getCleaningInfo(reservation, allReservations) {
     const checkout = reservation.checkOut;
 
-    // Encontrar a próxima reserva para este quarto específico
     const nextReservation = allReservations
         .filter(r => r.room === reservation.room && r.checkIn >= checkout)
         .sort((a, b) => a.checkIn - b.checkIn)[0];
 
-    // Verifica se entra alguém no preciso dia em que o hóspede atual sai
     const sameDayArrival = nextReservation && sameDay(checkout, nextReservation.checkIn);
 
     let bestDay = checkout;
     let isForcedSunday = false;
 
-    // REGRA 1: Domingo obrigatório APENAS se checkout e checkin forem no mesmo domingo
     if (isSunday(checkout) && sameDayArrival) {
         bestDay = checkout;
         isForcedSunday = true;
     } else {
-        // A janela de procura começa logo na 2ª feira se hoje for domingo e não houver entrada
         let startDay = isSunday(checkout) ? addDays(checkout, 1) : checkout;
         let endDay = startDay;
 
-        // Se houver próxima reserva, vemos se está a 1 ou 2 dias de distância
         if (nextReservation) {
             const gap = getDaysBetween(checkout, nextReservation.checkIn);
             if (gap <= 2) {
@@ -122,28 +122,24 @@ function getCleaningInfo(reservation, allReservations) {
 
         let bestScore = -1;
 
-        // REGRA 2: Procurar o melhor dia na janela temporal
         for (let d = new Date(startDay); d <= endDay; d = addDays(d, 1)) {
-            if (isSunday(d)) continue; // Evita domingos sempre que possível
+            if (isSunday(d)) continue;
 
             let score = 0;
 
-            // Avalia todas as outras saídas neste dia 'd'
             allReservations.forEach(r => {
                 if (sameDay(r.checkOut, d)) {
-                    score += 1; // Ponto base: juntar com qualquer outra limpeza
+                    score += 1;
 
-                    // Verifica se ambos são da "Achada"
                     const currentIsAchada = reservation.room.toLowerCase().includes("achada");
                     const otherIsAchada = r.room.toLowerCase().includes("achada");
 
                     if (currentIsAchada && otherIsAchada) {
-                        score += 10; // Super bónus: atrai as limpezas Achada para o mesmo dia
+                        score += 10;
                     }
                 }
             });
 
-            // O >= garante que agrupa e, em caso de empate de score, empurra a limpeza para a frente
             if (score >= bestScore) {
                 bestScore = score;
                 bestDay = new Date(d);
@@ -151,7 +147,6 @@ function getCleaningInfo(reservation, allReservations) {
         }
     }
 
-    // A limpeza é "urgente" se calhar exatamente no dia em que o próximo hóspede entra
     const urgent = nextReservation ? sameDay(bestDay, nextReservation.checkIn) : false;
 
     return {
@@ -161,19 +156,26 @@ function getCleaningInfo(reservation, allReservations) {
     };
 }
 
-function showCleaningPlan(reservations) {
+// Função para alternar a vista entre Próximas e Anteriores
+function toggleView() {
+    showHistoryMode = !showHistoryMode;
+    showCleaningPlan();
+}
+
+function showCleaningPlan() {
     let cleanings = [];
     
-    // Configura o "hoje" à meia noite para não mostrar limpezas antigas
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Calcular o dia ótimo de limpeza para cada reserva
-    reservations.forEach(reservation => {
-        const info = getCleaningInfo(reservation, reservations);
+    // Calcular datas de limpeza
+    globalReservations.forEach(reservation => {
+        const info = getCleaningInfo(reservation, globalReservations);
 
-        // Só queremos guardar limpezas que sejam hoje ou no futuro
-        if (info.date >= today) {
+        // Filtra conforme o modo (Histórico ou Futuro)
+        const isPast = info.date < today;
+
+        if ((showHistoryMode && isPast) || (!showHistoryMode && !isPast)) {
             cleanings.push({
                 room: reservation.room,
                 date: info.date,
@@ -185,9 +187,7 @@ function showCleaningPlan(reservations) {
 
     let grouped = {};
 
-    // Ordenar cronologicamente e agrupar por data
-    cleanings.sort((a, b) => a.date - b.date).forEach(clean => {
-        // Criar chave à prova de fusos horários (YYYY-MM-DD)
+    cleanings.forEach(clean => {
         const key = clean.date.getFullYear() + "-" +
             (clean.date.getMonth() + 1).toString().padStart(2, '0') + "-" +
             clean.date.getDate().toString().padStart(2, '0');
@@ -201,22 +201,40 @@ function showCleaningPlan(reservations) {
         }
     });
 
-    let html = "<h1>🧹 Plano de Limpezas</h1>";
-
-    const sortedKeys = Object.keys(grouped).sort();
-
-    if (sortedKeys.length === 0) {
-        html += "<p>Não há limpezas agendadas.</p>";
+    // Ordenação das chaves de data:
+    // Se for histórico: da mais recente para a mais antiga (descendente)
+    // Se for futuro: da mais antiga para a mais recente (ascendente)
+    let sortedKeys = Object.keys(grouped).sort();
+    if (showHistoryMode) {
+        sortedKeys.reverse();
     }
 
-    // Gerar o HTML agrupado por dias
+    // Botão de topo e Título
+    let buttonText = showHistoryMode ? "📅 Ver Próximas Limpezas" : "📜 Ver Dias Anteriores";
+    let mainTitle = showHistoryMode ? "📜 Histórico de Limpezas (Dias Anteriores)" : "🧹 Plano de Limpezas";
+
+    let html = `
+        <div style="margin-bottom: 20px;">
+            <button onclick="toggleView()" style="padding: 10px 16px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 1px solid #ccc; background-color: #f0f0f0; font-weight: bold;">
+                ${buttonText}
+            </button>
+        </div>
+        <h1>${mainTitle}</h1>
+    `;
+
+    if (sortedKeys.length === 0) {
+        html += `<p>Não há limpezas registradas ${showHistoryMode ? 'anteriores a hoje' : 'agendadas'}.</p>`;
+    }
+
+    // Gerar a lista por dias
     sortedKeys.forEach(key => {
         const day = grouped[key];
         
         let title = day.date.toLocaleDateString("pt-PT", {
             weekday: "long",
             day: "numeric",
-            month: "long"
+            month: "long",
+            year: "numeric"
         });
 
         if (day.sunday) {
@@ -225,7 +243,6 @@ function showCleaningPlan(reservations) {
 
         html += `<h2>${title}</h2>`;
 
-        // Opcional: ordenar as limpezas do dia para mostrar as "Achada" primeiro
         day.rooms.sort((a, b) => a.room.localeCompare(b.room)).forEach(clean => {
             let extra = clean.urgent ? " <b>(entrada hoje)</b>" : "";
             html += `🧹 ${clean.room}${extra}<br>`;
