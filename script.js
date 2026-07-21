@@ -1,4 +1,3 @@
-JavaScript
 const calendars = [
     {
         name: "Achada 1",
@@ -28,11 +27,10 @@ async function loadCalendars(){
         showReservations(reservations);
 
     }catch(error){
-        result.innerHTML = error;
+        result.innerHTML = "Erro ao carregar calendários: " + error;
     }
 }
 
-JavaScript
 function parseDate(icsDate){
     const year = Number(icsDate.substring(0,4));
     const month = Number(icsDate.substring(4,6)) - 1;
@@ -46,8 +44,9 @@ function parseICS(text, roomName){
     const events = text.split("BEGIN:VEVENT");
 
     for(const event of events){
-        const start = event.match(/DTSTART;VALUE=DATE:(\d{8})/);
-        const end = event.match(/DTEND;VALUE=DATE:(\d{8})/);
+        // Regex flexível para capturar DTSTART e DTEND em vários formatos de iCal
+        const start = event.match(/DTSTART.*?:(\d{8})/);
+        const end = event.match(/DTEND.*?:(\d{8})/);
 
         if(!start || !end){
             continue;
@@ -86,7 +85,6 @@ function getDaysBetween(dateA, dateB){
     return Math.round(diffTime / (1000 * 60 * 60 * 24));
 }
 
-JavaScript
 function getCleaningDay(reservation, allReservations){
     const checkout = reservation.checkOut;
 
@@ -95,25 +93,24 @@ function getCleaningDay(reservation, allReservations){
         .filter(r => r.room === reservation.room && r.checkIn >= checkout)
         .sort((a, b) => a.checkIn - b.checkIn)[0];
 
-    // Se não houver próxima reserva, limpa logo no checkout
+    // Se não houver próxima reserva, limpa no checkout (respeitando domingo)
     if(!nextReservation){
         return isSunday(checkout) ? addDays(checkout, 1) : checkout;
     }
 
     const gapDays = getDaysBetween(checkout, nextReservation.checkIn);
 
-    // Regra: Se o intervalo for de 3 dias ou mais, limpa logo no checkout (respeitando domingo)
+    // Regra 1: Intervalo de 3 dias ou mais -> limpa logo no checkout
     if(gapDays >= 3){
         return isSunday(checkout) ? addDays(checkout, 1) : checkout;
     }
 
-    // Regra: Se o intervalo for 2 dias ou menos, escolhe o dia ideal entre o checkout e o checkIn
-    // Vamos testar todos os dias possíveis no intervalo e ver qual deles acumula mais limpezas globais
+    // Regra 2: Intervalo de 2 dias ou menos -> testar do checkout até ao checkIn (inclusive)
     let bestDay = checkout;
     let maxCleaningsOnDay = -1;
 
-    for(let d = new Date(checkout); d < nextReservation.checkIn; d = addDays(d, 1)){
-        // Evitar limpar aos domingos, exceto se houver entrada estrita nesse domingo
+    for(let d = new Date(checkout); d <= nextReservation.checkIn; d = addDays(d, 1)){
+        // Evitar domingos, exceto se houver entrada no próprio domingo
         if(isSunday(d)){
             const hasArrivalOnSunday = allReservations.some(r => r.room === reservation.room && sameDay(r.checkIn, d));
             if(!hasArrivalOnSunday){
@@ -121,21 +118,18 @@ function getCleaningDay(reservation, allReservations){
             }
         }
 
-        // Contar quantas reservas dariam para limpar neste dia 'd'
+        // Contar quantas limpezas coincidem neste dia 'd'
         let count = 0;
         allReservations.forEach(r => {
             const rCheckout = r.checkOut;
             const rNext = allReservations
                 .filter(sub => sub.room === r.room && sub.checkIn >= rCheckout)
                 .sort((a, b) => a.checkIn - b.checkIn)[0];
-            
+
             if(rNext){
                 const rGap = getDaysBetween(rCheckout, rNext.checkIn);
-                let suggested = rCheckout;
-                if(rGap < 3){
-                    // Se for intervalo curto, qual seria o dia ideal simulado? 
-                    // Para simplificar a escolha de maior concorrência, verificamos se 'd' cai no intervalo dela
-                    if(d >= rCheckout && d < rNext.checkIn){
+                if(rGap <= 2){
+                    if(d >= rCheckout && d <= rNext.checkIn){
                         count++;
                         return;
                     }
@@ -155,7 +149,6 @@ function getCleaningDay(reservation, allReservations){
     return bestDay;
 }
 
-JavaScript
 function showReservations(reservations){
     let html = "";
     const today = new Date();
@@ -245,7 +238,11 @@ function showReservations(reservations){
         html += "<hr>";
     }
 
-    result.innerHTML = html;
+    if(html === ""){
+        result.innerHTML = "Nenhuma reserva encontrada para os próximos 30 dias.";
+    }else{
+        result.innerHTML = html;
+    }
 }
 
 loadCalendars();
