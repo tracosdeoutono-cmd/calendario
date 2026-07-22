@@ -375,8 +375,11 @@ function showCleaningPlan() {
                 tagHtml = " <b>(entrada hoje)</b>";
             }
 
-            copyLines.push(`• ${clean.room}${tagText}`);
-            roomsHtml += `🧹 ${clean.room}${tagHtml}<br>`;
+            // Adiciona emoji de atenção amarelo quando há entrada no dia
+            const warningEmoji = hasCheckin ? "⚠️ " : "";
+
+            copyLines.push(`• ${warningEmoji}${clean.room}${tagText}`);
+            roomsHtml += `${warningEmoji}🧹 ${clean.room}${tagHtml}<br>`;
         });
 
         const encodedCopyText = encodeURIComponent(copyLines.join("\n"));
