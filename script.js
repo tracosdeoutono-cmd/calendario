@@ -350,10 +350,17 @@ function showCleaningPlan() {
 
         if (day.rooms.some(r => r.sunday)) title = "🔴 " + title;
 
-        // Construção do texto legível para copiar
-        let dateForCopy = title.replace("🔴 ", "");
-        dateForCopy = dateForCopy.charAt(0).toUpperCase() + dateForCopy.slice(1);
-        let copyLines = [`🧹 Limpezas - ${dateForCopy}:`];
+        // Construção do texto em PORTUGUÊS
+        let dateForCopyPt = title.replace("🔴 ", "");
+        dateForCopyPt = dateForCopyPt.charAt(0).toUpperCase() + dateForCopyPt.slice(1);
+        let copyLinesPt = [`🧹 Limpezas - ${dateForCopyPt}:`];
+
+        // Construção do texto em ESPANHOL
+        let dateForCopyEs = day.date.toLocaleDateString("es-ES", {
+            weekday: "long", day: "numeric", month: "long", year: "numeric"
+        });
+        dateForCopyEs = dateForCopyEs.charAt(0).toUpperCase() + dateForCopyEs.slice(1);
+        let copyLinesEs = [`🧹 Limpiezas - ${dateForCopyEs}:`];
 
         let roomsHtml = "";
 
@@ -361,38 +368,51 @@ function showCleaningPlan() {
             const hasCheckout = globalReservations.some(r => r.room === clean.room && sameDay(r.checkOut, day.date));
             const hasCheckin = clean.urgent || globalReservations.some(r => r.room === clean.room && sameDay(r.checkIn, day.date));
 
-            let tagText = "";
+            let tagTextPt = "";
+            let tagTextEs = "";
             let tagHtml = "";
 
             if (hasCheckout && hasCheckin) {
-                tagText = " (sai e entra)";
+                tagTextPt = " (sai e entra)";
+                tagTextEs = " (sale y entra)";
                 tagHtml = " <b>(sai e entra)</b>";
             } else if (hasCheckout) {
-                tagText = " (sai hoje)";
+                tagTextPt = " (sai hoje)";
+                tagTextEs = " (sale hoy)";
                 tagHtml = " <b>(sai hoje)</b>";
             } else if (hasCheckin) {
-                tagText = " (entrada hoje)";
+                tagTextPt = " (entrada hoje)";
+                tagTextEs = " (entrada hoy)";
                 tagHtml = " <b>(entrada hoje)</b>";
             }
 
-            // Mudar vassoura (🧹) para ⚠️ quando houver entrada no dia
             const emoji = hasCheckin ? "⚠️" : "🧹";
 
-            copyLines.push(`${emoji} ${clean.room}${tagText}`);
+            copyLinesPt.push(`${emoji} ${clean.room}${tagTextPt}`);
+            copyLinesEs.push(`${emoji} ${clean.room}${tagTextEs}`);
             roomsHtml += `${emoji} ${clean.room}${tagHtml}<br>`;
         });
 
-        const encodedCopyText = encodeURIComponent(copyLines.join("\n"));
+        const encodedCopyTextPt = encodeURIComponent(copyLinesPt.join("\n"));
+        const encodedCopyTextEs = encodeURIComponent(copyLinesEs.join("\n"));
 
         html += `
             <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
                 <h2 style="margin: 0;">${title}</h2>
-                <button onclick="window.copyFromData(this, '${encodedCopyText}')" style="
-                    padding: 6px 12px; font-size: 13px; cursor: pointer; border-radius: 6px;
-                    border: 1px solid #28a745; background-color: #28a745; color: white; font-weight: bold;
-                ">
-                    📋 Copiar
-                </button>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button onclick="window.copyFromData(this, '${encodedCopyTextPt}')" style="
+                        padding: 6px 12px; font-size: 13px; cursor: pointer; border-radius: 6px;
+                        border: 1px solid #28a745; background-color: #28a745; color: white; font-weight: bold;
+                    ">
+                        🇵🇹 Copiar PT
+                    </button>
+                    <button onclick="window.copyFromData(this, '${encodedCopyTextEs}')" style="
+                        padding: 6px 12px; font-size: 13px; cursor: pointer; border-radius: 6px;
+                        border: 1px solid #17a2b8; background-color: #17a2b8; color: white; font-weight: bold;
+                    ">
+                        🇪🇸 Copiar ES
+                    </button>
+                </div>
             </div>
             <div style="margin-top: 8px;">${roomsHtml}</div>
             <hr>
