@@ -26,6 +26,18 @@ let currentView = "cleaning"; // "cleaning" ou "occupancy"
 let showHistoryMode = false;  // modo histórico das limpezas
 let selectedHouse = "achada";  // "achada", "impasse", "vizinho"
 
+// Função global para copiar texto para a área de transferência
+window.copyFromData = function(btnElement, encodedText) {
+    const text = decodeURIComponent(encodedText);
+    navigator.clipboard.writeText(text).then(() => {
+        const originalText = btnElement.innerText;
+        btnElement.innerText = "Copiado! ✅";
+        setTimeout(() => { btnElement.innerText = originalText; }, 1500);
+    }).catch(err => {
+        console.error("Erro ao copiar:", err);
+    });
+};
+
 // Alternar entre Vistas Principais
 window.switchMainView = function(view) {
     currentView = view;
@@ -70,7 +82,7 @@ async function saveToCloudHistory(newEntries) {
 }
 
 async function loadCalendars() {
-    result.innerHTML = "<p style='font-size: 18px; font-weight: bold;'>⏳ Esta quase...</p>";
+    result.innerHTML = "<p style='font-size: 18px; font-weight: bold;'>⏳ Está quase...</p>";
 
     try {
         const historyPromise = fetchCloudHistory();
@@ -338,14 +350,50 @@ function showCleaningPlan() {
 
         if (day.rooms.some(r => r.sunday)) title = "🔴 " + title;
 
-        html += `<h2>${title}</h2>`;
+        // Construção do texto legível para copiar
+        let dateForCopy = title.replace("🔴 ", "");
+        dateForCopy = dateForCopy.charAt(0).toUpperCase() + dateForCopy.slice(1);
+        let copyLines = [`🧹 Limpezas - ${dateForCopy}:`];
+
+        let roomsHtml = "";
 
         day.rooms.sort((a, b) => a.room.localeCompare(b.room)).forEach(clean => {
-            let extra = clean.urgent ? " <b>(entrada hoje)</b>" : "";
-            html += `🧹 ${clean.room}${extra}<br>`;
+            const hasCheckout = globalReservations.some(r => r.room === clean.room && sameDay(r.checkOut, day.date));
+            const hasCheckin = clean.urgent || globalReservations.some(r => r.room === clean.room && sameDay(r.checkIn, day.date));
+
+            let tagText = "";
+            let tagHtml = "";
+
+            if (hasCheckout && hasCheckin) {
+                tagText = " (sai e entra)";
+                tagHtml = " <b>(sai e entra)</b>";
+            } else if (hasCheckout) {
+                tagText = " (sai hoje)";
+                tagHtml = " <b>(sai hoje)</b>";
+            } else if (hasCheckin) {
+                tagText = " (entrada hoje)";
+                tagHtml = " <b>(entrada hoje)</b>";
+            }
+
+            copyLines.push(`• ${clean.room}${tagText}`);
+            roomsHtml += `🧹 ${clean.room}${tagHtml}<br>`;
         });
 
-        html += "<hr>";
+        const encodedCopyText = encodeURIComponent(copyLines.join("\n"));
+
+        html += `
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
+                <h2 style="margin: 0;">${title}</h2>
+                <button onclick="window.copyFromData(this, '${encodedCopyText}')" style="
+                    padding: 6px 12px; font-size: 13px; cursor: pointer; border-radius: 6px;
+                    border: 1px solid #28a745; background-color: #28a745; color: white; font-weight: bold;
+                ">
+                    📋 Copiar
+                </button>
+            </div>
+            <div style="margin-top: 8px;">${roomsHtml}</div>
+            <hr>
+        `;
     });
 
     result.innerHTML = html;
@@ -409,24 +457,52 @@ function showOccupancyPlan() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Mostra a disponibilidade para os próximos 30 dias a contar de hoje
-    for (let i = 0; i < 30; i++) {
+    // Calcula a data máxima com base nas reservas existentes para ser "infinito"
+    let maxDate = addDays(today, 60); // Mínimo de 60 dias garantidos
+    globalReservations.forEach(r => {
+        if (houseRooms.includes(r.room)) {
+            const outDate = new Date(r.checkOut);
+            outDate.setHours(0, 0, 0, 0);
+            if (outDate > maxDate) {
+                maxDate = outDate;
+            }
+        }
+    });
+
+    const totalDays = getDaysBetween(today, maxDate) + 1;
+
+    for (let i = 0; i < totalDays; i++) {
         const currentDate = addDays(today, i);
 
-        // Encontra quais os quartos desta casa que estão ocupados nesta data
-        const occupiedRooms = houseRooms.filter(roomName => {
-            return globalReservations.some(reservation => {
-                if (reservation.room !== roomName) return false;
+        let roomDetails = [];
 
-                const checkIn = new Date(reservation.checkIn); checkIn.setHours(0, 0, 0, 0);
-                const checkOut = new Date(reservation.checkOut); checkOut.setHours(0, 0, 0, 0);
-
-                // Quarto está ocupado entre o check-in e o dia anterior ao check-out
+        houseRooms.forEach(roomName => {
+            const hasCheckout = globalReservations.some(r => r.room === roomName && sameDay(r.checkOut, currentDate));
+            const hasCheckin = globalReservations.some(r => r.room === roomName && sameDay(r.checkIn, currentDate));
+            
+            const isOccupiedOvernight = globalReservations.some(r => {
+                if (r.room !== roomName) return false;
+                const checkIn = new Date(r.checkIn); checkIn.setHours(0, 0, 0, 0);
+                const checkOut = new Date(r.checkOut); checkOut.setHours(0, 0, 0, 0);
                 return currentDate >= checkIn && currentDate < checkOut;
             });
+
+            // Se o quarto tem qualquer movimento ou ocupação no dia
+            if (isOccupiedOvernight || hasCheckout || hasCheckin) {
+                let tag = "";
+                if (hasCheckout && hasCheckin) {
+                    tag = " <b>(sai e entra)</b>";
+                } else if (hasCheckout) {
+                    tag = " <b>(sai)</b>";
+                } else if (hasCheckin) {
+                    tag = " <b>(entra)</b>";
+                }
+
+                roomDetails.push(`${roomName}${tag}`);
+            }
         });
 
-        const count = occupiedRooms.length;
+        const count = roomDetails.length;
         const dateFormatted = currentDate.toLocaleDateString("pt-PT", {
             weekday: "long", day: "numeric", month: "long", year: "numeric"
         });
@@ -439,7 +515,7 @@ function showOccupancyPlan() {
             html += `<div style="font-size: 18px; font-weight: bold; color: #dc3545; margin-bottom: 5px;">
                 ${count} / ${totalRooms} 🔴
             </div>`;
-            html += `<div style="font-size: 14px; color: #555;">Ocupados: <b>${occupiedRooms.join(", ")}</b></div>`;
+            html += `<div style="font-size: 14px; color: #333;">Ocupados: ${roomDetails.join(", ")}</div>`;
         }
 
         html += "<hr>";
