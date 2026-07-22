@@ -375,11 +375,11 @@ function showCleaningPlan() {
                 tagHtml = " <b>(entrada hoje)</b>";
             }
 
-            // Adiciona emoji de atenção amarelo quando há entrada no dia
-            const warningEmoji = hasCheckin ? "⚠️ " : "";
+            // Mudar vassoura (🧹) para ⚠️ quando houver entrada no dia
+            const emoji = hasCheckin ? "⚠️" : "🧹";
 
-            copyLines.push(`• ${warningEmoji}${clean.room}${tagText}`);
-            roomsHtml += `${warningEmoji}🧹 ${clean.room}${tagHtml}<br>`;
+            copyLines.push(`${emoji} ${clean.room}${tagText}`);
+            roomsHtml += `${emoji} ${clean.room}${tagHtml}<br>`;
         });
 
         const encodedCopyText = encodeURIComponent(copyLines.join("\n"));
