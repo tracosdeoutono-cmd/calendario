@@ -25,6 +25,7 @@ let cloudHistory = {};
 let currentView = "cleaning"; // "cleaning" ou "occupancy"
 let showHistoryMode = false;  // modo histórico das limpezas
 let selectedHouse = "achada";  // "achada", "impasse", "vizinho"
+let showOccupancyStats = false; // Novo: estado para mostrar as estatísticas
 
 // Função auxiliar para evitar que os "fetches" fiquem presos para sempre (Timeout de 10 segundos)
 async function fetchWithTimeout(resource, options = {}, timeout = 10000) {
@@ -69,6 +70,12 @@ window.switchMainView = function(view) {
 window.toggleHistoryView = function() {
     showHistoryMode = !showHistoryMode;
     showCleaningPlan();
+};
+
+// Alternar Estatísticas no modo Disponibilidade
+window.toggleOccupancyStats = function() {
+    showOccupancyStats = !showOccupancyStats;
+    showOccupancyPlan();
 };
 
 // Selecionar Casa no modo Disponibilidade
@@ -483,6 +490,75 @@ function getHouseRooms(houseKey) {
     return [];
 }
 
+// NOVO: Função para calcular estatísticas por mês
+function calculateHouseStats(houseKey) {
+    const rooms = getHouseRooms(houseKey);
+    if (rooms.length === 0) return {};
+
+    const houseReservations = globalReservations.filter(r => rooms.includes(r.room));
+    if (houseReservations.length === 0) return {};
+
+    let minDate = new Date();
+    let maxDate = new Date();
+    
+    houseReservations.forEach(r => {
+        if (r.checkIn < minDate) minDate = new Date(r.checkIn);
+        if (r.checkOut > maxDate) maxDate = new Date(r.checkOut);
+    });
+
+    // Expandir para o início do mês mais antigo e fim do mês mais recente
+    let current = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+    let end = new Date(maxDate.getFullYear(), maxDate.getMonth() + 1, 0);
+
+    const stats = {};
+
+    while (current <= end) {
+        const monthKey = current.getFullYear() + "-" + String(current.getMonth() + 1).padStart(2, '0');
+        const monthLabel = current.toLocaleDateString("pt-PT", { month: "long", year: "numeric" });
+
+        if (!stats[monthKey]) {
+            stats[monthKey] = {
+                label: monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1),
+                dormidas: 0,
+                checkins: 0,
+                checkouts: 0,
+                diasEsgotados: 0,
+                totalCapacity: rooms.length * new Date(current.getFullYear(), current.getMonth() + 1, 0).getDate()
+            };
+        }
+
+        let occupiedRoomsToday = 0;
+
+        rooms.forEach(room => {
+            // Conta as dormidas (noite anterior ao checkout)
+            const isOccupied = houseReservations.some(r => {
+                if (r.room !== room) return false;
+                const cIn = new Date(r.checkIn); cIn.setHours(0, 0, 0, 0);
+                const cOut = new Date(r.checkOut); cOut.setHours(0, 0, 0, 0);
+                return current >= cIn && current < cOut;
+            });
+
+            if (isOccupied) {
+                stats[monthKey].dormidas++;
+                occupiedRoomsToday++;
+            }
+
+            // Conta os check-ins
+            const hasCheckin = houseReservations.some(r => r.room === room && sameDay(r.checkIn, current));
+            if (hasCheckin) stats[monthKey].checkins++;
+        });
+
+        // Se todos os quartos estiveram ocupados neste dia, é um dia esgotado
+        if (occupiedRoomsToday === rooms.length) {
+            stats[monthKey].diasEsgotados++;
+        }
+
+        current = addDays(current, 1);
+    }
+
+    return stats;
+}
+
 // VISTA 2: DISPONIBILIDADE DA CASA
 function showOccupancyPlan() {
     const houseRooms = getHouseRooms(selectedHouse);
@@ -521,8 +597,48 @@ function showOccupancyPlan() {
             </button>
         </div>
         <h1>📊 Ocupação - ${houseLabels[selectedHouse]}</h1>
-        <hr>
+        
+        <div style="margin-bottom: 20px;">
+            <button onclick="window.toggleOccupancyStats()" style="
+                padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px;
+                border: 1px solid #ffc107; background-color: ${showOccupancyStats ? '#e0a800' : '#ffc107'}; color: #333; font-weight: bold;
+            ">
+                ${showOccupancyStats ? '🔙 Ocultar Estatísticas' : '📈 Ver Estatísticas Mensais'}
+            </button>
+        </div>
     `;
+
+    // Renderiza as estatísticas se o modo estiver ativo
+    if (showOccupancyStats) {
+        const stats = calculateHouseStats(selectedHouse);
+        const statKeys = Object.keys(stats).sort();
+
+        if (statKeys.length === 0) {
+            html += `<p>Sem dados suficientes para calcular estatísticas desta casa.</p><hr>`;
+        } else {
+            html += `<div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 25px;">`;
+            
+            statKeys.forEach(key => {
+                const s = stats[key];
+                // Calcula a taxa de ocupação em %
+                const taxa = s.totalCapacity > 0 ? Math.round((s.dormidas / s.totalCapacity) * 100) : 0;
+                
+                html += `
+                    <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; flex: 1; min-width: 220px; background-color: #f8f9fa; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        <h3 style="margin-top: 0; color: #007bff; text-transform: capitalize; border-bottom: 1px solid #ccc; padding-bottom: 8px;">${s.label}</h3>
+                        <p style="margin: 8px 0; font-size: 15px;"><strong>🛏️ Ocupação:</strong> ${taxa}%</p>
+                        <p style="margin: 8px 0; font-size: 15px;"><strong>🌙 Dormidas:</strong> ${s.dormidas} <span style="font-size: 12px; color: #666;">(de ${s.totalCapacity})</span></p>
+                        <p style="margin: 8px 0; font-size: 15px;"><strong>🧳 Check-ins:</strong> ${s.checkins}</p>
+                        <p style="margin: 8px 0; font-size: 15px;"><strong>🔥 Dias 100% cheios:</strong> ${s.diasEsgotados}</p>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+        }
+    }
+
+    html += `<hr>`;
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
