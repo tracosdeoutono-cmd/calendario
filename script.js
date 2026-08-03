@@ -26,7 +26,7 @@ let currentView = "cleaning";
 let showHistoryMode = false;
 let selectedHouse = "achada";
 let showOccupancyStats = false;
-let viewPastMonths = false; // NOVO: Controla a visualização exclusiva de meses passados
+let viewPastMonths = false;
 
 async function fetchWithTimeout(resource, options = {}, timeout = 10000) {
     const controller = new AbortController();
@@ -149,7 +149,6 @@ function parseICS(text, roomName) {
         const checkInDate = parseDate(start[1]);
         const checkOutDate = parseDate(end[1]);
         
-        // Ignorar bloqueios de 0 noites ou erros de calendário
         if (checkInDate.getTime() >= checkOutDate.getTime()) continue;
 
         reservations.push({
@@ -375,16 +374,16 @@ function showCleaningPlan() {
     result.innerHTML = html;
 }
 
-function getHouseRooms(houseKey) {
+// Retorna APENAS os quartos base, estritamente usados para estatísticas e para a contagem fracionada (X / total).
+function getBaseHouseRooms(houseKey) {
     if (houseKey === "achada") return ["Achada 1", "Achada 2", "Achada 3", "Achada 4", "Achada 5", "Achada 6"];
-    // CORREÇÃO: "Impasse Villa" foi adicionada à lista da Impasse
-    if (houseKey === "impasse") return ["Impasse 2", "Impasse 3", "Impasse 4", "Impasse Villa"];
+    if (houseKey === "impasse") return ["Impasse 2", "Impasse 3", "Impasse 4"]; // Impasse Villa ignorada para contas
     if (houseKey === "vizinho") return ["Vizinho 1", "Vizinho 2", "Vizinho 3"];
     return [];
 }
 
 function calculateHouseStats(houseKey) {
-    const rooms = getHouseRooms(houseKey);
+    const rooms = getBaseHouseRooms(houseKey);
     if (rooms.length === 0) return {};
 
     const houseReservations = globalReservations.filter(r => rooms.includes(r.room));
@@ -393,7 +392,6 @@ function calculateHouseStats(houseKey) {
     let minDate = new Date();
     let maxDate = new Date();
     
-    // Otimização para prevenir processamento pesado e evitar bugs de duplicação
     const cleanReservations = houseReservations.map(r => {
         const cIn = new Date(r.checkIn); cIn.setHours(0, 0, 0, 0);
         const cOut = new Date(r.checkOut); cOut.setHours(0, 0, 0, 0);
@@ -432,7 +430,6 @@ function calculateHouseStats(houseKey) {
             let hasCheckin = false;
             let hasCheckout = false;
 
-            // Analisar se quarto específico esteve ocupado, com checkin ou checkout neste dia
             for (let i = 0; i < cleanReservations.length; i++) {
                 const r = cleanReservations[i];
                 if (r.room !== room) continue;
@@ -450,7 +447,6 @@ function calculateHouseStats(houseKey) {
             if (hasCheckout) stats[monthKey].checkouts++;
         });
 
-        // Só conta dias esgotados se todos os quartos (do array completo da casa) estiveram cheios na mesma noite
         if (occupiedRoomsToday === rooms.length) {
             stats[monthKey].diasEsgotados++;
         }
@@ -462,12 +458,18 @@ function calculateHouseStats(houseKey) {
 }
 
 function showOccupancyPlan() {
-    const houseRooms = getHouseRooms(selectedHouse);
-    const totalRooms = houseRooms.length;
+    const baseRooms = getBaseHouseRooms(selectedHouse);
+    const totalRooms = baseRooms.length; // Voltará a ser 3 para a Impasse
+
+    // Configuração dos quartos a mostrar visualmente na lista (inclui a Villa caso seja a Impasse)
+    let displayRooms = [...baseRooms];
+    if (selectedHouse === "impasse") {
+        displayRooms.push("Impasse Villa");
+    }
 
     const houseLabels = {
         achada: "Achada (6 Quartos)",
-        impasse: "Impasse (4 Quartos)",
+        impasse: "Impasse (3 Quartos)",
         vizinho: "Vizinho (3 Quartos)"
     };
 
@@ -497,13 +499,10 @@ function showOccupancyPlan() {
         const todayDate = new Date();
         const currentMonthStr = todayDate.getFullYear() + "-" + String(todayDate.getMonth() + 1).padStart(2, '0');
 
-        // Separa meses passados e futuros/atuais. Passados ficam organizados do mais recente para o antigo.
         const pastKeys = allStatKeys.filter(key => key < currentMonthStr).sort((a, b) => b.localeCompare(a));
         const futureKeys = allStatKeys.filter(key => key >= currentMonthStr).sort();
         
         const hasPastMonths = pastKeys.length > 0;
-        
-        // Define as chaves de renderização exclusivas baseadas no botão
         const visibleKeys = viewPastMonths ? pastKeys : futureKeys;
 
         if (allStatKeys.length === 0) {
@@ -550,7 +549,8 @@ function showOccupancyPlan() {
 
     let maxDate = addDays(today, 60); 
     globalReservations.forEach(r => {
-        if (houseRooms.includes(r.room)) {
+        // Usa as displayRooms para ver até onde vai a lista de disponibilidade
+        if (displayRooms.includes(r.room)) {
             const outDate = new Date(r.checkOut);
             outDate.setHours(0, 0, 0, 0);
             if (outDate > maxDate) maxDate = outDate;
@@ -562,8 +562,9 @@ function showOccupancyPlan() {
     for (let i = 0; i < totalDays; i++) {
         const currentDate = addDays(today, i);
         let roomDetails = [];
+        let occupiedCount = 0;
 
-        houseRooms.forEach(roomName => {
+        displayRooms.forEach(roomName => {
             const hasCheckout = globalReservations.some(r => r.room === roomName && sameDay(r.checkOut, currentDate));
             const hasCheckin = globalReservations.some(r => r.room === roomName && sameDay(r.checkIn, currentDate));
             
@@ -579,19 +580,25 @@ function showOccupancyPlan() {
                 if (hasCheckout && hasCheckin) tag = " <b>(sai e entra)</b>";
                 else if (hasCheckout) tag = " <b>(sai)</b>";
                 else if (hasCheckin) tag = " <b>(entra)</b>";
+                
                 roomDetails.push(`${roomName}${tag}`);
+
+                // Conta apenas para a fração vermelha no topo se for um quarto base (ignora a Villa)
+                if (baseRooms.includes(roomName)) {
+                    occupiedCount++;
+                }
             }
         });
 
-        const count = roomDetails.length;
         const dateFormatted = currentDate.toLocaleDateString("pt-PT", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
         html += `<h2>${dateFormatted}</h2>`;
 
-        if (count === 0) {
+        if (occupiedCount === 0 && roomDetails.length === 0) {
             html += `<div style="font-size: 18px; font-weight: bold; color: #28a745; margin-bottom: 5px;">0 🟢</div>`;
         } else {
-            html += `<div style="font-size: 18px; font-weight: bold; color: #dc3545; margin-bottom: 5px;">${count} / ${totalRooms} 🔴</div>
+            // A fração agora baseia-se unicamente nos Quartos normais
+            html += `<div style="font-size: 18px; font-weight: bold; color: #dc3545; margin-bottom: 5px;">${occupiedCount} / ${totalRooms} 🔴</div>
                      <div style="font-size: 14px; color: #333;">Ocupados: ${roomDetails.join(", ")}</div>`;
         }
         html += "<hr>";
@@ -601,3 +608,4 @@ function showOccupancyPlan() {
 }
 
 loadCalendars();
+,
