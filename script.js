@@ -185,6 +185,7 @@ function sameDay(a, b) {
 function addDays(date, days) {
     const d = new Date(date);
     d.setDate(d.getDate() + days);
+    d.setHours(0, 0, 0, 0);
     return d;
 }
 
@@ -393,6 +394,7 @@ function showCleaningPlan() {
     if (resultElem) resultElem.innerHTML = html;
 }
 
+// Retorna unicamente os quartos reais para estatísticas e somas
 function getBaseHouseRooms(houseKey) {
     if (houseKey === "achada") return ["Achada 1", "Achada 2", "Achada 3", "Achada 4", "Achada 5", "Achada 6"];
     if (houseKey === "impasse") return ["Impasse 2", "Impasse 3", "Impasse 4"];
@@ -404,12 +406,8 @@ function calculateHouseStats(houseKey) {
     const baseRooms = getBaseHouseRooms(houseKey);
     if (baseRooms.length === 0) return {};
 
-    const targetRooms = [...baseRooms];
-    if (houseKey === "impasse") {
-        targetRooms.push("Impasse Villa");
-    }
-
-    const houseReservations = globalReservations.filter(r => targetRooms.includes(r.room));
+    // Filtra ESTRITAMENTE as reservas dos quartos base (Ignora Impasse Villa a 100%)
+    const houseReservations = globalReservations.filter(r => baseRooms.includes(r.room));
     if (houseReservations.length === 0) return {};
 
     let minTime = Infinity;
@@ -428,7 +426,10 @@ function calculateHouseStats(houseKey) {
     const maxDate = new Date(maxTime);
 
     let current = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+    current.setHours(0, 0, 0, 0);
+
     let end = new Date(maxDate.getFullYear(), maxDate.getMonth() + 1, 0);
+    end.setHours(0, 0, 0, 0);
 
     const stats = {};
 
@@ -451,66 +452,41 @@ function calculateHouseStats(houseKey) {
             };
         }
 
-        let isVillaActive = false;
-        let isVillaCheckin = false;
-        let isVillaCheckout = false;
+        let occupiedRoomsToday = 0;
 
-        if (houseKey === "impasse") {
-            isVillaActive = houseReservations.some(r => {
-                if (r.room !== "Impasse Villa") return false;
+        baseRooms.forEach(room => {
+            const roomRes = houseReservations.filter(r => r.room === room);
+
+            // Verifica se o quarto está ocupado durante a noite
+            const isOccupied = roomRes.some(r => {
                 const cIn = new Date(r.checkIn).setHours(0, 0, 0, 0);
                 const cOut = new Date(r.checkOut).setHours(0, 0, 0, 0);
                 return currentTarget >= cIn && currentTarget < cOut;
             });
-            isVillaCheckin = houseReservations.some(r => {
-                if (r.room !== "Impasse Villa") return false;
-                return currentTarget === new Date(r.checkIn).setHours(0, 0, 0, 0);
-            });
-            isVillaCheckout = houseReservations.some(r => {
-                if (r.room !== "Impasse Villa") return false;
-                return currentTarget === new Date(r.checkOut).setHours(0, 0, 0, 0);
-            });
-        }
 
-        let occupiedRoomsCount = 0;
+            if (isOccupied) {
+                occupiedRoomsToday++;
+            }
 
-        if (isVillaActive) {
-            // Se a Villa estiver alugada, preenche os 3 quartos (casa 100% cheia)
-            occupiedRoomsCount = baseRooms.length;
-            stats[monthKey].dormidas += baseRooms.length;
-        } else {
-            // Conta os quartos individuais
-            baseRooms.forEach(room => {
-                const isOccupied = houseReservations.some(r => {
-                    if (r.room !== room) return false;
-                    const cIn = new Date(r.checkIn).setHours(0, 0, 0, 0);
-                    const cOut = new Date(r.checkOut).setHours(0, 0, 0, 0);
-                    return currentTarget >= cIn && currentTarget < cOut;
-                });
-                if (isOccupied) {
-                    occupiedRoomsCount++;
-                    stats[monthKey].dormidas++;
-                }
-            });
-        }
-
-        if (isVillaCheckin) stats[monthKey].checkins++;
-        if (isVillaCheckout) stats[monthKey].checkouts++;
-
-        baseRooms.forEach(room => {
-            const hasCheckin = houseReservations.some(r => {
-                if (r.room !== room) return false;
-                return currentTarget === new Date(r.checkIn).setHours(0, 0, 0, 0);
-            });
-            const hasCheckout = houseReservations.some(r => {
-                if (r.room !== room) return false;
-                return currentTarget === new Date(r.checkOut).setHours(0, 0, 0, 0);
+            // Conta check-ins
+            const hasCheckin = roomRes.some(r => {
+                const cIn = new Date(r.checkIn).setHours(0, 0, 0, 0);
+                return currentTarget === cIn;
             });
             if (hasCheckin) stats[monthKey].checkins++;
+
+            // Conta check-outs
+            const hasCheckout = roomRes.some(r => {
+                const cOut = new Date(r.checkOut).setHours(0, 0, 0, 0);
+                return currentTarget === cOut;
+            });
             if (hasCheckout) stats[monthKey].checkouts++;
         });
 
-        if (occupiedRoomsCount >= baseRooms.length) {
+        stats[monthKey].dormidas += occupiedRoomsToday;
+
+        // O dia só é "100% cheio" se TODOS os quartos base estiverem ocupados nessa noite
+        if (occupiedRoomsToday === baseRooms.length) {
             stats[monthKey].diasEsgotados++;
         }
 
@@ -524,6 +500,7 @@ function showOccupancyPlan() {
     const baseRooms = getBaseHouseRooms(selectedHouse);
     const totalRooms = baseRooms.length;
 
+    // A Villa só é adicionada a esta lista para efeitos de ESCRITA na descrição do dia
     let displayRooms = [...baseRooms];
     if (selectedHouse === "impasse") {
         displayRooms.push("Impasse Villa");
@@ -625,16 +602,6 @@ function showOccupancyPlan() {
         let roomDetails = [];
         let occupiedCount = 0;
 
-        let isVillaOvernight = false;
-        if (selectedHouse === "impasse") {
-            isVillaOvernight = globalReservations.some(r => {
-                if (r.room !== "Impasse Villa") return false;
-                const cIn = new Date(r.checkIn); cIn.setHours(0, 0, 0, 0);
-                const cOut = new Date(r.checkOut); cOut.setHours(0, 0, 0, 0);
-                return currentDate >= cIn && currentDate < cOut;
-            });
-        }
-
         displayRooms.forEach(roomName => {
             const hasCheckout = globalReservations.some(r => r.room === roomName && sameDay(r.checkOut, currentDate));
             const hasCheckin = globalReservations.some(r => r.room === roomName && sameDay(r.checkIn, currentDate));
@@ -654,15 +621,12 @@ function showOccupancyPlan() {
 
                 roomDetails.push(`${roomName}${tag}`);
 
+                // APENAS incrementa a fração (X / total) se for um quarto base (2, 3, 4) e estiver ocupado durante a noite
                 if (baseRooms.includes(roomName) && isOccupiedOvernight) {
                     occupiedCount++;
                 }
             }
         });
-
-        if (isVillaOvernight) {
-            occupiedCount = totalRooms; // Força 3 / 3
-        }
 
         const dateFormatted = currentDate.toLocaleDateString("pt-PT", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
