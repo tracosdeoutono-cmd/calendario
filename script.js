@@ -16,8 +16,6 @@ const calendars = [
     { name: "Vizinho 3", url: `${WORKER_BASE_URL}?room=vizinho3` }
 ];
 
-const result = document.getElementById("result");
-
 let globalReservations = [];
 let cloudHistory = {};
 
@@ -28,16 +26,37 @@ let selectedHouse = "achada";
 let showOccupancyStats = false;
 let viewPastMonths = false;
 
-async function fetchWithTimeout(resource, options = {}, timeout = 10000) {
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), timeout);
+function getResultElem() {
+    return document.getElementById("result");
+}
+
+// Requisições com Timeout Garantido (Evita Carregamento Infinito)
+async function fetchTextWithTimeout(url, timeoutMs = 8000) {
     try {
-        const response = await fetch(resource, { ...options, signal: controller.signal });
-        clearTimeout(id);
-        return response;
-    } catch (error) {
-        clearTimeout(id);
-        throw error;
+        return await Promise.race([
+            fetch(url).then(async res => {
+                if (!res.ok) return "";
+                return await res.text();
+            }),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), timeoutMs))
+        ]);
+    } catch (e) {
+        return "";
+    }
+}
+
+async function fetchJsonWithTimeout(url, timeoutMs = 8000) {
+    try {
+        return await Promise.race([
+            fetch(url).then(async res => {
+                if (!res.ok) return {};
+                const data = await res.json();
+                return typeof data === 'string' ? JSON.parse(data) : data;
+            }),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), timeoutMs))
+        ]);
+    } catch (e) {
+        return {};
     }
 }
 
@@ -77,43 +96,36 @@ window.selectHouse = function(house) {
 };
 
 async function fetchCloudHistory() {
-    try {
-        const res = await fetchWithTimeout(`${WORKER_BASE_URL}?action=getHistory`, {}, 8000);
-        let data = await res.json();
-        cloudHistory = typeof data === 'string' ? JSON.parse(data) : data;
-        if (typeof cloudHistory !== 'object' || cloudHistory === null || Array.isArray(cloudHistory)) cloudHistory = {};
-    } catch (e) {
+    cloudHistory = await fetchJsonWithTimeout(`${WORKER_BASE_URL}?action=getHistory`, 6000);
+    if (typeof cloudHistory !== 'object' || cloudHistory === null || Array.isArray(cloudHistory)) {
         cloudHistory = {};
     }
 }
 
 async function saveToCloudHistory(newEntries) {
     try {
-        await fetchWithTimeout(`${WORKER_BASE_URL}?action=saveHistory`, {
+        await fetch(`${WORKER_BASE_URL}?action=saveHistory`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(newEntries)
-        }, 8000);
+        });
     } catch (e) {
         console.error("Erro cloud:", e);
     }
 }
 
 async function loadCalendars() {
-    result.innerHTML = "<p style='font-size: 18px; font-weight: bold; color: #007bff;'>⏳ A ligar à Cloud e a carregar calendários (aguarda)...</p>";
+    const resultElem = getResultElem();
+    if (resultElem) {
+        resultElem.innerHTML = "<p style='font-size: 18px; font-weight: bold; color: #007bff;'>⏳ A ligar à Cloud e a carregar calendários (aguarda)...</p>";
+    }
 
     try {
         const historyPromise = fetchCloudHistory();
-        
+
         const calendarPromises = calendars.map(async (calendar) => {
-            try {
-                const response = await fetchWithTimeout(calendar.url, {}, 12000);
-                if (!response.ok) return [];
-                const text = await response.text();
-                return parseICS(text, calendar.name);
-            } catch (e) {
-                return []; 
-            }
+            const text = await fetchTextWithTimeout(calendar.url, 8000);
+            return parseICS(text, calendar.name);
         });
 
         const [_, results] = await Promise.all([historyPromise, Promise.all(calendarPromises)]);
@@ -123,7 +135,10 @@ async function loadCalendars() {
         showCleaningPlan();
 
     } catch (err) {
-        result.innerHTML = `<p style="color: red; font-weight: bold;">Erro geral: ${err.message}</p>`;
+        const resElem = getResultElem();
+        if (resElem) {
+            resElem.innerHTML = `<p style="color: red; font-weight: bold;">Erro geral ao carregar: ${err.message}</p>`;
+        }
     }
 }
 
@@ -136,11 +151,16 @@ function parseDate(icsDate) {
 
 function parseICS(text, roomName) {
     const reservations = [];
-    if (!text || !text.includes("BEGIN:VEVENT")) return reservations;
+    if (!text || !text.includes("VEVENT")) return reservations;
 
-    const events = text.split("BEGIN:VEVENT");
+    // Remove quebras de linha ICS (folding)
+    const unfoldedText = text.replace(/\r?\n[ \t]/g, "");
+    const events = unfoldedText.split(/BEGIN:VEVENT/i);
 
-    for (const event of events) {
+    for (let i = 1; i < events.length; i++) {
+        const event = events[i];
+        if (event.includes("STATUS:CANCELLED")) continue;
+
         const start = event.match(/DTSTART(?:;[^:]*)?:(\d{8})/);
         const end = event.match(/DTEND(?:;[^:]*)?:(\d{8})/);
 
@@ -148,7 +168,7 @@ function parseICS(text, roomName) {
 
         const checkInDate = parseDate(start[1]);
         const checkOutDate = parseDate(end[1]);
-        
+
         if (checkInDate.getTime() >= checkOutDate.getTime()) continue;
 
         reservations.push({
@@ -259,7 +279,7 @@ function updateCloudHistory() {
 
         if (hasChanges) {
             saveToCloudHistory(mergedHistory);
-            cloudHistory = mergedHistory; 
+            cloudHistory = mergedHistory;
         }
     } catch (err) {
         console.error("Erro histórico:", err);
@@ -371,13 +391,14 @@ function showCleaningPlan() {
         `;
     });
 
-    result.innerHTML = html;
+    const resultElem = getResultElem();
+    if (resultElem) resultElem.innerHTML = html;
 }
 
-// Retorna APENAS os quartos base, estritamente usados para estatísticas e para a contagem fracionada (X / total).
+// Retorna APENAS os quartos base (Impasse Villa NUNCA entra aqui)
 function getBaseHouseRooms(houseKey) {
     if (houseKey === "achada") return ["Achada 1", "Achada 2", "Achada 3", "Achada 4", "Achada 5", "Achada 6"];
-    if (houseKey === "impasse") return ["Impasse 2", "Impasse 3", "Impasse 4"]; // Impasse Villa ignorada para contas
+    if (houseKey === "impasse") return ["Impasse 2", "Impasse 3", "Impasse 4"];
     if (houseKey === "vizinho") return ["Vizinho 1", "Vizinho 2", "Vizinho 3"];
     return [];
 }
@@ -391,14 +412,14 @@ function calculateHouseStats(houseKey) {
 
     let minDate = new Date();
     let maxDate = new Date();
-    
+
     const cleanReservations = houseReservations.map(r => {
         const cIn = new Date(r.checkIn); cIn.setHours(0, 0, 0, 0);
         const cOut = new Date(r.checkOut); cOut.setHours(0, 0, 0, 0);
-        
+
         if (cIn < minDate) minDate = new Date(cIn);
         if (cOut > maxDate) maxDate = new Date(cOut);
-        
+
         return { room: r.room, checkInTime: cIn.getTime(), checkOutTime: cOut.getTime() };
     });
 
@@ -459,9 +480,9 @@ function calculateHouseStats(houseKey) {
 
 function showOccupancyPlan() {
     const baseRooms = getBaseHouseRooms(selectedHouse);
-    const totalRooms = baseRooms.length; // Voltará a ser 3 para a Impasse
+    const totalRooms = baseRooms.length; // Sempre 3 para a Impasse
 
-    // Configuração dos quartos a mostrar visualmente na lista (inclui a Villa caso seja a Impasse)
+    // Divisão visual: displayRooms inclui a Villa para renderizar o texto em baixo caso exista reserva
     let displayRooms = [...baseRooms];
     if (selectedHouse === "impasse") {
         displayRooms.push("Impasse Villa");
@@ -501,7 +522,7 @@ function showOccupancyPlan() {
 
         const pastKeys = allStatKeys.filter(key => key < currentMonthStr).sort((a, b) => b.localeCompare(a));
         const futureKeys = allStatKeys.filter(key => key >= currentMonthStr).sort();
-        
+
         const hasPastMonths = pastKeys.length > 0;
         const visibleKeys = viewPastMonths ? pastKeys : futureKeys;
 
@@ -526,7 +547,7 @@ function showOccupancyPlan() {
                 visibleKeys.forEach(key => {
                     const s = stats[key];
                     const taxa = s.totalCapacity > 0 ? Math.round((s.dormidas / s.totalCapacity) * 100) : 0;
-                    
+
                     html += `
                         <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; flex: 1; min-width: 260px; background-color: #f8f9fa; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
                             <h3 style="margin-top: 0; color: #007bff; text-transform: capitalize; border-bottom: 1px solid #ccc; padding-bottom: 8px;">${s.label}</h3>
@@ -547,9 +568,8 @@ function showOccupancyPlan() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    let maxDate = addDays(today, 60); 
+    let maxDate = addDays(today, 60);
     globalReservations.forEach(r => {
-        // Usa as displayRooms para ver até onde vai a lista de disponibilidade
         if (displayRooms.includes(r.room)) {
             const outDate = new Date(r.checkOut);
             outDate.setHours(0, 0, 0, 0);
@@ -567,7 +587,7 @@ function showOccupancyPlan() {
         displayRooms.forEach(roomName => {
             const hasCheckout = globalReservations.some(r => r.room === roomName && sameDay(r.checkOut, currentDate));
             const hasCheckin = globalReservations.some(r => r.room === roomName && sameDay(r.checkIn, currentDate));
-            
+
             const isOccupiedOvernight = globalReservations.some(r => {
                 if (r.room !== roomName) return false;
                 const checkIn = new Date(r.checkIn); checkIn.setHours(0, 0, 0, 0);
@@ -580,10 +600,10 @@ function showOccupancyPlan() {
                 if (hasCheckout && hasCheckin) tag = " <b>(sai e entra)</b>";
                 else if (hasCheckout) tag = " <b>(sai)</b>";
                 else if (hasCheckin) tag = " <b>(entra)</b>";
-                
+
                 roomDetails.push(`${roomName}${tag}`);
 
-                // Conta apenas para a fração vermelha no topo se for um quarto base (ignora a Villa)
+                // Soma APENAS para os quartos normais (Impasse 2, 3, 4). Ignora a Villa na fração.
                 if (baseRooms.includes(roomName)) {
                     occupiedCount++;
                 }
@@ -597,15 +617,19 @@ function showOccupancyPlan() {
         if (occupiedCount === 0 && roomDetails.length === 0) {
             html += `<div style="font-size: 18px; font-weight: bold; color: #28a745; margin-bottom: 5px;">0 🟢</div>`;
         } else {
-            // A fração agora baseia-se unicamente nos Quartos normais
             html += `<div style="font-size: 18px; font-weight: bold; color: #dc3545; margin-bottom: 5px;">${occupiedCount} / ${totalRooms} 🔴</div>
                      <div style="font-size: 14px; color: #333;">Ocupados: ${roomDetails.join(", ")}</div>`;
         }
         html += "<hr>";
     }
 
-    result.innerHTML = html;
+    const resultElem = getResultElem();
+    if (resultElem) resultElem.innerHTML = html;
 }
 
-loadCalendars();
-,
+// Inicia assim que o HTML estiver pronto para evitar erros de renderização
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", loadCalendars);
+} else {
+    loadCalendars();
+}
