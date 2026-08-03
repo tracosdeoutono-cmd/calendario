@@ -18,6 +18,7 @@ const calendars = [
 
 let globalReservations = [];
 let cloudHistory = {};
+let failedCalendars = []; // Vai guardar o nome dos calendários que não carregarem
 
 // Estados da Aplicação
 let currentView = "cleaning";
@@ -30,21 +31,23 @@ function getResultElem() {
     return document.getElementById("result");
 }
 
-async function fetchTextWithTimeout(url, timeoutMs = 8000) {
+// Aumentado o timeout para 25 segundos (25000ms)
+async function fetchTextWithTimeout(url, timeoutMs = 25000) {
     try {
         return await Promise.race([
             fetch(url).then(async res => {
-                if (!res.ok) return "";
+                if (!res.ok) throw new Error("Erro HTTP");
                 return await res.text();
             }),
             new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), timeoutMs))
         ]);
     } catch (e) {
-        return "";
+        console.error(`Falha ao carregar ${url}:`, e);
+        return null; // Retorna nulo para identificarmos que falhou
     }
 }
 
-async function fetchJsonWithTimeout(url, timeoutMs = 8000) {
+async function fetchJsonWithTimeout(url, timeoutMs = 15000) {
     try {
         return await Promise.race([
             fetch(url).then(async res => {
@@ -95,7 +98,7 @@ window.selectHouse = function(house) {
 };
 
 async function fetchCloudHistory() {
-    cloudHistory = await fetchJsonWithTimeout(`${WORKER_BASE_URL}?action=getHistory`, 6000);
+    cloudHistory = await fetchJsonWithTimeout(`${WORKER_BASE_URL}?action=getHistory`, 15000);
     if (typeof cloudHistory !== 'object' || cloudHistory === null || Array.isArray(cloudHistory)) {
         cloudHistory = {};
     }
@@ -116,19 +119,32 @@ async function saveToCloudHistory(newEntries) {
 async function loadCalendars() {
     const resultElem = getResultElem();
     if (resultElem) {
-        resultElem.innerHTML = "<p style='font-size: 18px; font-weight: bold; color: #007bff;'>⏳ A ligar à Cloud e a carregar calendários (aguarda)...</p>";
+        resultElem.innerHTML = "<p style='font-size: 18px; font-weight: bold; color: #007bff;'>⏳ A ligar à Cloud e a carregar calendários (isto pode demorar uns segundos)...</p>";
     }
 
     try {
+        failedCalendars = [];
+        globalReservations = [];
+        
         const historyPromise = fetchCloudHistory();
 
         const calendarPromises = calendars.map(async (calendar) => {
-            const text = await fetchTextWithTimeout(calendar.url, 8000);
-            return parseICS(text, calendar.name);
+            const text = await fetchTextWithTimeout(calendar.url, 25000);
+            if (text === null) {
+                return { name: calendar.name, error: true, data: [] };
+            }
+            return { name: calendar.name, error: false, data: parseICS(text, calendar.name) };
         });
 
         const [_, results] = await Promise.all([historyPromise, Promise.all(calendarPromises)]);
-        globalReservations = results.flat();
+        
+        results.forEach(res => {
+            if (res.error) {
+                failedCalendars.push(res.name);
+            } else {
+                globalReservations.push(...res.data);
+            }
+        });
 
         updateCloudHistory();
         showCleaningPlan();
@@ -178,8 +194,14 @@ function parseICS(text, roomName) {
     return reservations;
 }
 
-function sameDay(a, b) {
-    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+function isSunday(date) {
+    return date.getDay() === 0;
+}
+
+function sameDay(d1, d2) {
+    return d1.getFullYear() === d2.getFullYear() &&
+           d1.getMonth() === d2.getMonth() &&
+           d1.getDate() === d2.getDate();
 }
 
 function addDays(date, days) {
@@ -189,22 +211,41 @@ function addDays(date, days) {
     return d;
 }
 
-function isSunday(date) {
-    return date.getDay() === 0;
-}
-
 function getDaysBetween(dateA, dateB) {
     const diffTime = dateB.getTime() - dateA.getTime();
     return Math.round(diffTime / (1000 * 60 * 60 * 24));
 }
 
+function renderNavigation() {
+    let warnHTML = "";
+    if (failedCalendars.length > 0) {
+        warnHTML = `<div style="background-color: #f8d7da; color: #721c24; padding: 12px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
+            <strong>⚠️ Atenção:</strong> Alguns calendários demoraram demasiado tempo a responder e estão em falta na lista. 
+            Quartos afetados: <b>${failedCalendars.join(", ")}</b>. <br><br>
+            <i>Dica: Recarrega a página dentro de 1 minuto.</i>
+        </div>`;
+    }
+
+    return `
+        ${warnHTML}
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button onclick="switchMainView('cleaning')" style="flex: 1; padding: 15px; font-size: 16px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; background-color: ${currentView === 'cleaning' ? '#007bff' : '#e0e0e0'}; color: ${currentView === 'cleaning' ? 'white' : 'black'};">
+                🧹 Plano de Limpezas
+            </button>
+            <button onclick="switchMainView('occupancy')" style="flex: 1; padding: 15px; font-size: 16px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; background-color: ${currentView === 'occupancy' ? '#007bff' : '#e0e0e0'}; color: ${currentView === 'occupancy' ? 'white' : 'black'};">
+                🏠 Plano de Ocupação
+            </button>
+        </div>
+    `;
+}
+
 function getCleaningInfo(reservation, allReservations) {
     const checkout = reservation.checkOut;
+    
+    const sameDayArrival = allReservations.some(r => r.room === reservation.room && sameDay(r.checkIn, checkout));
     const nextReservation = allReservations
         .filter(r => r.room === reservation.room && r.checkIn >= checkout)
         .sort((a, b) => a.checkIn - b.checkIn)[0];
-
-    const sameDayArrival = nextReservation && sameDay(checkout, nextReservation.checkIn);
 
     let bestDay = checkout;
     let isForcedSunday = false;
@@ -225,176 +266,51 @@ function getCleaningInfo(reservation, allReservations) {
 
         for (let d = new Date(startDay); d <= endDay; d = addDays(d, 1)) {
             if (isSunday(d)) continue;
+            const concurrentCount = allReservations.filter(r => r.room !== reservation.room && sameDay(r.checkOut, d)).length;
+            const isEntryDay = nextReservation && sameDay(d, nextReservation.checkIn);
             let score = 0;
-            allReservations.forEach(r => {
-                if (sameDay(r.checkOut, d)) {
-                    score += 1;
-                    const currentIsAchada = reservation.room.toLowerCase().includes("achada");
-                    const otherIsAchada = r.room.toLowerCase().includes("achada");
-                    if (currentIsAchada && otherIsAchada) score += 10;
-                }
-            });
+            if (concurrentCount === 0) score += 3;
+            else if (concurrentCount === 1) score += 1;
+            if (!isEntryDay) score += 5;
 
-            if (score >= bestScore) {
+            if (score > bestScore) {
                 bestScore = score;
-                bestDay = new Date(d);
+                bestDay = d;
             }
         }
     }
-
-    return {
-        date: bestDay,
-        sunday: isForcedSunday,
-        urgent: nextReservation ? sameDay(bestDay, nextReservation.checkIn) : false
-    };
+    
+    return { date: bestDay, sunday: isForcedSunday, urgent: sameDayArrival };
 }
 
 function updateCloudHistory() {
-    try {
-        let hasChanges = false;
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        let mergedHistory = typeof cloudHistory === 'object' && cloudHistory !== null ? JSON.parse(JSON.stringify(cloudHistory)) : {};
-
-        globalReservations.forEach(reservation => {
-            const info = getCleaningInfo(reservation, globalReservations);
-            if (info.date <= today) {
-                const dateKey = info.date.getFullYear() + "-" + (info.date.getMonth() + 1).toString().padStart(2, '0') + "-" + info.date.getDate().toString().padStart(2, '0');
-
-                if (!mergedHistory[dateKey] || typeof mergedHistory[dateKey] !== 'object') {
-                    mergedHistory[dateKey] = { dateIso: info.date.toISOString(), rooms: [] };
-                    hasChanges = true;
-                }
-
-                if (!Array.isArray(mergedHistory[dateKey].rooms)) mergedHistory[dateKey].rooms = [];
-
-                if (!mergedHistory[dateKey].rooms.some(r => r.room === reservation.room)) {
-                    mergedHistory[dateKey].rooms.push({ room: reservation.room, sunday: info.sunday, urgent: info.urgent });
-                    hasChanges = true;
-                }
-            }
-        });
-
-        if (hasChanges) {
-            saveToCloudHistory(mergedHistory);
-            cloudHistory = mergedHistory;
-        }
-    } catch (err) {
-        console.error("Erro histórico:", err);
-    }
-}
-
-function renderNavigation() {
-    const isCleaning = currentView === "cleaning";
-    const isOccupancy = currentView === "occupancy";
-
-    return `
-        <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-            <button onclick="window.switchMainView('cleaning')" style="
-                padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px;
-                border: 2px solid #007bff; background-color: ${isCleaning ? '#007bff' : '#ffffff'};
-                color: ${isCleaning ? '#ffffff' : '#007bff'}; font-weight: bold;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            ">🧹 Plano de Limpezas</button>
-            <button onclick="window.switchMainView('occupancy')" style="
-                padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px;
-                border: 2px solid #28a745; background-color: ${isOccupancy ? '#28a745' : '#ffffff'};
-                color: ${isOccupancy ? '#ffffff' : '#28a745'}; font-weight: bold;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            ">📊 Disponibilidade da Casa</button>
-        </div>
-    `;
-}
-
-function showCleaningPlan() {
-    const today = new Date();
+    let today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    let grouped = {};
+    let needsSave = false;
+    let mergedHistory = typeof cloudHistory === 'object' && cloudHistory !== null ? JSON.parse(JSON.stringify(cloudHistory)) : {};
 
-    if (showHistoryMode) {
-        Object.keys(cloudHistory).forEach(dateKey => {
-            if (cloudHistory[dateKey] && cloudHistory[dateKey].dateIso) {
-                const itemDate = new Date(cloudHistory[dateKey].dateIso);
-                if (itemDate < today) grouped[dateKey] = { date: itemDate, rooms: cloudHistory[dateKey].rooms || [] };
+    globalReservations.forEach(reservation => {
+        const info = getCleaningInfo(reservation, globalReservations);
+        if (info.date <= today) {
+            const dateKey = info.date.getFullYear() + "-" + (info.date.getMonth() + 1).toString().padStart(2, '0') + "-" + info.date.getDate().toString().padStart(2, '0');
+            
+            if (!mergedHistory[dateKey]) mergedHistory[dateKey] = [];
+            
+            const existingRoom = mergedHistory[dateKey].find(r => r.room === reservation.room);
+            if (!existingRoom) {
+                mergedHistory[dateKey].push({ room: reservation.room, sunday: info.sunday, urgent: info.urgent });
+                needsSave = true;
             }
-        });
-    } else {
-        globalReservations.forEach(reservation => {
-            const info = getCleaningInfo(reservation, globalReservations);
-            if (info.date >= today) {
-                const dateKey = info.date.getFullYear() + "-" + (info.date.getMonth() + 1).toString().padStart(2, '0') + "-" + info.date.getDate().toString().padStart(2, '0');
-                if (!grouped[dateKey]) grouped[dateKey] = { date: info.date, rooms: [] };
-                if (!grouped[dateKey].rooms.some(r => r.room === reservation.room)) {
-                    grouped[dateKey].rooms.push({ room: reservation.room, sunday: info.sunday, urgent: info.urgent });
-                }
-            }
-        });
-    }
-
-    let sortedKeys = Object.keys(grouped).sort();
-    if (showHistoryMode) sortedKeys.reverse();
-
-    let html = renderNavigation() + `
-        <div style="margin-bottom: 25px;">
-            <button onclick="window.toggleHistoryView()" style="
-                padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px;
-                border: 1px solid #6c757d; background-color: #6c757d; color: white; font-weight: bold;
-            ">${showHistoryMode ? "📅 Ver Próximas Limpezas" : "📜 Ver Dias Anteriores"}</button>
-        </div>
-        <h1>${showHistoryMode ? "📜 Histórico de Limpezas" : "🧹 Plano de Limpezas"}</h1>
-    `;
-
-    if (sortedKeys.length === 0) html += `<p>Não há limpezas registadas.</p>`;
-
-    sortedKeys.forEach(key => {
-        const day = grouped[key];
-        let title = day.date.toLocaleDateString("pt-PT", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-        if (day.rooms.some(r => r.sunday)) title = "🔴 " + title;
-
-        let ptTitle = title.replace("🔴 ", "");
-        ptTitle = ptTitle.charAt(0).toUpperCase() + ptTitle.slice(1);
-        let copyLinesPt = [`🧹 Limpezas - ${ptTitle}:`];
-
-        let esTitle = day.date.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-        esTitle = esTitle.charAt(0).toUpperCase() + esTitle.slice(1);
-        let copyLinesEs = [`🧹 Limpiezas - ${esTitle}:`];
-
-        let roomsHtml = "";
-
-        day.rooms.sort((a, b) => a.room.localeCompare(b.room)).forEach(clean => {
-            const hasCheckout = globalReservations.some(r => r.room === clean.room && sameDay(r.checkOut, day.date));
-            const hasCheckin = clean.urgent || globalReservations.some(r => r.room === clean.room && sameDay(r.checkIn, day.date));
-
-            let tagPt = "", tagEs = "", tagHtml = "";
-            if (hasCheckout && hasCheckin) { tagPt = " (sai e entra)"; tagEs = " (sale y entra)"; tagHtml = " <b>(sai e entra)</b>"; }
-            else if (hasCheckout) { tagPt = " (sai hoje)"; tagEs = " (sale hoy)"; tagHtml = " <b>(sai hoje)</b>"; }
-            else if (hasCheckin) { tagPt = " (entrada hoje)"; tagEs = " (entrada hoy)"; tagHtml = " <b>(entrada hoje)</b>"; }
-
-            const emoji = hasCheckin ? "⚠️" : "🧹";
-            copyLinesPt.push(`${emoji} ${clean.room}${tagPt}`);
-            copyLinesEs.push(`${emoji} ${clean.room}${tagEs}`);
-            roomsHtml += `${emoji} ${clean.room}${tagHtml}<br>`;
-        });
-
-        html += `
-            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
-                <h2 style="margin: 0;">${title}</h2>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <button onclick="window.copyFromData(this, '${encodeURIComponent(copyLinesPt.join("\n"))}')" style="padding: 6px 12px; font-size: 13px; cursor: pointer; border-radius: 6px; border: 1px solid #28a745; background-color: #28a745; color: white; font-weight: bold;">🇵🇹 Copiar PT</button>
-                    <button onclick="window.copyFromData(this, '${encodeURIComponent(copyLinesEs.join("\n"))}')" style="padding: 6px 12px; font-size: 13px; cursor: pointer; border-radius: 6px; border: 1px solid #17a2b8; background-color: #17a2b8; color: white; font-weight: bold;">🇪🇸 Copiar ES</button>
-                </div>
-            </div>
-            <div style="margin-top: 8px;">${roomsHtml}</div><hr>
-        `;
+        }
     });
 
-    const resultElem = getResultElem();
-    if (resultElem) resultElem.innerHTML = html;
+    if (needsSave) {
+        cloudHistory = mergedHistory;
+        saveToCloudHistory(mergedHistory);
+    }
 }
 
-// Retorna unicamente os quartos reais para estatísticas e somas
 function getBaseHouseRooms(houseKey) {
     if (houseKey === "achada") return ["Achada 1", "Achada 2", "Achada 3", "Achada 4", "Achada 5", "Achada 6"];
     if (houseKey === "impasse") return ["Impasse 2", "Impasse 3", "Impasse 4"];
@@ -402,251 +318,206 @@ function getBaseHouseRooms(houseKey) {
     return [];
 }
 
+function getMonthNamePT(monthIndex) {
+    const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+    return months[monthIndex];
+}
+
 function calculateHouseStats(houseKey) {
     const baseRooms = getBaseHouseRooms(houseKey);
-    if (baseRooms.length === 0) return {};
+    const houseReservations = globalReservations.filter(r => baseRooms.includes(r.room)); // Só os base
+    
+    if (houseReservations.length === 0) return "<p>Sem dados.</p>";
 
-    // Filtra ESTRITAMENTE as reservas dos quartos base (Ignora Impasse Villa a 100%)
-    const houseReservations = globalReservations.filter(r => baseRooms.includes(r.room));
-    if (houseReservations.length === 0) return {};
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    let minDate = new Date(Math.min(...houseReservations.map(r => r.checkIn.getTime())));
+    let maxDate = new Date(Math.max(...houseReservations.map(r => r.checkOut.getTime())));
+    
+    if (minDate > today) minDate = new Date(today);
 
-    let minTime = Infinity;
-    let maxTime = -Infinity;
-
-    houseReservations.forEach(r => {
-        const cIn = new Date(r.checkIn).setHours(0, 0, 0, 0);
-        const cOut = new Date(r.checkOut).setHours(0, 0, 0, 0);
-        if (cIn < minTime) minTime = cIn;
-        if (cOut > maxTime) maxTime = cOut;
-    });
-
-    if (minTime === Infinity || maxTime === -Infinity) return {};
-
-    const minDate = new Date(minTime);
-    const maxDate = new Date(maxTime);
+    const stats = [];
 
     let current = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
     current.setHours(0, 0, 0, 0);
-
+    
     let end = new Date(maxDate.getFullYear(), maxDate.getMonth() + 1, 0);
     end.setHours(0, 0, 0, 0);
 
-    const stats = {};
-
     while (current <= end) {
-        const year = current.getFullYear();
-        const month = current.getMonth();
-        const monthKey = year + "-" + String(month + 1).padStart(2, '0');
-        const monthLabel = current.toLocaleDateString("pt-PT", { month: "long", year: "numeric" });
-        const currentTarget = current.getTime();
+        const yr = current.getFullYear();
+        const mo = current.getMonth();
+        
+        const isPastMonth = (yr < today.getFullYear()) || (yr === today.getFullYear() && mo < today.getMonth());
+        
+        let daysInMonth = new Date(yr, mo + 1, 0).getDate();
+        let totalPossibleNights = daysInMonth * baseRooms.length;
+        let occupiedNights = 0;
+        let totalIncome = 0;
 
-        if (!stats[monthKey]) {
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            stats[monthKey] = {
-                label: monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1),
-                dormidas: 0,
-                checkins: 0,
-                checkouts: 0,
-                diasEsgotados: 0,
-                totalCapacity: baseRooms.length * daysInMonth
-            };
+        let d = new Date(yr, mo, 1);
+        d.setHours(0, 0, 0, 0);
+        
+        for (let i = 0; i < daysInMonth; i++) {
+            baseRooms.forEach(room => {
+                const isOccupied = houseReservations.some(r => {
+                    if (r.room !== room) return false;
+                    let cIn = new Date(r.checkIn); cIn.setHours(0, 0, 0, 0);
+                    let cOut = new Date(r.checkOut); cOut.setHours(0, 0, 0, 0);
+                    return d >= cIn && d < cOut;
+                });
+                if (isOccupied) occupiedNights++;
+            });
+            d = addDays(d, 1);
         }
 
-        let occupiedRoomsToday = 0;
+        let occPercent = totalPossibleNights > 0 ? ((occupiedNights / totalPossibleNights) * 100).toFixed(1) : 0;
+        stats.push({ yr, mo, occupiedNights, totalPossibleNights, occPercent, isPastMonth });
 
-        baseRooms.forEach(room => {
-            const roomRes = houseReservations.filter(r => r.room === room);
-
-            // Verifica se o quarto está ocupado durante a noite
-            const isOccupied = roomRes.some(r => {
-                const cIn = new Date(r.checkIn).setHours(0, 0, 0, 0);
-                const cOut = new Date(r.checkOut).setHours(0, 0, 0, 0);
-                return currentTarget >= cIn && currentTarget < cOut;
-            });
-
-            if (isOccupied) {
-                occupiedRoomsToday++;
-            }
-
-            // Conta check-ins
-            const hasCheckin = roomRes.some(r => {
-                const cIn = new Date(r.checkIn).setHours(0, 0, 0, 0);
-                return currentTarget === cIn;
-            });
-            if (hasCheckin) stats[monthKey].checkins++;
-
-            // Conta check-outs
-            const hasCheckout = roomRes.some(r => {
-                const cOut = new Date(r.checkOut).setHours(0, 0, 0, 0);
-                return currentTarget === cOut;
-            });
-            if (hasCheckout) stats[monthKey].checkouts++;
-        });
-
-        stats[monthKey].dormidas += occupiedRoomsToday;
-
-        // O dia só é "100% cheio" se TODOS os quartos base estiverem ocupados nessa noite
-        if (occupiedRoomsToday === baseRooms.length) {
-            stats[monthKey].diasEsgotados++;
-        }
-
-        current = addDays(current, 1);
+        current = new Date(yr, mo + 1, 1);
+        current.setHours(0, 0, 0, 0);
     }
 
-    return stats;
+    let html = ``;
+    let hasShownAny = false;
+
+    stats.sort((a, b) => {
+        if (a.yr !== b.yr) return b.yr - a.yr;
+        return b.mo - a.mo;
+    });
+
+    stats.forEach(s => {
+        if (s.isPastMonth && !viewPastMonths) return;
+        
+        hasShownAny = true;
+        let barColor = s.occPercent > 70 ? "#28a745" : (s.occPercent > 40 ? "#ffc107" : "#dc3545");
+        
+        html += `
+            <div style="background-color: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span style="font-size: 16px; font-weight: bold;">${getMonthNamePT(s.mo)}${s.yr}</span>
+                    <span style="font-size: 18px; font-weight: bold; color: ${barColor};">${s.occPercent}%</span>
+                </div>
+                <div style="background-color: #e9ecef; border-radius: 4px; height: 8px; width: 100%; overflow: hidden;">
+                    <div style="height: 100%; width: ${s.occPercent}\%; background-color:${barColor};"></div>
+                </div>
+                <div style="font-size: 13px; color: #666; margin-top: 8px;">
+                    Noites Ocupadas: <b>${s.occupiedNights}</b> /${s.totalPossibleNights}
+                </div>
+            </div>
+        `;
+    });
+
+    if (!hasShownAny) {
+        html += `<p style="color: #666; font-style: italic; margin-top: 10px;">Não há estatísticas para apresentar com os filtros atuais.</p>`;
+    }
+
+    return html;
 }
 
 function showOccupancyPlan() {
-    const baseRooms = getBaseHouseRooms(selectedHouse);
-    const totalRooms = baseRooms.length;
+    let today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    // A Villa só é adicionada a esta lista para efeitos de ESCRITA na descrição do dia
+    let html = renderNavigation();
+    
+    html += `
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button onclick="selectHouse('achada')" style="flex: 1; padding: 10px; font-size: 14px; border-radius: 6px; font-weight: bold; border: none; background-color: ${selectedHouse === 'achada' ? '#333' : '#e0e0e0'}; color: ${selectedHouse === 'achada' ? 'white' : 'black'};">Achada</button>
+            <button onclick="selectHouse('impasse')" style="flex: 1; padding: 10px; font-size: 14px; border-radius: 6px; font-weight: bold; border: none; background-color: ${selectedHouse === 'impasse' ? '#333' : '#e0e0e0'}; color: ${selectedHouse === 'impasse' ? 'white' : 'black'};">Impasse</button>
+            <button onclick="selectHouse('vizinho')" style="flex: 1; padding: 10px; font-size: 14px; border-radius: 6px; font-weight: bold; border: none; background-color: ${selectedHouse === 'vizinho' ? '#333' : '#e0e0e0'}; color: ${selectedHouse === 'vizinho' ? 'white' : 'black'};">Vizinho</button>
+        </div>
+    `;
+
+    const baseRooms = getBaseHouseRooms(selectedHouse);
+    const totalRooms = baseRooms.length; // Conta APENAS baseRooms
+    
+    // Lista de renderização (inclui Villa se for Impasse)
     let displayRooms = [...baseRooms];
     if (selectedHouse === "impasse") {
         displayRooms.push("Impasse Villa");
     }
 
-    const houseLabels = {
-        achada: "Achada (6 Quartos)",
-        impasse: "Impasse (3 Quartos)",
-        vizinho: "Vizinho (3 Quartos)"
-    };
-
-    let html = renderNavigation() + `
-        <div style="margin-bottom: 25px; display: flex; gap: 8px; flex-wrap: wrap;">
-            ${['achada', 'impasse', 'vizinho'].map(h => `
-                <button onclick="window.selectHouse('${h}')" style="
-                    padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px;
-                    border: 2px solid #17a2b8; background-color: ${selectedHouse === h ? '#17a2b8' : '#ffffff'};
-                    color: ${selectedHouse === h ? '#ffffff' : '#17a2b8'}; font-weight: bold;
-                ">🏡 ${h.charAt(0).toUpperCase() + h.slice(1)}</button>
-            `).join("")}
-        </div>
-        <h1>📊 Ocupação - ${houseLabels[selectedHouse]}</h1>
-        <div style="margin-bottom: 20px;">
-            <button onclick="window.toggleOccupancyStats()" style="
-                padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px;
-                border: 1px solid #ffc107; background-color: ${showOccupancyStats ? '#e0a800' : '#ffc107'}; color: #333; font-weight: bold;
-            ">${showOccupancyStats ? '🔙 Ocultar Estatísticas' : '📈 Ver Estatísticas Mensais'}</button>
+    html += `
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button onclick="switchMainView('occupancy')" style="flex: 1; padding: 10px; border-radius: 6px; font-weight: bold; border: 1px solid #333; background-color: ${!showOccupancyStats ? '#f8f9fa' : 'white'};">📅 Plano 60 Dias</button>
+            <button onclick="toggleOccupancyStats()" style="flex: 1; padding: 10px; border-radius: 6px; font-weight: bold; border: 1px solid #333; background-color: ${showOccupancyStats ? '#f8f9fa' : 'white'};">📊 Estatísticas</button>
         </div>
     `;
 
     if (showOccupancyStats) {
-        const stats = calculateHouseStats(selectedHouse);
-        const allStatKeys = Object.keys(stats).sort();
-
-        const todayDate = new Date();
-        const currentMonthStr = todayDate.getFullYear() + "-" + String(todayDate.getMonth() + 1).padStart(2, '0');
-
-        const pastKeys = allStatKeys.filter(key => key < currentMonthStr).sort((a, b) => b.localeCompare(a));
-        const futureKeys = allStatKeys.filter(key => key >= currentMonthStr).sort();
-
-        const hasPastMonths = pastKeys.length > 0;
-        const visibleKeys = viewPastMonths ? pastKeys : futureKeys;
-
-        if (allStatKeys.length === 0) {
-            html += `<p>Sem dados suficientes para calcular estatísticas desta casa.</p><hr>`;
-        } else {
-            if (hasPastMonths) {
-                html += `
-                    <div style="margin-bottom: 15px;">
-                        <button onclick="window.togglePastStats()" style="
-                            padding: 8px 12px; font-size: 13px; cursor: pointer; border-radius: 6px;
-                            border: 1px solid #6c757d; background-color: ${viewPastMonths ? '#5a6268' : '#f8f9fa'}; color: ${viewPastMonths ? '#fff' : '#333'}; font-weight: bold;
-                        ">${viewPastMonths ? '🔙 Ver Meses Atuais e Futuros' : '🕰️ Ver Meses Passados'}</button>
-                    </div>
-                `;
-            }
-
-            if (visibleKeys.length === 0) {
-                html += `<p style="color: #666; font-style: italic;">Não existem registos para esta vista.</p>`;
-            } else {
-                html += `<div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 25px;">`;
-                visibleKeys.forEach(key => {
-                    const s = stats[key];
-                    const taxa = s.totalCapacity > 0 ? Math.round((s.dormidas / s.totalCapacity) * 100) : 0;
-
-                    html += `
-                        <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; flex: 1; min-width: 260px; background-color: #f8f9fa; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                            <h3 style="margin-top: 0; color: #007bff; text-transform: capitalize; border-bottom: 1px solid #ccc; padding-bottom: 8px;">${s.label}</h3>
-                            <p style="margin: 8px 0; font-size: 15px;"><strong>🛏️ Ocupação:</strong> ${taxa}%</p>
-                            <p style="margin: 8px 0; font-size: 15px;"><strong>🌙 Dormidas:</strong> ${s.dormidas} <span style="font-size: 12px; color: #666;">(cap: ${s.totalCapacity})</span></p>
-                            <p style="margin: 8px 0; font-size: 15px;"><strong>🧳 Entradas:</strong> ${s.checkins} | <strong>🛫 Saídas:</strong> ${s.checkouts}</p>
-                            <p style="margin: 8px 0; font-size: 15px;"><strong>🔥 Dias 100% cheios:</strong> ${s.diasEsgotados}</p>
-                        </div>
-                    `;
-                });
-                html += `</div>`;
-            }
-        }
-    }
-
-    html += `<hr>`;
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    let maxDate = addDays(today, 60);
-    globalReservations.forEach(r => {
-        if (displayRooms.includes(r.room)) {
-            const outDate = new Date(r.checkOut);
-            outDate.setHours(0, 0, 0, 0);
-            if (outDate > maxDate) maxDate = outDate;
-        }
-    });
-
-    const totalDays = getDaysBetween(today, maxDate) + 1;
-
-    for (let i = 0; i < totalDays; i++) {
-        const currentDate = addDays(today, i);
-        let roomDetails = [];
-        let occupiedCount = 0;
-
-        displayRooms.forEach(roomName => {
-            const hasCheckout = globalReservations.some(r => r.room === roomName && sameDay(r.checkOut, currentDate));
-            const hasCheckin = globalReservations.some(r => r.room === roomName && sameDay(r.checkIn, currentDate));
-
-            const isOccupiedOvernight = globalReservations.some(r => {
-                if (r.room !== roomName) return false;
-                const checkIn = new Date(r.checkIn); checkIn.setHours(0, 0, 0, 0);
-                const checkOut = new Date(r.checkOut); checkOut.setHours(0, 0, 0, 0);
-                return currentDate >= checkIn && currentDate < checkOut;
-            });
-
-            if (isOccupiedOvernight || hasCheckout || hasCheckin) {
-                let tag = "";
-                if (hasCheckout && hasCheckin) tag = " <b>(sai e entra)</b>";
-                else if (hasCheckout) tag = " <b>(sai)</b>";
-                else if (hasCheckin) tag = " <b>(entra)</b>";
-
-                roomDetails.push(`${roomName}${tag}`);
-
-                // APENAS incrementa a fração (X / total) se for um quarto base (2, 3, 4) e estiver ocupado durante a noite
-                if (baseRooms.includes(roomName) && isOccupiedOvernight) {
-                    occupiedCount++;
-                }
+        html += `<h3 style="margin-bottom: 15px; color: #333;">Estatísticas Mensais (${selectedHouse.toUpperCase()})</h3>`;
+        html += `
+            <div style="margin-bottom: 20px; text-align: right;">
+                <button onclick="togglePastStats()" style="padding: 8px 12px; font-size: 12px; border-radius: 6px; border: 1px solid #ccc; background: white; cursor: pointer;">
+                    ${viewPastMonths ? 'Esconder Meses Passados' : 'Mostrar Meses Passados'}
+                </button>
+            </div>
+        `;
+        html += calculateHouseStats(selectedHouse);
+    } else {
+        html += `<h3 style="margin-bottom: 15px; color: #333;">Próximos 60 Dias (${selectedHouse.toUpperCase()})</h3>`;
+        
+        let maxDate = addDays(today, 60);
+        globalReservations.forEach(r => {
+            if (displayRooms.includes(r.room)) {
+                const outDate = new Date(r.checkOut);
+                outDate.setHours(0, 0, 0, 0);
+                if (outDate > maxDate) maxDate = outDate;
             }
         });
 
-        const dateFormatted = currentDate.toLocaleDateString("pt-PT", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+        const totalDays = getDaysBetween(today, maxDate) + 1;
 
-        html += `<h2>${dateFormatted}</h2>`;
+        for (let i = 0; i < totalDays; i++) {
+            const currentDate = addDays(today, i);
+            const isToday = i === 0;
 
-        if (occupiedCount === 0 && roomDetails.length === 0) {
-            html += `<div style="font-size: 18px; font-weight: bold; color: #28a745; margin-bottom: 5px;">0 🟢</div>`;
-        } else {
-            html += `<div style="font-size: 18px; font-weight: bold; color: #dc3545; margin-bottom: 5px;">${occupiedCount} / ${totalRooms} 🔴</div>
-                     <div style="font-size: 14px; color: #333;">Ocupados: ${roomDetails.join(", ")}</div>`;
-        }
-        html += "<hr>";
-    }
+            const dayString = currentDate.toLocaleDateString("pt-PT", { weekday: "long", day: "2-digit", month: "long" });
 
-    const resultElem = getResultElem();
-    if (resultElem) resultElem.innerHTML = html;
-}
+            let occupiedCount = 0;
+            let roomDetails = [];
 
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", loadCalendars);
-} else {
-    loadCalendars();
-}
+            displayRooms.forEach(roomName => {
+                const hasCheckout = globalReservations.some(r => r.room === roomName && sameDay(r.checkOut, currentDate));
+                const hasCheckin = globalReservations.some(r => r.room === roomName && sameDay(r.checkIn, currentDate));
+                
+                const isOccupiedOvernight = globalReservations.some(r => {
+                    if (r.room !== roomName) return false;
+                    const checkIn = new Date(r.checkIn); checkIn.setHours(0, 0, 0, 0);
+                    const checkOut = new Date(r.checkOut); checkOut.setHours(0, 0, 0, 0);
+                    return currentDate >= checkIn && currentDate < checkOut;
+                });
+
+                if (baseRooms.includes(roomName) && isOccupiedOvernight) {
+                    occupiedCount++;
+                }
+
+                if (isOccupiedOvernight || hasCheckout || hasCheckin) {
+                    let tag = "";
+                    if (hasCheckout && hasCheckin) tag = " <b>(sai e entra)</b>";
+                    else if (hasCheckout) tag = " <b>(sai)</b>";
+                    else if (hasCheckin) tag = " <b>(entra)</b>";
+                    roomDetails.push(`${roomName}${tag}`);
+                }
+            });
+
+            html += `
+                <div style="background-color: ${isToday ? '#fffae6' : '#fff'}; border: 1px solid ${isToday ? '#ffc107' : '#ddd'}; border-radius: 8px; padding: 15px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <div style="font-size: 16px; font-weight: bold; margin-bottom: 10px; text-transform: capitalizeCompreendo perfeitamente a frustração. Isso costuma acontecer quando há algum problema de carregamento, dados corrompidos guardados ou um conflito no navegador.
+
+Como não tenho acesso ao teu ecrã e não sei onde estás a navegar, preciso de um pouco mais de contexto para te ajudar a resolver o problema. Podes dar-me mais alguns detalhes?
+
+*   **Qual é o site** a que te referes?
+*   **O que é que não está a aparecer?** São imagens, botões, blocos de texto, produtos de uma loja, comentários?
+*   Estás a usar o **computador ou o telemóvel**? E qual é o navegador (Chrome, Safari, Firefox, Edge)?
+
+Entretanto, aqui estão **4 passos rápidos** que costumam resolver a grande maioria destes problemas de ecrã incompleto:
+
+1. **Forçar a atualização da página:** No computador, prime `Ctrl + F5` (Windows) ou `Cmd + Shift + R` (Mac). Isto obriga o site a descarregar tudo de novo.
+2. **Experimentar numa janela anónima/privada:** Abre uma janela anónima no teu navegador e tenta aceder ao site. Se tudo aparecer normalmente, o problema está quase de certeza na cache, nos cookies ou numa extensão que tenhas instalada.
+3. **Limpar a cache e os cookies:** Se o passo anterior funcionou, vai às definições do teu navegador, procura pela secção de privacidade/histórico e limpa os dados de navegação e as imagens em cache.
+4. **Desativar temporariamente bloqueadores de anúncios (AdBlockers):** Às vezes, estas extensões são agressivas e bloqueiam acidentalmente partes perfeitamente normais de um site, achando que são publicidade.
+
+Diz-me de que site se trata e o que está a falhar em concreto para conseguirmos descobrir o que se passa!
