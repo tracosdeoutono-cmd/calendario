@@ -294,7 +294,10 @@ function updateCloudHistory() {
         if (info.date <= today) {
             const dateKey = info.date.getFullYear() + "-" + (info.date.getMonth() + 1).toString().padStart(2, '0') + "-" + info.date.getDate().toString().padStart(2, '0');
             
-            if (!mergedHistory[dateKey]) mergedHistory[dateKey] = [];
+            // CORREÇÃO: Garante que é sempre uma lista (array) antes de usar o .find()
+            if (!Array.isArray(mergedHistory[dateKey])) {
+                mergedHistory[dateKey] = [];
+            }
             
             const existingRoom = mergedHistory[dateKey].find(r => r.room === reservation.room);
             if (!existingRoom) {
@@ -437,9 +440,12 @@ function showCleaningPlan() {
     if (showHistoryMode) {
         Object.keys(cloudHistory).forEach(dateStr => {
             if (!cleaningMap[dateStr]) cleaningMap[dateStr] = [];
-            cloudHistory[dateStr].forEach(item => {
-                cleaningMap[dateStr].push(item);
-            });
+            // CORREÇÃO: Garante que só lê dados que são listas
+            if (Array.isArray(cloudHistory[dateStr])) {
+                cloudHistory[dateStr].forEach(item => {
+                    cleaningMap[dateStr].push(item);
+                });
+            }
         });
     }
 
@@ -613,5 +619,5 @@ function showOccupancyPlan() {
     resultElem.innerHTML = html;
 }
 
-// Inicia o carregamento assim que o script é executado
+// Inicia o carregamento
 loadCalendars();
