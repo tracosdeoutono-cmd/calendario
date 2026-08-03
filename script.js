@@ -25,7 +25,8 @@ let cloudHistory = {};
 let currentView = "cleaning"; // "cleaning" ou "occupancy"
 let showHistoryMode = false;  // modo histórico das limpezas
 let selectedHouse = "achada";  // "achada", "impasse", "vizinho"
-let showOccupancyStats = false; // Novo: estado para mostrar as estatísticas
+let showOccupancyStats = false; // estado para mostrar as estatísticas
+let showPastStats = false; // NOVO: estado para mostrar os meses passados
 
 // Função auxiliar para evitar que os "fetches" fiquem presos para sempre (Timeout de 10 segundos)
 async function fetchWithTimeout(resource, options = {}, timeout = 10000) {
@@ -75,6 +76,12 @@ window.toggleHistoryView = function() {
 // Alternar Estatísticas no modo Disponibilidade
 window.toggleOccupancyStats = function() {
     showOccupancyStats = !showOccupancyStats;
+    showOccupancyPlan();
+};
+
+// NOVO: Alternar visão de meses passados
+window.togglePastStats = function() {
+    showPastStats = !showPastStats;
     showOccupancyPlan();
 };
 
@@ -251,14 +258,12 @@ function getCleaningInfo(reservation, allReservations) {
     };
 }
 
-// Versão completamente segura para não falhar nem causar loops
 function updateCloudHistory() {
     try {
         let hasChanges = false;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        // Clona de forma defensiva
         let mergedHistory = {};
         if (typeof cloudHistory === 'object' && cloudHistory !== null) {
             mergedHistory = JSON.parse(JSON.stringify(cloudHistory));
@@ -272,13 +277,11 @@ function updateCloudHistory() {
                     (info.date.getMonth() + 1).toString().padStart(2, '0') + "-" +
                     info.date.getDate().toString().padStart(2, '0');
 
-                // Inicializa a data em segurança se não existir
                 if (!mergedHistory[dateKey] || typeof mergedHistory[dateKey] !== 'object') {
                     mergedHistory[dateKey] = { dateIso: info.date.toISOString(), rooms: [] };
                     hasChanges = true;
                 }
 
-                // Proteção contra lixo vindo da cloud antiga
                 if (!Array.isArray(mergedHistory[dateKey].rooms)) {
                     mergedHistory[dateKey].rooms = [];
                 }
@@ -304,7 +307,6 @@ function updateCloudHistory() {
     }
 }
 
-// Cabeçalho de Navegação Principal
 function renderNavigation() {
     const isCleaning = currentView === "cleaning";
     const isOccupancy = currentView === "occupancy";
@@ -331,7 +333,6 @@ function renderNavigation() {
     `;
 }
 
-// VISTA 1: PLANO DE LIMPEZAS & HISTÓRICO
 function showCleaningPlan() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -363,7 +364,6 @@ function showCleaningPlan() {
                     grouped[dateKey] = { date: info.date, rooms: [] };
                 }
 
-                // Evitar duplicações visuais (caso hajam problemas no cálculo)
                 const alreadyAdded = grouped[dateKey].rooms.some(r => r.room === reservation.room);
                 if (!alreadyAdded) {
                     grouped[dateKey].rooms.push({
@@ -478,7 +478,6 @@ function showCleaningPlan() {
     result.innerHTML = html;
 }
 
-// Retorna os quartos de cada casa
 function getHouseRooms(houseKey) {
     if (houseKey === "achada") {
         return ["Achada 1", "Achada 2", "Achada 3", "Achada 4", "Achada 5", "Achada 6"];
@@ -490,7 +489,6 @@ function getHouseRooms(houseKey) {
     return [];
 }
 
-// NOVO: Função para calcular estatísticas por mês
 function calculateHouseStats(houseKey) {
     const rooms = getHouseRooms(houseKey);
     if (rooms.length === 0) return {};
@@ -506,7 +504,6 @@ function calculateHouseStats(houseKey) {
         if (r.checkOut > maxDate) maxDate = new Date(r.checkOut);
     });
 
-    // Expandir para o início do mês mais antigo e fim do mês mais recente
     let current = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
     let end = new Date(maxDate.getFullYear(), maxDate.getMonth() + 1, 0);
 
@@ -530,7 +527,6 @@ function calculateHouseStats(houseKey) {
         let occupiedRoomsToday = 0;
 
         rooms.forEach(room => {
-            // Conta as dormidas (noite anterior ao checkout)
             const isOccupied = houseReservations.some(r => {
                 if (r.room !== room) return false;
                 const cIn = new Date(r.checkIn); cIn.setHours(0, 0, 0, 0);
@@ -543,12 +539,10 @@ function calculateHouseStats(houseKey) {
                 occupiedRoomsToday++;
             }
 
-            // Conta os check-ins
             const hasCheckin = houseReservations.some(r => r.room === room && sameDay(r.checkIn, current));
             if (hasCheckin) stats[monthKey].checkins++;
         });
 
-        // Se todos os quartos estiveram ocupados neste dia, é um dia esgotado
         if (occupiedRoomsToday === rooms.length) {
             stats[monthKey].diasEsgotados++;
         }
@@ -559,7 +553,6 @@ function calculateHouseStats(houseKey) {
     return stats;
 }
 
-// VISTA 2: DISPONIBILIDADE DA CASA
 function showOccupancyPlan() {
     const houseRooms = getHouseRooms(selectedHouse);
     const totalRooms = houseRooms.length;
@@ -611,30 +604,57 @@ function showOccupancyPlan() {
     // Renderiza as estatísticas se o modo estiver ativo
     if (showOccupancyStats) {
         const stats = calculateHouseStats(selectedHouse);
-        const statKeys = Object.keys(stats).sort();
+        const allStatKeys = Object.keys(stats).sort();
 
-        if (statKeys.length === 0) {
+        // Determinar o mês atual no formato "YYYY-MM"
+        const todayDate = new Date();
+        const currentMonthStr = todayDate.getFullYear() + "-" + String(todayDate.getMonth() + 1).padStart(2, '0');
+
+        // Verificar se existem dados de meses passados
+        const hasPastMonths = allStatKeys.some(key => key < currentMonthStr);
+        
+        // Filtrar as chaves a renderizar conforme o estado showPastStats
+        let visibleKeys = showPastStats ? allStatKeys : allStatKeys.filter(key => key >= currentMonthStr);
+
+        if (allStatKeys.length === 0) {
             html += `<p>Sem dados suficientes para calcular estatísticas desta casa.</p><hr>`;
         } else {
-            html += `<div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 25px;">`;
-            
-            statKeys.forEach(key => {
-                const s = stats[key];
-                // Calcula a taxa de ocupação em %
-                const taxa = s.totalCapacity > 0 ? Math.round((s.dormidas / s.totalCapacity) * 100) : 0;
-                
+            // Botão para alternar meses passados (só aparece se existirem meses anteriores)
+            if (hasPastMonths) {
                 html += `
-                    <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; flex: 1; min-width: 220px; background-color: #f8f9fa; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                        <h3 style="margin-top: 0; color: #007bff; text-transform: capitalize; border-bottom: 1px solid #ccc; padding-bottom: 8px;">${s.label}</h3>
-                        <p style="margin: 8px 0; font-size: 15px;"><strong>🛏️ Ocupação:</strong> ${taxa}%</p>
-                        <p style="margin: 8px 0; font-size: 15px;"><strong>🌙 Dormidas:</strong> ${s.dormidas} <span style="font-size: 12px; color: #666;">(de ${s.totalCapacity})</span></p>
-                        <p style="margin: 8px 0; font-size: 15px;"><strong>🧳 Check-ins:</strong> ${s.checkins}</p>
-                        <p style="margin: 8px 0; font-size: 15px;"><strong>🔥 Dias 100% cheios:</strong> ${s.diasEsgotados}</p>
+                    <div style="margin-bottom: 15px;">
+                        <button onclick="window.togglePastStats()" style="
+                            padding: 8px 12px; font-size: 13px; cursor: pointer; border-radius: 6px;
+                            border: 1px solid #6c757d; background-color: ${showPastStats ? '#5a6268' : '#f8f9fa'}; color: ${showPastStats ? '#fff' : '#333'}; font-weight: bold;
+                        ">
+                            ${showPastStats ? 'Ocultar Meses Passados' : 'Ver Meses Passados'}
+                        </button>
                     </div>
                 `;
-            });
-            
-            html += `</div>`;
+            }
+
+            if (visibleKeys.length === 0) {
+                html += `<p style="color: #666; font-style: italic;">Não há dados estatísticos do mês atual em diante.</p>`;
+            } else {
+                html += `<div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 25px;">`;
+                
+                visibleKeys.forEach(key => {
+                    const s = stats[key];
+                    const taxa = s.totalCapacity > 0 ? Math.round((s.dormidas / s.totalCapacity) * 100) : 0;
+                    
+                    html += `
+                        <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; flex: 1; min-width: 220px; background-color: #f8f9fa; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                            <h3 style="margin-top: 0; color: #007bff; text-transform: capitalize; border-bottom: 1px solid #ccc; padding-bottom: 8px;">${s.label}</h3>
+                            <p style="margin: 8px 0; font-size: 15px;"><strong>🛏️ Ocupação:</strong> ${taxa}%</p>
+                            <p style="margin: 8px 0; font-size: 15px;"><strong>🌙 Dormidas:</strong> ${s.dormidas} <span style="font-size: 12px; color: #666;">(de ${s.totalCapacity})</span></p>
+                            <p style="margin: 8px 0; font-size: 15px;"><strong>🧳 Check-ins:</strong> ${s.checkins}</p>
+                            <p style="margin: 8px 0; font-size: 15px;"><strong>🔥 Dias 100% cheios:</strong> ${s.diasEsgotados}</p>
+                        </div>
+                    `;
+                });
+                
+                html += `</div>`;
+            }
         }
     }
 
