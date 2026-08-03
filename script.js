@@ -18,7 +18,7 @@ const calendars = [
 
 let globalReservations = [];
 let cloudHistory = {};
-let failedCalendars = []; // Vai guardar o nome dos calendários que não carregarem
+let failedCalendars = [];
 
 // Estados da Aplicação
 let currentView = "cleaning";
@@ -31,7 +31,6 @@ function getResultElem() {
     return document.getElementById("result");
 }
 
-// Aumentado o timeout para 25 segundos (25000ms)
 async function fetchTextWithTimeout(url, timeoutMs = 25000) {
     try {
         return await Promise.race([
@@ -43,7 +42,7 @@ async function fetchTextWithTimeout(url, timeoutMs = 25000) {
         ]);
     } catch (e) {
         console.error(`Falha ao carregar ${url}:`, e);
-        return null; // Retorna nulo para identificarmos que falhou
+        return null;
     }
 }
 
@@ -220,9 +219,9 @@ function renderNavigation() {
     let warnHTML = "";
     if (failedCalendars.length > 0) {
         warnHTML = `<div style="background-color: #f8d7da; color: #721c24; padding: 12px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
-            <strong>⚠️ Atenção:</strong> Alguns calendários demoraram demasiado tempo a responder e estão em falta na lista. 
-            Quartos afetados: <b>${failedCalendars.join(", ")}</b>. <br><br>
-            <i>Dica: Recarrega a página dentro de 1 minuto.</i>
+            <strong>⚠️ Atenção:</strong> Alguns calendários demoraram a responder e estão temporariamente em falta.<br>
+            Quartos afetados: <b>${failedCalendars.join(", ")}</b>.<br>
+            <i>Dica: Recarrega a página se precisares de atualizar estes quartos específicos.</i>
         </div>`;
     }
 
@@ -325,9 +324,9 @@ function getMonthNamePT(monthIndex) {
 
 function calculateHouseStats(houseKey) {
     const baseRooms = getBaseHouseRooms(houseKey);
-    const houseReservations = globalReservations.filter(r => baseRooms.includes(r.room)); // Só os base
+    const houseReservations = globalReservations.filter(r => baseRooms.includes(r.room));
     
-    if (houseReservations.length === 0) return "<p>Sem dados.</p>";
+    if (houseReservations.length === 0) return "<p>Sem dados suficientes para estatísticas.</p>";
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -354,7 +353,6 @@ function calculateHouseStats(houseKey) {
         let daysInMonth = new Date(yr, mo + 1, 0).getDate();
         let totalPossibleNights = daysInMonth * baseRooms.length;
         let occupiedNights = 0;
-        let totalIncome = 0;
 
         let d = new Date(yr, mo, 1);
         d.setHours(0, 0, 0, 0);
@@ -396,14 +394,14 @@ function calculateHouseStats(houseKey) {
         html += `
             <div style="background-color: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 15px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <span style="font-size: 16px; font-weight: bold;">${getMonthNamePT(s.mo)}${s.yr}</span>
+                    <span style="font-size: 16px; font-weight: bold;">${getMonthNamePT(s.mo)} ${s.yr}</span>
                     <span style="font-size: 18px; font-weight: bold; color: ${barColor};">${s.occPercent}%</span>
                 </div>
                 <div style="background-color: #e9ecef; border-radius: 4px; height: 8px; width: 100%; overflow: hidden;">
-                    <div style="height: 100%; width: ${s.occPercent}\%; background-color:${barColor};"></div>
+                    <div style="height: 100%; width: ${s.occPercent}%; background-color: ${barColor};"></div>
                 </div>
                 <div style="font-size: 13px; color: #666; margin-top: 8px;">
-                    Noites Ocupadas: <b>${s.occupiedNights}</b> /${s.totalPossibleNights}
+                    Noites Ocupadas: <b>${s.occupiedNights}</b> / ${s.totalPossibleNights}
                 </div>
             </div>
         `;
@@ -416,7 +414,103 @@ function calculateHouseStats(houseKey) {
     return html;
 }
 
+function showCleaningPlan() {
+    const resultElem = getResultElem();
+    if (!resultElem) return;
+
+    let today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let html = renderNavigation();
+
+    html += `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin: 0; color: #333;">🧹 Plano de Limpezas</h2>
+            <button onclick="toggleHistoryView()" style="padding: 8px 12px; font-size: 13px; border-radius: 6px; border: 1px solid #ccc; background: white; cursor: pointer;">
+                ${showHistoryMode ? 'Esconder Histórico' : '📜 Mostrar Histórico'}
+            </button>
+        </div>
+    `;
+
+    let cleaningMap = {};
+
+    if (showHistoryMode) {
+        Object.keys(cloudHistory).forEach(dateStr => {
+            if (!cleaningMap[dateStr]) cleaningMap[dateStr] = [];
+            cloudHistory[dateStr].forEach(item => {
+                cleaningMap[dateStr].push(item);
+            });
+        });
+    }
+
+    globalReservations.forEach(r => {
+        const info = getCleaningInfo(r, globalReservations);
+        const dateKey = info.date.getFullYear() + "-" + (info.date.getMonth() + 1).toString().padStart(2, '0') + "-" + info.date.getDate().toString().padStart(2, '0');
+        
+        if (!cleaningMap[dateKey]) cleaningMap[dateKey] = [];
+        
+        const exists = cleaningMap[dateKey].some(item => item.room === r.room);
+        if (!exists) {
+            cleaningMap[dateKey].push({
+                room: r.room,
+                sunday: info.sunday,
+                urgent: info.urgent
+            });
+        }
+    });
+
+    let sortedDates = Object.keys(cleaningMap).sort();
+
+    if (sortedDates.length === 0) {
+        html += `<p style="color: #666; font-style: italic;">Sem limpezas agendadas.</p>`;
+        resultElem.innerHTML = html;
+        return;
+    }
+
+    sortedDates.forEach(dateStr => {
+        const [y, m, d] = dateStr.split("-").map(Number);
+        const cleanDate = new Date(y, m - 1, d);
+        cleanDate.setHours(0, 0, 0, 0);
+
+        if (!showHistoryMode && cleanDate < today) return;
+
+        const isToday = sameDay(cleanDate, today);
+        const dateFormatted = cleanDate.toLocaleDateString("pt-PT", { weekday: "long", day: "2-digit", month: "long" });
+
+        let items = cleaningMap[dateStr];
+        let copyTextList = items.map(i => i.room).join(", ");
+        let encodedCopy = encodeURIComponent(`Limpezas (${dateFormatted}): ${copyTextList}`);
+
+        html += `
+            <div style="background-color: ${isToday ? '#e6f0ff' : '#fff'}; border: 1px solid ${isToday ? '#007bff' : '#ddd'}; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span style="font-size: 16px; font-weight: bold; text-transform: capitalize;">${dateFormatted} ${isToday ? ' (HOJE)' : ''}</span>
+                    <button onclick="copyFromData(this, '${encodedCopy}')" style="padding: 6px 10px; font-size: 12px; border-radius: 4px; border: 1px solid #007bff; background-color: #007bff; color: white; cursor: pointer;">📋 Copiar</button>
+                </div>
+                <ul style="margin: 0; padding-left: 20px;">
+        `;
+
+        items.forEach(item => {
+            let badge = "";
+            if (item.urgent) badge += ` <span style="background: #dc3545; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px;">⚠️ Entrada no mesmo dia</span>`;
+            if (item.sunday) badge += ` <span style="background: #ffc107; color: black; padding: 2px 6px; border-radius: 4px; font-size: 11px;">Domingo OBRIGATÓRIO</span>`;
+
+            html += `<li style="margin-bottom: 5px; font-size: 15px;"><b>${item.room}</b>${badge}</li>`;
+        });
+
+        html += `
+                </ul>
+            </div>
+        `;
+    });
+
+    resultElem.innerHTML = html;
+}
+
 function showOccupancyPlan() {
+    const resultElem = getResultElem();
+    if (!resultElem) return;
+
     let today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -431,9 +525,8 @@ function showOccupancyPlan() {
     `;
 
     const baseRooms = getBaseHouseRooms(selectedHouse);
-    const totalRooms = baseRooms.length; // Conta APENAS baseRooms
+    const totalRooms = baseRooms.length;
     
-    // Lista de renderização (inclui Villa se for Impasse)
     let displayRooms = [...baseRooms];
     if (selectedHouse === "impasse") {
         displayRooms.push("Impasse Villa");
@@ -505,19 +598,20 @@ function showOccupancyPlan() {
 
             html += `
                 <div style="background-color: ${isToday ? '#fffae6' : '#fff'}; border: 1px solid ${isToday ? '#ffc107' : '#ddd'}; border-radius: 8px; padding: 15px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                    <div style="font-size: 16px; font-weight: bold; margin-bottom: 10px; text-transform: capitalizeCompreendo perfeitamente a frustração. Isso costuma acontecer quando há algum problema de carregamento, dados corrompidos guardados ou um conflito no navegador.
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-size: 16px; font-weight: bold; text-transform: capitalize;">${dayString} ${isToday ? ' (HOJE)' : ''}</span>
+                        <span style="font-size: 14px; font-weight: bold; background: #e0e0e0; padding: 4px 8px; border-radius: 4px;">Ocupação: ${occupiedCount} / ${totalRooms}</span>
+                    </div>
+                    <div style="font-size: 14px; color: #444;">
+                        ${roomDetails.length > 0 ? roomDetails.join(" • ") : "<i>Nenhum movimento ou ocupação neste dia.</i>"}
+                    </div>
+                </div>
+            `;
+        }
+    }
 
-Como não tenho acesso ao teu ecrã e não sei onde estás a navegar, preciso de um pouco mais de contexto para te ajudar a resolver o problema. Podes dar-me mais alguns detalhes?
+    resultElem.innerHTML = html;
+}
 
-*   **Qual é o site** a que te referes?
-*   **O que é que não está a aparecer?** São imagens, botões, blocos de texto, produtos de uma loja, comentários?
-*   Estás a usar o **computador ou o telemóvel**? E qual é o navegador (Chrome, Safari, Firefox, Edge)?
-
-Entretanto, aqui estão **4 passos rápidos** que costumam resolver a grande maioria destes problemas de ecrã incompleto:
-
-1. **Forçar a atualização da página:** No computador, prime `Ctrl + F5` (Windows) ou `Cmd + Shift + R` (Mac). Isto obriga o site a descarregar tudo de novo.
-2. **Experimentar numa janela anónima/privada:** Abre uma janela anónima no teu navegador e tenta aceder ao site. Se tudo aparecer normalmente, o problema está quase de certeza na cache, nos cookies ou numa extensão que tenhas instalada.
-3. **Limpar a cache e os cookies:** Se o passo anterior funcionou, vai às definições do teu navegador, procura pela secção de privacidade/histórico e limpa os dados de navegação e as imagens em cache.
-4. **Desativar temporariamente bloqueadores de anúncios (AdBlockers):** Às vezes, estas extensões são agressivas e bloqueiam acidentalmente partes perfeitamente normais de um site, achando que são publicidade.
-
-Diz-me de que site se trata e o que está a falhar em concreto para conseguirmos descobrir o que se passa!
+// Inicia o carregamento assim que o script é executado
+loadCalendars();
