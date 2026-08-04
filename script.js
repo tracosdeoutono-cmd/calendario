@@ -378,34 +378,17 @@ function renderNavigation() {
     const isSnapshots = currentView === "snapshots";
 
     return `
-        <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-            <button onclick="window.switchMainView('cleaning')" style="
-                padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px;
-                border: 2px solid #007bff; background-color: ${isCleaning ? '#007bff' : '#ffffff'};
-                color: ${isCleaning ? '#ffffff' : '#007bff'}; font-weight: bold;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            ">
-                🧹 Plano de Limpezas
-            </button>
-            <button onclick="window.switchMainView('occupancy')" style="
-                padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px;
-                border: 2px solid #28a745; background-color: ${isOccupancy ? '#28a745' : '#ffffff'};
-                color: ${isOccupancy ? '#ffffff' : '#28a745'}; font-weight: bold;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            ">
-                📊 Disponibilidade da Casa
-            </button>
-            <button onclick="window.switchMainView('snapshots')" style="
-                padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px;
-                border: 2px solid #6c757d; background-color: ${isSnapshots ? '#6c757d' : '#ffffff'};
-                color: ${isSnapshots ? '#ffffff' : '#6c757d'}; font-weight: bold;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            ">
-                🕒 Previsões Guardadas
-            </button>
-        </div>
-    `;
-}
+        <!-- NOVO: Botão Flutuante (Relógio) -->
+        <button onclick="window.switchMainView('snapshots')" style="
+            position: fixed; top: 15px; right: 15px; font-size: 28px;
+            background-color: ${isSnapshots ? '#e2e6ea' : 'white'}; border: 1px solid #ccc; border-radius: 50%;
+            cursor: pointer; z-index: 1000; width: 55px; height: 55px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center;
+            transition: 0.2s;
+        " title="Ver Previsões Guardadas (Snapshots)">
+            🕒
+        </button>
+
         <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; padding-right: 60px;">
             <button onclick="window.switchMainView('cleaning')" style="
                 padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px;
