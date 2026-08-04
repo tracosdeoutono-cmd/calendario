@@ -1,179 +1,205 @@
-// Injeta dinamicamente os 8 temas no cabeçalho da página
-(function injectThemeStyles() {
-    if (document.getElementById("al-app-multitheme")) return;
+// Injeta dinamicamente as 8 arquiteturas de design CSS na página
+(function injectAllUniqueThemes() {
+    if (document.getElementById("al-app-allthemes")) return;
     const style = document.createElement("style");
-    style.id = "al-app-multitheme";
+    style.id = "al-app-allthemes";
     style.textContent = `
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Fira+Code:wght@500;700&display=swap');
 
         * { box-sizing: border-box; }
 
         body {
-            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
             margin: 0;
-            padding: 20px 16px;
+            padding: 24px 16px;
             min-height: 100vh;
-            transition: background-color 0.3s ease, color 0.3s ease;
+            transition: all 0.3s ease;
         }
 
         #result {
-            max-width: 900px;
+            max-width: 920px;
             margin: 0 auto;
         }
 
         /* ------------------------------------------------------------------ */
-        /* DEFINIÇÕES DOS 8 TEMAS */
+        /* 1. TEMA BRANCO CLÁSSICO (ORIGINAL - PADRÃO AO ENTRAR) */
         /* ------------------------------------------------------------------ */
-
-        /* 1. TEMA BRANCO (ORIGINAL) - PADRÃO AO ENTRAR */
         body[data-theme="white"], body:not([data-theme]) {
-            --bg-main: #ffffff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8f9fa;
+            color: #212529;
             --bg-card: #ffffff;
-            --border-card: #e5e7eb;
-            --text-main: #111827;
-            --text-muted: #6b7280;
+            --border-card: #dee2e6;
             --accent-blue: #007bff;
             --accent-green: #28a745;
-            --accent-purple: #6c757d;
-            --chip-bg: #f3f4f6;
-            --chip-text: #1f2937;
-            --shadow-card: 0 1px 3px rgba(0,0,0,0.08);
+            --accent-purple: #6f42c1;
+            --chip-bg: #e9ecef;
+            --chip-text: #212529;
+            --shadow-card: 0 2px 6px rgba(0,0,0,0.06);
+            --card-radius: 12px;
         }
 
-        /* 2. OUTONO LUXURY (COM TÍTULO TRAÇOS DE OUTONO) */
+        /* ------------------------------------------------------------------ */
+        /* 2. OUTONO LUXURY (EXACTAMENTE COMO O PRIMEIRO DESIGN) */
+        /* ------------------------------------------------------------------ */
         body[data-theme="outono"] {
-            --bg-main: #12100e;
-            --bg-card: rgba(28, 23, 20, 0.9);
-            --border-card: rgba(245, 158, 11, 0.25);
-            --text-main: #fff8f0;
-            --text-muted: #a3998e;
+            font-family: 'Outfit', sans-serif;
+            background-color: #12100e;
+            color: #fff8f0;
+            background-image: 
+                radial-gradient(at 10% 10%, rgba(245, 158, 11, 0.14) 0px, transparent 45%),
+                radial-gradient(at 90% 90%, rgba(234, 88, 12, 0.12) 0px, transparent 45%);
+            background-attachment: fixed;
+            --bg-card: rgba(26, 22, 19, 0.85);
+            --border-card: rgba(245, 158, 11, 0.2);
             --accent-blue: #ea580c;
             --accent-green: #10b981;
             --accent-purple: #f59e0b;
             --chip-bg: rgba(245, 158, 11, 0.12);
             --chip-text: #fbbf24;
-            --shadow-card: 0 10px 30px -10px rgba(0,0,0,0.5);
+            --shadow-card: 0 12px 30px -10px rgba(0,0,0,0.5);
+            --card-radius: 20px;
         }
 
-        /* 3. DARK GLASSMORPHISM */
+        /* ------------------------------------------------------------------ */
+        /* 3. CYBER NEON 2099 (FUTURISTA / MONOSPACE / EDGES AFISADOS) */
+        /* ------------------------------------------------------------------ */
+        body[data-theme="cyber"] {
+            font-family: 'Fira Code', monospace;
+            background-color: #050508;
+            color: #00f0ff;
+            background-image: repeating-linear-gradient(0deg, rgba(0,240,255,0.03) 0px, rgba(0,240,255,0.03) 1px, transparent 1px, transparent 2px);
+            background-size: 100% 4px;
+            --bg-card: #0c0c14;
+            --border-card: #ff0055;
+            --accent-blue: #00f0ff;
+            --accent-green: #00ff66;
+            --accent-purple: #ff0055;
+            --chip-bg: rgba(255, 0, 85, 0.15);
+            --chip-text: #ff6699;
+            --shadow-card: 0 0 15px rgba(255, 0, 85, 0.3);
+            --card-radius: 2px;
+        }
+
+        /* ------------------------------------------------------------------ */
+        /* 4. WARM CAPPUCCINO (BOUTIQUE VINTAGE / SERIF) */
+        /* ------------------------------------------------------------------ */
+        body[data-theme="cappuccino"] {
+            font-family: 'Playfair Display', serif;
+            background-color: #f4efe9;
+            color: #3d342d;
+            --bg-card: #ffffff;
+            --border-card: #d9ceb2;
+            --accent-blue: #8c5a3c;
+            --accent-green: #5a8c5a;
+            --accent-purple: #c29b7f;
+            --chip-bg: #eae1d5;
+            --chip-text: #4a3b32;
+            --shadow-card: 0 4px 12px rgba(61, 52, 45, 0.08);
+            --card-radius: 6px;
+        }
+
+        /* ------------------------------------------------------------------ */
+        /* 5. NATURE EMERALD (ORGANIC CAPSULE DESIGN) */
+        /* ------------------------------------------------------------------ */
+        body[data-theme="emerald"] {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #042f2e;
+            color: #ecfdf5;
+            --bg-card: rgba(15, 118, 110, 0.25);
+            --border-card: rgba(52, 211, 153, 0.3);
+            --accent-blue: #10b981;
+            --accent-green: #34d399;
+            --accent-purple: #059669;
+            --chip-bg: rgba(52, 211, 153, 0.2);
+            --chip-text: #6ee7b7;
+            --shadow-card: 0 10px 25px rgba(0, 0, 0, 0.4);
+            --card-radius: 28px;
+        }
+
+        /* ------------------------------------------------------------------ */
+        /* 6. DARK GLASSMORPHISM (VISCO TRANSLÚCIDO) */
+        /* ------------------------------------------------------------------ */
         body[data-theme="glass"] {
-            --bg-main: #0f172a;
-            --bg-card: rgba(30, 41, 59, 0.8);
-            --border-card: rgba(255, 255, 255, 0.1);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            --bg-card: rgba(30, 41, 59, 0.75);
+            --border-card: rgba(255, 255, 255, 0.12);
             --accent-blue: #3b82f6;
             --accent-green: #10b981;
             --accent-purple: #8b5cf6;
             --chip-bg: rgba(255, 255, 255, 0.08);
             --chip-text: #f8fafc;
-            --shadow-card: 0 10px 25px -5px rgba(0,0,0,0.3);
+            --shadow-card: 0 10px 25px -5px rgba(0,0,0,0.35);
+            --card-radius: 18px;
         }
 
-        /* 4. NATURE EMERALD */
-        body[data-theme="emerald"] {
-            --bg-main: #064e3b;
-            --bg-card: rgba(6, 78, 59, 0.85);
-            --border-card: rgba(52, 211, 153, 0.25);
-            --text-main: #ecfdf5;
-            --text-muted: #a7f3d0;
-            --accent-blue: #10b981;
-            --accent-green: #34d399;
-            --accent-purple: #059669;
-            --chip-bg: rgba(52, 211, 153, 0.15);
-            --chip-text: #a7f3d0;
-            --shadow-card: 0 10px 25px -5px rgba(0,0,0,0.4);
-        }
-
-        /* 5. CYBER NEON */
-        body[data-theme="cyber"] {
-            --bg-main: #09090b;
-            --bg-card: rgba(24, 24, 27, 0.9);
-            --border-card: rgba(168, 85, 247, 0.35);
-            --text-main: #fafafa;
-            --text-muted: #a1a1aa;
-            --accent-blue: #06b6d4;
-            --accent-green: #10b981;
-            --accent-purple: #a855f7;
-            --chip-bg: rgba(168, 85, 247, 0.15);
-            --chip-text: #c084fc;
-            --shadow-card: 0 0 20px rgba(168, 85, 247, 0.25);
-        }
-
-        /* 6. WARM CAPPUCCINO */
-        body[data-theme="cappuccino"] {
-            --bg-main: #f5f0eb;
-            --bg-card: #ffffff;
-            --border-card: #e6ded6;
-            --text-main: #3d342d;
-            --text-muted: #8c7e72;
-            --accent-blue: #8c5a3c;
-            --accent-green: #5a8c5a;
-            --accent-purple: #c29b7f;
-            --chip-bg: #efe8e0;
-            --chip-text: #3d342d;
-            --shadow-card: 0 4px 15px rgba(61, 52, 45, 0.08);
-        }
-
-        /* 7. OCEAN BREEZE */
+        /* ------------------------------------------------------------------ */
+        /* 7. OCEAN BREEZE (ONDA FLUIDA AQUÁTICA) */
+        /* ------------------------------------------------------------------ */
         body[data-theme="ocean"] {
-            --bg-main: #0f2b3c;
-            --bg-card: rgba(21, 50, 67, 0.85);
-            --border-card: rgba(56, 189, 248, 0.25);
-            --text-main: #f0f9ff;
-            --text-muted: #7dd3fc;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #072534;
+            color: #f0f9ff;
+            --bg-card: rgba(14, 116, 144, 0.2);
+            --border-card: rgba(56, 189, 248, 0.3);
             --accent-blue: #0284c7;
             --accent-green: #06b6d4;
             --accent-purple: #38bdf8;
-            --chip-bg: rgba(56, 189, 248, 0.12);
+            --chip-bg: rgba(56, 189, 248, 0.15);
             --chip-text: #38bdf8;
-            --shadow-card: 0 10px 25px -5px rgba(0,0,0,0.35);
+            --shadow-card: 0 10px 30px rgba(2, 132, 199, 0.2);
+            --card-radius: 16px 30px 16px 30px;
         }
 
-        /* 8. ROYAL GOLD */
+        /* ------------------------------------------------------------------ */
+        /* 8. ROYAL GOLD (PRETO OBSIDIAN & OURO 24K) */
+        /* ------------------------------------------------------------------ */
         body[data-theme="royalgold"] {
-            --bg-main: #0a0a0a;
-            --bg-card: rgba(20, 20, 20, 0.9);
-            --border-card: rgba(234, 179, 8, 0.35);
-            --text-main: #fef08a;
-            --text-muted: #ca8a04;
+            font-family: 'Outfit', sans-serif;
+            background-color: #050505;
+            color: #fef08a;
+            --bg-card: rgba(20, 20, 20, 0.95);
+            --border-card: rgba(234, 179, 8, 0.4);
             --accent-blue: #eab308;
             --accent-green: #10b981;
             --accent-purple: #ca8a04;
-            --chip-bg: rgba(234, 179, 8, 0.12);
+            --chip-bg: rgba(234, 179, 8, 0.15);
             --chip-text: #fde047;
-            --shadow-card: 0 10px 30px rgba(234, 179, 8, 0.15);
+            --shadow-card: 0 10px 30px rgba(234, 179, 8, 0.2);
+            --card-radius: 14px;
         }
 
         /* ------------------------------------------------------------------ */
-        /* ELEMENTOS VISUAIS DA INTERFACE */
+        /* ESTRUTURA GERAL DOS ELEMENTOS DA INTERFACE */
         /* ------------------------------------------------------------------ */
-
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-main);
-        }
 
         .card {
             background-color: var(--bg-card);
             border: 1px solid var(--border-card);
-            border-radius: 12px;
-            padding: 18px;
-            margin-bottom: 16px;
+            border-radius: var(--card-radius);
+            padding: 20px;
+            margin-bottom: 18px;
             box-shadow: var(--shadow-card);
-            transition: all 0.2s ease;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            transition: all 0.25s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
         }
 
         .btn-ui {
             font-family: inherit;
-            padding: 10px 16px;
+            padding: 10px 18px;
             font-size: 14px;
             font-weight: 600;
-            border-radius: 8px;
+            border-radius: calc(var(--card-radius) / 1.5);
             cursor: pointer;
             border: 1px solid var(--border-card);
             background-color: var(--bg-card);
-            color: var(--text-main);
+            color: inherit;
             transition: all 0.2s ease;
             display: inline-flex;
             align-items: center;
@@ -181,8 +207,8 @@
         }
 
         .btn-ui:hover {
-            opacity: 0.9;
             transform: translateY(-1px);
+            opacity: 0.9;
         }
 
         .btn-ui.active-blue {
@@ -204,69 +230,119 @@
         }
 
         .btn-clock {
-            width: 44px;
-            height: 44px;
+            width: 46px;
+            height: 46px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 22px;
             cursor: pointer;
             border: 1px solid var(--border-card);
             background-color: var(--bg-card);
-            color: var(--text-main);
-            transition: all 0.2s ease;
+            color: inherit;
+            transition: all 0.25s ease;
+        }
+
+        .btn-clock:hover {
+            transform: rotate(20deg) scale(1.08);
+            border-color: var(--accent-purple);
         }
 
         .btn-clock.active {
-            border-color: var(--accent-purple);
-            box-shadow: 0 0 10px var(--accent-purple);
+            background-color: var(--accent-purple);
+            color: #fff;
+            box-shadow: 0 0 15px var(--accent-purple);
         }
 
         .chip {
             display: inline-block;
-            padding: 5px 12px;
+            padding: 6px 14px;
             border-radius: 20px;
             font-size: 13px;
             font-weight: 600;
             background-color: var(--chip-bg);
             color: var(--chip-text);
-            margin: 3px 4px 3px 0;
+            margin: 4px 5px 4px 0;
             border: 1px solid var(--border-card);
         }
 
         .chip-urgent {
-            background-color: rgba(220, 53, 69, 0.15);
-            color: #dc3545;
-            border-color: rgba(220, 53, 69, 0.3);
+            background-color: rgba(244, 63, 94, 0.18);
+            color: #fb7185;
+            border-color: rgba(244, 63, 94, 0.4);
         }
 
         .chip-free {
-            background-color: rgba(40, 167, 69, 0.15);
-            color: #28a745;
-            border-color: rgba(40, 167, 69, 0.3);
+            background-color: rgba(16, 185, 129, 0.18);
+            color: #34d399;
+            border-color: rgba(16, 185, 129, 0.4);
         }
 
         .theme-select-dropdown {
-            padding: 9px 14px;
+            padding: 10px 14px;
             font-size: 14px;
             font-weight: bold;
-            border-radius: 8px;
+            border-radius: 10px;
             border: 2px solid var(--border-card);
             background-color: var(--bg-card);
-            color: var(--text-main);
+            color: inherit;
             cursor: pointer;
             outline: none;
             transition: all 0.2s ease;
         }
 
-        .theme-select-dropdown:hover {
-            border-color: var(--accent-blue);
+        /* ------------------------------------------------------------------ */
+        /* COMPONENTES EXCLUSIVOS DO TEMA OUTONO LUXURY */
+        /* ------------------------------------------------------------------ */
+        
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 4px;
+            animation: pulse 1.6s infinite;
+        }
+        .pulse-red { background-color: #f43f5e; box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7); }
+        .pulse-green { background-color: #10b981; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(244, 63, 94, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+        }
+
+        .stat-box {
+            background: rgba(18, 16, 14, 0.7);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 16px;
+            padding: 18px;
+        }
+
+        .stat-val {
+            font-size: 26px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-top: 4px;
+        }
+
+        .bar-bg {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f59e0b, #ea580c);
+            border-radius: 3px;
         }
 
         h1 { font-size: 22px; font-weight: 700; margin: 0 0 16px 0; }
-        h2 { font-size: 16px; font-weight: 700; margin: 0; }
-        p { margin: 6px 0; }
+        h2 { font-size: 17px; font-weight: 700; margin: 0; }
     `;
     document.head.appendChild(style);
 })();
@@ -302,11 +378,11 @@ let showOccupancyStats = false;
 let showPastStatsMode = false;
 let selectedSnapshotDate = null;
 
-// Gestão de Temas (Por defeito ao entrar: "white" - Branco Clássico Original)
+// Gestão de Temas (Por defeito: "white" - Branco Clássico)
 let currentTheme = localStorage.getItem("al_theme") || "white";
 document.body.setAttribute("data-theme", currentTheme);
 
-// Função global para Mudar o Tema da Página
+// Alterar Tema
 window.setTheme = function(themeKey) {
     currentTheme = themeKey;
     try { localStorage.setItem("al_theme", themeKey); } catch(e){}
@@ -341,7 +417,7 @@ async function fetchWithTimeout(resource, options = {}, timeout = 10000) {
     }
 }
 
-// Copiar dados para a área de transferência
+// Copiar texto para área de transferência
 window.copyFromData = function(btnElement, encodedText) {
     const text = decodeURIComponent(encodedText);
     navigator.clipboard.writeText(text).then(() => {
@@ -353,7 +429,7 @@ window.copyFromData = function(btnElement, encodedText) {
     });
 };
 
-// Alternar entre Vistas Principais
+// Alternar Vistas
 window.switchMainView = function(view) {
     currentView = view;
     if (currentView === "snapshots") selectedSnapshotDate = null;
@@ -632,7 +708,7 @@ function updateCloudHistory() {
     }
 }
 
-// Cabeçalho de Navegação com Menu Dropdown Visível de Temas
+// Cabeçalho de Navegação com Seletor de Temas
 function renderNavigation() {
     const isCleaning = currentView === "cleaning";
     const isOccupancy = currentView === "occupancy";
@@ -641,7 +717,7 @@ function renderNavigation() {
     let brandingBanner = "";
     if (currentTheme === "outono") {
         brandingBanner = `
-            <div style="margin-bottom: 20px;">
+            <div style="margin-bottom: 22px;">
                 <h1 style="font-size: 26px; font-weight: 800; background: linear-gradient(135deg, #fff8f0 30%, #f59e0b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0;">🍂 Traços de Outono</h1>
                 <div style="font-size: 13px; color: var(--text-muted); font-weight: 500;">Gestão de Alojamento Local</div>
             </div>
@@ -661,14 +737,14 @@ function renderNavigation() {
             </div>
             
             <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                <!-- MENU DROPDOWN VISÍVEL DE SELEÇÃO DE TEMA -->
-                <select class="theme-select-dropdown" onchange="window.setTheme(this.value)" title="Mudar Estilo da Página">
+                <!-- DROPDOWN VISÍVEL PARA MUDAR O ESTILO COMPLETO DA PÁGINA -->
+                <select class="theme-select-dropdown" onchange="window.setTheme(this.value)" title="Mudar Estilo Completo da Página">
                     <option value="white" ${currentTheme === 'white' ? 'selected' : ''}>⬜ Branco Clássico (Original)</option>
                     <option value="outono" ${currentTheme === 'outono' ? 'selected' : ''}>🍂 Outono Luxury (Traços de Outono)</option>
-                    <option value="glass" ${currentTheme === 'glass' ? 'selected' : ''}>🌙 Dark Glassmorphism</option>
-                    <option value="emerald" ${currentTheme === 'emerald' ? 'selected' : ''}>🌿 Nature Emerald</option>
-                    <option value="cyber" ${currentTheme === 'cyber' ? 'selected' : ''}>🌆 Cyber Neon</option>
+                    <option value="cyber" ${currentTheme === 'cyber' ? 'selected' : ''}>🌆 Cyber Neon 2099</option>
                     <option value="cappuccino" ${currentTheme === 'cappuccino' ? 'selected' : ''}>☕ Warm Cappuccino</option>
+                    <option value="emerald" ${currentTheme === 'emerald' ? 'selected' : ''}>🌿 Nature Emerald</option>
+                    <option value="glass" ${currentTheme === 'glass' ? 'selected' : ''}>🌙 Dark Glassmorphism</option>
                     <option value="ocean" ${currentTheme === 'ocean' ? 'selected' : ''}>🌊 Ocean Breeze</option>
                     <option value="royalgold" ${currentTheme === 'royalgold' ? 'selected' : ''}>👑 Royal Gold</option>
                 </select>
@@ -1020,21 +1096,39 @@ function showOccupancyPlan() {
         if (statKeys.length === 0) {
             html += `<div class="card"><p style="color: var(--text-muted);">Sem dados de estatísticas.</p></div>`;
         } else {
-            html += `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px;">`;
+            html += `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 20px;">`;
             
             statKeys.forEach(key => {
                 const s = stats[key];
                 const taxa = s.totalCapacity > 0 ? Math.round((s.dormidas / s.totalCapacity) * 100) : 0;
                 
-                html += `
-                    <div class="card">
-                        <h3 style="margin-top:0; color: var(--accent-blue); text-transform: capitalize; border-bottom: 1px solid var(--border-card); padding-bottom: 6px;">${s.label}</h3>
-                        <p><strong>🛏️ Ocupação:</strong> ${taxa}%</p>
-                        <p><strong>🌙 Dormidas:</strong> ${s.dormidas} <span style="font-size:12px; color:var(--text-muted);">(de ${s.totalCapacity})</span></p>
-                        <p><strong>🧳 Check-ins:</strong> ${s.checkins}</p>
-                        <p><strong>🔥 Dias cheios:</strong> ${s.diasEsgotados}</p>
-                    </div>
-                `;
+                // Renderização Premium para o tema Outono Luxury
+                if (currentTheme === "outono") {
+                    html += `
+                        <div class="stat-box">
+                            <div style="color: #fbbf24; font-weight: 700; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 6px;">${s.label}</div>
+                            <div class="stat-val">${taxa}% <span style="font-size: 13px; font-weight: 500; color: var(--text-muted);">ocupação</span></div>
+                            <div class="bar-bg">
+                                <div class="bar-fill" style="width: ${taxa}%;"></div>
+                            </div>
+                            <div style="margin-top: 12px; font-size: 13px; color: var(--text-muted); display: flex; flex-direction: column; gap: 4px;">
+                                <span>🌙 Dormidas: <strong style="color: #fff;">${s.dormidas}</strong> / ${s.totalCapacity}</span>
+                                <span>🧳 Check-ins: <strong style="color: #fff;">${s.checkins}</strong></span>
+                                <span>🔥 Dias 100% cheios: <strong style="color: #34d399;">${s.diasEsgotados}</strong></span>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="card">
+                            <h3 style="margin-top:0; color: var(--accent-blue); text-transform: capitalize; border-bottom: 1px solid var(--border-card); padding-bottom: 6px;">${s.label}</h3>
+                            <p><strong>🛏️ Ocupação:</strong> ${taxa}%</p>
+                            <p><strong>🌙 Dormidas:</strong> ${s.dormidas} <span style="font-size:12px; color:var(--text-muted);">(de ${s.totalCapacity})</span></p>
+                            <p><strong>🧳 Check-ins:</strong> ${s.checkins}</p>
+                            <p><strong>🔥 Dias cheios:</strong> ${s.diasEsgotados}</p>
+                        </div>
+                    `;
+                }
             });
             
             html += `</div>`;
@@ -1091,9 +1185,16 @@ function showOccupancyPlan() {
             weekday: "long", day: "numeric", month: "long", year: "numeric"
         });
 
-        const statusBadge = count === 0
-            ? `<span class="chip chip-free">0 🟢 Livre</span>`
-            : `<span class="chip chip-urgent">${count} / ${totalRooms} 🔴 Ocupado</span>`;
+        let statusBadge = "";
+        if (currentTheme === "outono") {
+            statusBadge = count === 0
+                ? `<span class="chip chip-free"><span class="pulse-dot pulse-green"></span> 0 Livre</span>`
+                : `<span class="chip chip-urgent"><span class="pulse-dot pulse-red"></span> ${count} / ${totalRooms} Ocupado</span>`;
+        } else {
+            statusBadge = count === 0
+                ? `<span class="chip chip-free">0 🟢 Livre</span>`
+                : `<span class="chip chip-urgent">${count} / ${totalRooms} 🔴 Ocupado</span>`;
+        }
 
         let chips = roomDetails.map(r => `<span class="chip">${r}</span>`).join("");
 
