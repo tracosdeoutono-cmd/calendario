@@ -26,6 +26,7 @@ let currentView = "cleaning"; // "cleaning" ou "occupancy"
 let showHistoryMode = false;  // modo histórico das limpezas
 let selectedHouse = "achada";  // "achada", "impasse", "vizinho"
 let showOccupancyStats = false; // Novo: estado para mostrar as estatísticas
+let showPastStatsMode = false; // NOVO: estado para mostrar estatísticas de meses passados
 
 // Função auxiliar para evitar que os "fetches" fiquem presos para sempre (Timeout de 10 segundos)
 async function fetchWithTimeout(resource, options = {}, timeout = 10000) {
@@ -75,6 +76,14 @@ window.toggleHistoryView = function() {
 // Alternar Estatísticas no modo Disponibilidade
 window.toggleOccupancyStats = function() {
     showOccupancyStats = !showOccupancyStats;
+    // Quando voltamos a esconder as estatísticas, resetamos também o modo de meses passados
+    if (!showOccupancyStats) showPastStatsMode = false;
+    showOccupancyPlan();
+};
+
+// NOVO: Alternar meses passados nas estatísticas
+window.togglePastStats = function() {
+    showPastStatsMode = !showPastStatsMode;
     showOccupancyPlan();
 };
 
@@ -490,7 +499,7 @@ function getHouseRooms(houseKey) {
     return [];
 }
 
-// NOVO: Função para calcular estatísticas por mês
+// Função para calcular estatísticas por mês
 function calculateHouseStats(houseKey) {
     const rooms = getHouseRooms(houseKey);
     if (rooms.length === 0) return {};
@@ -598,23 +607,44 @@ function showOccupancyPlan() {
         </div>
         <h1>📊 Ocupação - ${houseLabels[selectedHouse]}</h1>
         
-        <div style="margin-bottom: 20px;">
+        <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
             <button onclick="window.toggleOccupancyStats()" style="
                 padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px;
                 border: 1px solid #ffc107; background-color: ${showOccupancyStats ? '#e0a800' : '#ffc107'}; color: #333; font-weight: bold;
             ">
                 ${showOccupancyStats ? '🔙 Ocultar Estatísticas' : '📈 Ver Estatísticas Mensais'}
             </button>
+            
+            ${showOccupancyStats ? `
+            <button onclick="window.togglePastStats()" style="
+                padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px;
+                border: 1px solid #6c757d; background-color: ${showPastStatsMode ? '#5a6268' : '#6c757d'}; color: white; font-weight: bold;
+            ">
+                ${showPastStatsMode ? '📅 Ver Meses Atuais e Futuros' : '📜 Ver Meses Passados'}
+            </button>
+            ` : ''}
         </div>
     `;
 
     // Renderiza as estatísticas se o modo estiver ativo
     if (showOccupancyStats) {
         const stats = calculateHouseStats(selectedHouse);
-        const statKeys = Object.keys(stats).sort();
+        let statKeys = Object.keys(stats);
+
+        // NOVO: Lógica para separar meses atuais/futuros de meses passados e reordenar
+        const todayDate = new Date();
+        const currentMonthKey = todayDate.getFullYear() + "-" + String(todayDate.getMonth() + 1).padStart(2, '0');
+
+        if (showPastStatsMode) {
+            // Se estiver no modo meses passados: filtra apenas os anteriores a este mês e inverte a ordem (mais recente primeiro)
+            statKeys = statKeys.filter(key => key < currentMonthKey).sort().reverse();
+        } else {
+            // Se estiver no modo padrão: mostra o mês atual e meses futuros, ordenados do mais antigo para o mais recente
+            statKeys = statKeys.filter(key => key >= currentMonthKey).sort();
+        }
 
         if (statKeys.length === 0) {
-            html += `<p>Sem dados suficientes para calcular estatísticas desta casa.</p><hr>`;
+            html += `<p>Sem dados de estatísticas para mostrar nesta vista.</p><hr>`;
         } else {
             html += `<div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 25px;">`;
             
