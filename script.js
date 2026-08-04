@@ -27,7 +27,7 @@ let showHistoryMode = false;  // modo histórico das limpezas
 let selectedHouse = "achada";  // "achada", "impasse", "vizinho"
 let showOccupancyStats = false; // estado para mostrar as estatísticas
 let showPastStatsMode = false; // estado para mostrar estatísticas de meses passados
-let selectedSnapshotDate = null; // NOVO: estado para ver o snapshot de um dia específico
+let selectedSnapshotDate = null; // estado para ver o snapshot de um dia específico
 
 // Função auxiliar para evitar que os "fetches" fiquem presos para sempre (Timeout de 10 segundos)
 async function fetchWithTimeout(resource, options = {}, timeout = 10000) {
@@ -80,7 +80,6 @@ window.toggleHistoryView = function() {
 // Alternar Estatísticas no modo Disponibilidade
 window.toggleOccupancyStats = function() {
     showOccupancyStats = !showOccupancyStats;
-    // Quando voltamos a esconder as estatísticas, resetamos também o modo de meses passados
     if (!showOccupancyStats) showPastStatsMode = false;
     showOccupancyPlan();
 };
@@ -97,7 +96,7 @@ window.selectHouse = function(house) {
     showOccupancyPlan();
 };
 
-// NOVO: Selecionar um Snapshot guardado para visualizar
+// Selecionar um Snapshot guardado para visualizar
 window.selectSnapshot = function(dateKey) {
     selectedSnapshotDate = dateKey;
     showSnapshotsPlan();
@@ -107,16 +106,14 @@ async function fetchCloudHistory() {
     try {
         const res = await fetchWithTimeout(`${WORKER_BASE_URL}?action=getHistory`, {}, 8000);
         let data = await res.json();
-        // Se por acaso a cloud retornar uma string encadeada, tenta convertê-la
         cloudHistory = typeof data === 'string' ? JSON.parse(data) : data;
         
-        // Garante que é um objeto seguro
         if (typeof cloudHistory !== 'object' || cloudHistory === null || Array.isArray(cloudHistory)) {
             cloudHistory = {};
         }
     } catch (e) {
         console.warn("Aviso: Histórico da cloud não carregou a tempo ou falhou.", e);
-        cloudHistory = {}; // Permite continuar sem travar
+        cloudHistory = {};
     }
 }
 
@@ -146,7 +143,7 @@ async function loadCalendars() {
                 return parseICS(text, calendar.name);
             } catch (e) {
                 console.warn("Erro ou atraso extremo ao carregar " + calendar.name + ". A ignorar este calendário por agora.");
-                return []; // Se um falhar, retorna vazio mas NÃO bloqueia a app
+                return [];
             }
         });
 
@@ -155,7 +152,6 @@ async function loadCalendars() {
 
         updateCloudHistory();
         
-        // Redireciona para a vista correta após carregar (por defeito "cleaning")
         if (currentView === "cleaning") showCleaningPlan();
         else if (currentView === "occupancy") showOccupancyPlan();
         else if (currentView === "snapshots") showSnapshotsPlan();
@@ -274,20 +270,17 @@ function getCleaningInfo(reservation, allReservations) {
     };
 }
 
-// Versão completamente segura para não falhar nem causar loops
 function updateCloudHistory() {
     try {
         let hasChanges = false;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        // Clona de forma defensiva
         let mergedHistory = {};
         if (typeof cloudHistory === 'object' && cloudHistory !== null) {
             mergedHistory = JSON.parse(JSON.stringify(cloudHistory));
         }
 
-        // 1. Lógica do Histórico Original (Dias Passados)
         globalReservations.forEach(reservation => {
             const info = getCleaningInfo(reservation, globalReservations);
             
@@ -296,13 +289,11 @@ function updateCloudHistory() {
                     (info.date.getMonth() + 1).toString().padStart(2, '0') + "-" +
                     info.date.getDate().toString().padStart(2, '0');
 
-                // Inicializa a data em segurança se não existir
                 if (!mergedHistory[dateKey] || typeof mergedHistory[dateKey] !== 'object') {
                     mergedHistory[dateKey] = { dateIso: info.date.toISOString(), rooms: [] };
                     hasChanges = true;
                 }
 
-                // Proteção contra lixo vindo da cloud antiga
                 if (!Array.isArray(mergedHistory[dateKey].rooms)) {
                     mergedHistory[dateKey].rooms = [];
                 }
@@ -319,8 +310,6 @@ function updateCloudHistory() {
             }
         });
 
-        // 2. NOVO: Lógica do Snapshot Diário (Próximos 7 dias)
-        // Garante que o objeto _snapshots existe
         if (!mergedHistory["_snapshots"] || typeof mergedHistory["_snapshots"] !== 'object') {
             mergedHistory["_snapshots"] = {};
         }
@@ -329,15 +318,13 @@ function updateCloudHistory() {
                          (today.getMonth() + 1).toString().padStart(2, '0') + "-" + 
                          today.getDate().toString().padStart(2, '0');
 
-        // Se o snapshot de hoje ainda não existe, cria-o e guarda
         if (!mergedHistory["_snapshots"][todayKey]) {
             let snapshotPlan = {};
-            let limitDate = addDays(today, 6); // Hoje + 6 dias = 7 dias
+            let limitDate = addDays(today, 6);
 
             globalReservations.forEach(reservation => {
                 const info = getCleaningInfo(reservation, globalReservations);
                 
-                // Se a limpeza planeada recair entre hoje e os próximos 6 dias
                 if (info.date >= today && info.date <= limitDate) {
                     const snapDateKey = info.date.getFullYear() + "-" +
                         (info.date.getMonth() + 1).toString().padStart(2, '0') + "-" +
@@ -371,25 +358,14 @@ function updateCloudHistory() {
     }
 }
 
-// Cabeçalho de Navegação Principal
+// Cabeçalho de Navegação Principal (Botões Fixos no Topo)
 function renderNavigation() {
     const isCleaning = currentView === "cleaning";
     const isOccupancy = currentView === "occupancy";
     const isSnapshots = currentView === "snapshots";
 
     return `
-        <!-- NOVO: Botão Flutuante (Relógio) -->
-        <button onclick="window.switchMainView('snapshots')" style="
-            position: fixed; top: 15px; right: 15px; font-size: 28px;
-            background-color: ${isSnapshots ? '#e2e6ea' : 'white'}; border: 1px solid #ccc; border-radius: 50%;
-            cursor: pointer; z-index: 1000; width: 55px; height: 55px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center;
-            transition: 0.2s;
-        " title="Ver Previsões Guardadas (Snapshots)">
-            🕒
-        </button>
-
-        <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; padding-right: 60px;">
+        <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
             <button onclick="window.switchMainView('cleaning')" style="
                 padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px;
                 border: 2px solid #007bff; background-color: ${isCleaning ? '#007bff' : '#ffffff'};
@@ -406,11 +382,19 @@ function renderNavigation() {
             ">
                 📊 Disponibilidade da Casa
             </button>
+            <button onclick="window.switchMainView('snapshots')" style="
+                padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px;
+                border: 2px solid #17a2b8; background-color: ${isSnapshots ? '#17a2b8' : '#ffffff'};
+                color: ${isSnapshots ? '#ffffff' : '#17a2b8'}; font-weight: bold;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            " title="Ver Previsões Guardadas (Snapshots)">
+                🕒 Previsões Passadas
+            </button>
         </div>
     `;
 }
 
-// NOVO: VISTA 3: PREVISÕES GUARDADAS (SNAPSHOTS)
+// VISTA 3: PREVISÕES GUARDADAS (SNAPSHOTS)
 function showSnapshotsPlan() {
     let html = renderNavigation();
     html += `<h1>🕒 Previsões Passadas</h1>`;
@@ -502,7 +486,6 @@ function showCleaningPlan() {
 
     if (showHistoryMode) {
         Object.keys(cloudHistory).forEach(dateKey => {
-            // Ignora a chave especial _snapshots que não tem dataIso direta
             if (cloudHistory[dateKey] && cloudHistory[dateKey].dateIso) {
                 const itemDate = new Date(cloudHistory[dateKey].dateIso);
                 if (itemDate < today) {
@@ -526,7 +509,6 @@ function showCleaningPlan() {
                     grouped[dateKey] = { date: info.date, rooms: [] };
                 }
 
-                // Evitar duplicações visuais (caso hajam problemas no cálculo)
                 const alreadyAdded = grouped[dateKey].rooms.some(r => r.room === reservation.room);
                 if (!alreadyAdded) {
                     grouped[dateKey].rooms.push({
@@ -641,7 +623,6 @@ function showCleaningPlan() {
     result.innerHTML = html;
 }
 
-// Retorna os quartos de cada casa
 function getHouseRooms(houseKey) {
     if (houseKey === "achada") {
         return ["Achada 1", "Achada 2", "Achada 3", "Achada 4", "Achada 5", "Achada 6"];
@@ -653,7 +634,6 @@ function getHouseRooms(houseKey) {
     return [];
 }
 
-// Função para calcular estatísticas por mês
 function calculateHouseStats(houseKey) {
     const rooms = getHouseRooms(houseKey);
     if (rooms.length === 0) return {};
@@ -669,7 +649,6 @@ function calculateHouseStats(houseKey) {
         if (r.checkOut > maxDate) maxDate = new Date(r.checkOut);
     });
 
-    // Expandir para o início do mês mais antigo e fim do mês mais recente
     let current = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
     let end = new Date(maxDate.getFullYear(), maxDate.getMonth() + 1, 0);
 
@@ -693,7 +672,6 @@ function calculateHouseStats(houseKey) {
         let occupiedRoomsToday = 0;
 
         rooms.forEach(room => {
-            // Conta as dormidas (noite anterior ao checkout)
             const isOccupied = houseReservations.some(r => {
                 if (r.room !== room) return false;
                 const cIn = new Date(r.checkIn); cIn.setHours(0, 0, 0, 0);
@@ -706,12 +684,10 @@ function calculateHouseStats(houseKey) {
                 occupiedRoomsToday++;
             }
 
-            // Conta os check-ins
             const hasCheckin = houseReservations.some(r => r.room === room && sameDay(r.checkIn, current));
             if (hasCheckin) stats[monthKey].checkins++;
         });
 
-        // Se todos os quartos estiveram ocupados neste dia, é um dia esgotado
         if (occupiedRoomsToday === rooms.length) {
             stats[monthKey].diasEsgotados++;
         }
@@ -780,7 +756,6 @@ function showOccupancyPlan() {
         </div>
     `;
 
-    // Renderiza as estatísticas se o modo estiver ativo
     if (showOccupancyStats) {
         const stats = calculateHouseStats(selectedHouse);
         let statKeys = Object.keys(stats);
@@ -789,10 +764,8 @@ function showOccupancyPlan() {
         const currentMonthKey = todayDate.getFullYear() + "-" + String(todayDate.getMonth() + 1).padStart(2, '0');
 
         if (showPastStatsMode) {
-            // Se estiver no modo meses passados: filtra apenas os anteriores a este mês e inverte a ordem (mais recente primeiro)
             statKeys = statKeys.filter(key => key < currentMonthKey).sort().reverse();
         } else {
-            // Se estiver no modo padrão: mostra o mês atual e meses futuros, ordenados do mais antigo para o mais recente
             statKeys = statKeys.filter(key => key >= currentMonthKey).sort();
         }
 
@@ -803,7 +776,6 @@ function showOccupancyPlan() {
             
             statKeys.forEach(key => {
                 const s = stats[key];
-                // Calcula a taxa de ocupação em %
                 const taxa = s.totalCapacity > 0 ? Math.round((s.dormidas / s.totalCapacity) * 100) : 0;
                 
                 html += `
