@@ -29,18 +29,17 @@ let showOccupancyStats = false; // estado para mostrar as estatísticas
 let showPastStatsMode = false; // estado para mostrar estatísticas de meses passados
 let selectedSnapshotDate = null; // estado para ver o snapshot de um dia específico
 
-// Função auxiliar com Timeout + PROTEÇÃO ANTI-CACHE TOTAL (cache: 'no-store' e Timestamp)
+// Função auxiliar com Timeout + Proteção Anti-Cache Total
 async function fetchWithTimeout(resource, options = {}, timeout = 10000) {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
 
-    // Adiciona timestamp ao URL para forçar o navegador a não usar cache anterior
     const separator = resource.includes("?") ? "&" : "?";
     const noCacheUrl = `${resource}${separator}_t=${Date.now()}`;
 
     const noCacheOptions = {
         ...options,
-        cache: 'no-store', // Impede o navegador de guardar/usar cache
+        cache: 'no-store',
         headers: {
             'Cache-Control': 'no-cache, no-store, must-revalidate',
             'Pragma': 'no-cache',
@@ -372,37 +371,40 @@ function updateCloudHistory() {
     }
 }
 
-// Cabeçalho de Navegação Principal
+// Cabeçalho de Navegação Principal (Com Botão Relógio no canto superior direito)
 function renderNavigation() {
     const isCleaning = currentView === "cleaning";
     const isOccupancy = currentView === "occupancy";
     const isSnapshots = currentView === "snapshots";
 
     return `
-        <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-            <button onclick="window.switchMainView('cleaning')" style="
-                padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px;
-                border: 2px solid #007bff; background-color: ${isCleaning ? '#007bff' : '#ffffff'};
-                color: ${isCleaning ? '#ffffff' : '#007bff'}; font-weight: bold;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            ">
-                🧹 Plano de Limpezas
-            </button>
-            <button onclick="window.switchMainView('occupancy')" style="
-                padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px;
-                border: 2px solid #28a745; background-color: ${isOccupancy ? '#28a745' : '#ffffff'};
-                color: ${isOccupancy ? '#ffffff' : '#28a745'}; font-weight: bold;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            ">
-                📊 Disponibilidade da Casa
-            </button>
+        <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button onclick="window.switchMainView('cleaning')" style="
+                    padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px;
+                    border: 2px solid #007bff; background-color: ${isCleaning ? '#007bff' : '#ffffff'};
+                    color: ${isCleaning ? '#ffffff' : '#007bff'}; font-weight: bold;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                ">
+                    🧹 Plano de Limpezas
+                </button>
+                <button onclick="window.switchMainView('occupancy')" style="
+                    padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px;
+                    border: 2px solid #28a745; background-color: ${isOccupancy ? '#28a745' : '#ffffff'};
+                    color: ${isOccupancy ? '#ffffff' : '#28a745'}; font-weight: bold;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                ">
+                    📊 Disponibilidade da Casa
+                </button>
+            </div>
+            
             <button onclick="window.switchMainView('snapshots')" style="
-                padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px;
-                border: 2px solid #17a2b8; background-color: ${isSnapshots ? '#17a2b8' : '#ffffff'};
-                color: ${isSnapshots ? '#ffffff' : '#17a2b8'}; font-weight: bold;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                font-size: 26px; background-color: ${isSnapshots ? '#e2e6ea' : 'white'};
+                border: 1px solid #ccc; border-radius: 50%; cursor: pointer; width: 50px; height: 50px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center;
+                transition: 0.2s;
             " title="Ver Previsões Guardadas (Snapshots)">
-                🕒 Previsões Passadas
+                🕒
             </button>
         </div>
     `;
