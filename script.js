@@ -29,28 +29,20 @@ let showOccupancyStats = false; // estado para mostrar as estatísticas
 let showPastStatsMode = false; // estado para mostrar estatísticas de meses passados
 let selectedSnapshotDate = null; // estado para ver o snapshot de um dia específico
 
-// Função auxiliar com Timeout + Proteção Anti-Cache Total
+// Função auxiliar com Timeout e Anti-Cache seguro (sem quebrar CORS)
 async function fetchWithTimeout(resource, options = {}, timeout = 10000) {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
 
+    // Adiciona timestamp ao URL para garantir dados sempre atualizados no telemóvel
     const separator = resource.includes("?") ? "&" : "?";
     const noCacheUrl = `${resource}${separator}_t=${Date.now()}`;
 
-    const noCacheOptions = {
-        ...options,
-        cache: 'no-store',
-        headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0',
-            ...(options.headers || {})
-        },
-        signal: controller.signal
-    };
-
     try {
-        const response = await fetch(noCacheUrl, noCacheOptions);
+        const response = await fetch(noCacheUrl, {
+            ...options,
+            signal: controller.signal
+        });
         clearTimeout(id);
         return response;
     } catch (error) {
@@ -79,7 +71,7 @@ window.switchMainView = function(view) {
     } else if (currentView === "occupancy") {
         showOccupancyPlan();
     } else if (currentView === "snapshots") {
-        selectedSnapshotDate = null; // Reset da seleção de snapshot ao entrar
+        selectedSnapshotDate = null;
         showSnapshotsPlan();
     }
 };
@@ -371,7 +363,7 @@ function updateCloudHistory() {
     }
 }
 
-// Cabeçalho de Navegação Principal (Com Botão Relógio no canto superior direito)
+// Cabeçalho de Navegação Principal
 function renderNavigation() {
     const isCleaning = currentView === "cleaning";
     const isOccupancy = currentView === "occupancy";
