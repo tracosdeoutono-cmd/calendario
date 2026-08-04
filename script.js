@@ -18,7 +18,7 @@
 
         body {
             margin: 0;
-            padding: 70px 16px 20px 16px; /* Padding de topo para baixar o título */
+            padding: 20px 16px 20px 16px; /* Padding ajustado para topo normal */
             min-height: 100vh;
             transition: background-color 0.4s ease, color 0.3s ease;
             position: relative;
@@ -931,10 +931,9 @@ function renderNavigation() {
     const isOccupancy = currentView === "occupancy";
     const isSnapshots = currentView === "snapshots";
 
-    // MUDANÇA CRUCIAL: Modificado de "position: absolute" (que tinhas no teu código original e que o fazia desaparecer)
-    // para "position: fixed". Agora sim, vai ficar eternamente colado no canto!
+    // Posição absoluta em relação ao elemento #result: fica no topo do conteúdo e sobe com a página
     const topRightControls = `
-        <div style="position: fixed; top: 16px; right: 16px; display: flex; align-items: center; gap: 8px; z-index: 999999;">
+        <div style="position: absolute; top: 0; right: 0; display: flex; align-items: center; gap: 8px; z-index: 10;">
             <select class="theme-select-dropdown" onchange="window.setTheme(this.value)" title="Mudar Estilo" style="
                 padding: 4px 8px; font-size: 13px; border-radius: 6px;
                 border: 1px solid rgba(0,0,0,0.2); background-color: rgba(255,255,255,0.9); color: #333;
@@ -1222,7 +1221,6 @@ function showOccupancyPlan() {
     const houseLabels = { achada: "Achada (6 Quartos)", impasse: "Impasse (3 Quartos)", vizinho: "Vizinho (3 Quartos)" };
     let html = renderNavigation();
     
-    // MUDANÇA CRUCIAL AQUI: flex-wrap: nowrap e flex: 1 para forçar todos os botões a ficarem na mesma linha
     html += `<div style="margin-bottom: 25px; display: flex; gap: 6px; flex-wrap: nowrap; justify-content: space-between;">
         <button onclick="window.selectHouse('achada')" style="flex: 1; padding: 10px 2px; font-size: 13px; cursor: pointer; border-radius: 6px; border: 2px solid #17a2b8; background-color: ${selectedHouse==='achada'?'#17a2b8':'#ffffff'}; color: ${selectedHouse==='achada'?'#ffffff':'#17a2b8'}; font-weight: bold; text-align: center; white-space: nowrap;">🏡 Achada</button>
         <button onclick="window.selectHouse('impasse')" style="flex: 1; padding: 10px 2px; font-size: 13px; cursor: pointer; border-radius: 6px; border: 2px solid #17a2b8; background-color: ${selectedHouse==='impasse'?'#17a2b8':'#ffffff'}; color: ${selectedHouse==='impasse'?'#ffffff':'#17a2b8'}; font-weight: bold; text-align: center; white-space: nowrap;">🏡 Impasse</button>
