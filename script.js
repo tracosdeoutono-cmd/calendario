@@ -1,5 +1,5 @@
-// Injeta dinamicamente as 8 arquiteturas de design CSS na página
-(function injectAllUniqueThemes() {
+// Injeta os 8 temas visuais na página
+(function injectAllThemes() {
     if (document.getElementById("al-app-allthemes")) return;
     const style = document.createElement("style");
     style.id = "al-app-allthemes";
@@ -10,7 +10,7 @@
 
         body {
             margin: 0;
-            padding: 24px 16px;
+            padding: 20px 16px;
             min-height: 100vh;
             transition: all 0.3s ease;
         }
@@ -20,27 +20,14 @@
             margin: 0 auto;
         }
 
-        /* ------------------------------------------------------------------ */
-        /* 1. TEMA BRANCO CLÁSSICO (ORIGINAL - PADRÃO AO ENTRAR) */
-        /* ------------------------------------------------------------------ */
+        /* 1. BRANCO CLÁSSICO (PADRÃO AO ENTRAR) */
         body[data-theme="white"], body:not([data-theme]) {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #f8f9fa;
+            background-color: #ffffff;
             color: #212529;
-            --bg-card: #ffffff;
-            --border-card: #dee2e6;
-            --accent-blue: #007bff;
-            --accent-green: #28a745;
-            --accent-purple: #6f42c1;
-            --chip-bg: #e9ecef;
-            --chip-text: #212529;
-            --shadow-card: 0 2px 6px rgba(0,0,0,0.06);
-            --card-radius: 12px;
         }
 
-        /* ------------------------------------------------------------------ */
-        /* 2. OUTONO LUXURY (EXACTAMENTE COMO O PRIMEIRO DESIGN) */
-        /* ------------------------------------------------------------------ */
+        /* 2. OUTONO LUXURY (DESIGN QUENTE ORIGINAL) */
         body[data-theme="outono"] {
             font-family: 'Outfit', sans-serif;
             background-color: #12100e;
@@ -49,253 +36,140 @@
                 radial-gradient(at 10% 10%, rgba(245, 158, 11, 0.14) 0px, transparent 45%),
                 radial-gradient(at 90% 90%, rgba(234, 88, 12, 0.12) 0px, transparent 45%);
             background-attachment: fixed;
-            --bg-card: rgba(26, 22, 19, 0.85);
-            --border-card: rgba(245, 158, 11, 0.2);
-            --accent-blue: #ea580c;
-            --accent-green: #10b981;
-            --accent-purple: #f59e0b;
-            --chip-bg: rgba(245, 158, 11, 0.12);
-            --chip-text: #fbbf24;
-            --shadow-card: 0 12px 30px -10px rgba(0,0,0,0.5);
-            --card-radius: 20px;
+        }
+        body[data-theme="outono"] div[style*="background-color: #f8f9fa"],
+        body[data-theme="outono"] div[style*="border: 1px solid #ddd"] {
+            background-color: rgba(26, 22, 19, 0.85) !important;
+            border-color: rgba(245, 158, 11, 0.2) !important;
+            color: #fff8f0 !important;
+            border-radius: 16px !important;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5) !important;
+        }
+        body[data-theme="outono"] h2, body[data-theme="outono"] h3 {
+            color: #fff !important;
         }
 
-        /* ------------------------------------------------------------------ */
-        /* 3. CYBER NEON 2099 (FUTURISTA / MONOSPACE / EDGES AFISADOS) */
-        /* ------------------------------------------------------------------ */
+        /* 3. CYBER NEON 2099 (FUTURISTA MONOSPACE) */
         body[data-theme="cyber"] {
             font-family: 'Fira Code', monospace;
             background-color: #050508;
             color: #00f0ff;
             background-image: repeating-linear-gradient(0deg, rgba(0,240,255,0.03) 0px, rgba(0,240,255,0.03) 1px, transparent 1px, transparent 2px);
-            background-size: 100% 4px;
-            --bg-card: #0c0c14;
-            --border-card: #ff0055;
-            --accent-blue: #00f0ff;
-            --accent-green: #00ff66;
-            --accent-purple: #ff0055;
-            --chip-bg: rgba(255, 0, 85, 0.15);
-            --chip-text: #ff6699;
-            --shadow-card: 0 0 15px rgba(255, 0, 85, 0.3);
-            --card-radius: 2px;
+        }
+        body[data-theme="cyber"] div[style*="background-color: #f8f9fa"],
+        body[data-theme="cyber"] div[style*="border: 1px solid #ddd"] {
+            background-color: #0c0c14 !important;
+            border: 1px solid #ff0055 !important;
+            border-radius: 0px !important;
+            box-shadow: 0 0 15px rgba(255, 0, 85, 0.3) !important;
+            color: #00f0ff !important;
+        }
+        body[data-theme="cyber"] h2, body[data-theme="cyber"] h3 {
+            color: #ff0055 !important;
+            text-transform: uppercase;
+        }
+        body[data-theme="cyber"] button {
+            border-radius: 0px !important;
+            font-family: 'Fira Code', monospace !important;
+            text-transform: uppercase;
         }
 
-        /* ------------------------------------------------------------------ */
-        /* 4. WARM CAPPUCCINO (BOUTIQUE VINTAGE / SERIF) */
-        /* ------------------------------------------------------------------ */
+        /* 4. WARM CAPPUCCINO (BOUTIQUE VINTAGE PAPER) */
         body[data-theme="cappuccino"] {
             font-family: 'Playfair Display', serif;
             background-color: #f4efe9;
             color: #3d342d;
-            --bg-card: #ffffff;
-            --border-card: #d9ceb2;
-            --accent-blue: #8c5a3c;
-            --accent-green: #5a8c5a;
-            --accent-purple: #c29b7f;
-            --chip-bg: #eae1d5;
-            --chip-text: #4a3b32;
-            --shadow-card: 0 4px 12px rgba(61, 52, 45, 0.08);
-            --card-radius: 6px;
+        }
+        body[data-theme="cappuccino"] div[style*="background-color: #f8f9fa"],
+        body[data-theme="cappuccino"] div[style*="border: 1px solid #ddd"] {
+            background-color: #ffffff !important;
+            border: 2px dashed #c4b5a5 !important;
+            border-radius: 4px !important;
+            box-shadow: 0 4px 12px rgba(61, 52, 45, 0.08) !important;
+            color: #3d342d !important;
+        }
+        body[data-theme="cappuccino"] h2, body[data-theme="cappuccino"] h3 {
+            color: #8c5a3c !important;
+            font-style: italic;
         }
 
-        /* ------------------------------------------------------------------ */
-        /* 5. NATURE EMERALD (ORGANIC CAPSULE DESIGN) */
-        /* ------------------------------------------------------------------ */
+        /* 5. NATURE EMERALD (ORGANIC CAPSULE) */
         body[data-theme="emerald"] {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #042f2e;
+            background-color: #022c22;
             color: #ecfdf5;
-            --bg-card: rgba(15, 118, 110, 0.25);
-            --border-card: rgba(52, 211, 153, 0.3);
-            --accent-blue: #10b981;
-            --accent-green: #34d399;
-            --accent-purple: #059669;
-            --chip-bg: rgba(52, 211, 153, 0.2);
-            --chip-text: #6ee7b7;
-            --shadow-card: 0 10px 25px rgba(0, 0, 0, 0.4);
-            --card-radius: 28px;
+        }
+        body[data-theme="emerald"] div[style*="background-color: #f8f9fa"],
+        body[data-theme="emerald"] div[style*="border: 1px solid #ddd"] {
+            background-color: rgba(15, 118, 110, 0.25) !important;
+            border: 1px solid rgba(52, 211, 153, 0.3) !important;
+            border-radius: 32px !important;
+            color: #ecfdf5 !important;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+        }
+        body[data-theme="emerald"] h2, body[data-theme="emerald"] h3 {
+            color: #34d399 !important;
+        }
+        body[data-theme="emerald"] button {
+            border-radius: 20px !important;
         }
 
-        /* ------------------------------------------------------------------ */
-        /* 6. DARK GLASSMORPHISM (VISCO TRANSLÚCIDO) */
-        /* ------------------------------------------------------------------ */
+        /* 6. DARK GLASSMORPHISM */
         body[data-theme="glass"] {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: #0f172a;
             color: #f8fafc;
-            --bg-card: rgba(30, 41, 59, 0.75);
-            --border-card: rgba(255, 255, 255, 0.12);
-            --accent-blue: #3b82f6;
-            --accent-green: #10b981;
-            --accent-purple: #8b5cf6;
-            --chip-bg: rgba(255, 255, 255, 0.08);
-            --chip-text: #f8fafc;
-            --shadow-card: 0 10px 25px -5px rgba(0,0,0,0.35);
-            --card-radius: 18px;
+        }
+        body[data-theme="glass"] div[style*="background-color: #f8f9fa"],
+        body[data-theme="glass"] div[style*="border: 1px solid #ddd"] {
+            background-color: rgba(30, 41, 59, 0.75) !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            border-radius: 18px !important;
+            color: #f8fafc !important;
+            backdrop-filter: blur(16px) !important;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.35) !important;
+        }
+        body[data-theme="glass"] h2, body[data-theme="glass"] h3 {
+            color: #3b82f6 !important;
         }
 
-        /* ------------------------------------------------------------------ */
-        /* 7. OCEAN BREEZE (ONDA FLUIDA AQUÁTICA) */
-        /* ------------------------------------------------------------------ */
+        /* 7. OCEAN BREEZE (ONDA AQUÁTICA) */
         body[data-theme="ocean"] {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #072534;
+            background-color: #032b41;
             color: #f0f9ff;
-            --bg-card: rgba(14, 116, 144, 0.2);
-            --border-card: rgba(56, 189, 248, 0.3);
-            --accent-blue: #0284c7;
-            --accent-green: #06b6d4;
-            --accent-purple: #38bdf8;
-            --chip-bg: rgba(56, 189, 248, 0.15);
-            --chip-text: #38bdf8;
-            --shadow-card: 0 10px 30px rgba(2, 132, 199, 0.2);
-            --card-radius: 16px 30px 16px 30px;
+        }
+        body[data-theme="ocean"] div[style*="background-color: #f8f9fa"],
+        body[data-theme="ocean"] div[style*="border: 1px solid #ddd"] {
+            background-color: rgba(14, 116, 144, 0.2) !important;
+            border: 1px solid rgba(56, 189, 248, 0.3) !important;
+            border-radius: 20px 40px 10px 40px !important;
+            color: #f0f9ff !important;
+            box-shadow: 0 10px 30px rgba(2, 132, 199, 0.2) !important;
+        }
+        body[data-theme="ocean"] h2, body[data-theme="ocean"] h3 {
+            color: #38bdf8 !important;
         }
 
-        /* ------------------------------------------------------------------ */
-        /* 8. ROYAL GOLD (PRETO OBSIDIAN & OURO 24K) */
-        /* ------------------------------------------------------------------ */
+        /* 8. ROYAL GOLD (OURO 24K & OBSIDIAN) */
         body[data-theme="royalgold"] {
             font-family: 'Outfit', sans-serif;
             background-color: #050505;
             color: #fef08a;
-            --bg-card: rgba(20, 20, 20, 0.95);
-            --border-card: rgba(234, 179, 8, 0.4);
-            --accent-blue: #eab308;
-            --accent-green: #10b981;
-            --accent-purple: #ca8a04;
-            --chip-bg: rgba(234, 179, 8, 0.15);
-            --chip-text: #fde047;
-            --shadow-card: 0 10px 30px rgba(234, 179, 8, 0.2);
-            --card-radius: 14px;
+        }
+        body[data-theme="royalgold"] div[style*="background-color: #f8f9fa"],
+        body[data-theme="royalgold"] div[style*="border: 1px solid #ddd"] {
+            background-color: rgba(20, 20, 20, 0.95) !important;
+            border: 1px solid rgba(234, 179, 8, 0.4) !important;
+            border-radius: 12px !important;
+            color: #fef08a !important;
+            box-shadow: 0 10px 30px rgba(234, 179, 8, 0.2) !important;
+        }
+        body[data-theme="royalgold"] h2, body[data-theme="royalgold"] h3 {
+            color: #eab308 !important;
         }
 
-        /* ------------------------------------------------------------------ */
-        /* ESTRUTURA GERAL DOS ELEMENTOS DA INTERFACE */
-        /* ------------------------------------------------------------------ */
-
-        .card {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-card);
-            border-radius: var(--card-radius);
-            padding: 20px;
-            margin-bottom: 18px;
-            box-shadow: var(--shadow-card);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            transition: all 0.25s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-        }
-
-        .btn-ui {
-            font-family: inherit;
-            padding: 10px 18px;
-            font-size: 14px;
-            font-weight: 600;
-            border-radius: calc(var(--card-radius) / 1.5);
-            cursor: pointer;
-            border: 1px solid var(--border-card);
-            background-color: var(--bg-card);
-            color: inherit;
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-ui:hover {
-            transform: translateY(-1px);
-            opacity: 0.9;
-        }
-
-        .btn-ui.active-blue {
-            background-color: var(--accent-blue);
-            color: #ffffff;
-            border-color: var(--accent-blue);
-        }
-
-        .btn-ui.active-green {
-            background-color: var(--accent-green);
-            color: #ffffff;
-            border-color: var(--accent-green);
-        }
-
-        .btn-ui.active-purple {
-            background-color: var(--accent-purple);
-            color: #ffffff;
-            border-color: var(--accent-purple);
-        }
-
-        .btn-clock {
-            width: 46px;
-            height: 46px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            cursor: pointer;
-            border: 1px solid var(--border-card);
-            background-color: var(--bg-card);
-            color: inherit;
-            transition: all 0.25s ease;
-        }
-
-        .btn-clock:hover {
-            transform: rotate(20deg) scale(1.08);
-            border-color: var(--accent-purple);
-        }
-
-        .btn-clock.active {
-            background-color: var(--accent-purple);
-            color: #fff;
-            box-shadow: 0 0 15px var(--accent-purple);
-        }
-
-        .chip {
-            display: inline-block;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 600;
-            background-color: var(--chip-bg);
-            color: var(--chip-text);
-            margin: 4px 5px 4px 0;
-            border: 1px solid var(--border-card);
-        }
-
-        .chip-urgent {
-            background-color: rgba(244, 63, 94, 0.18);
-            color: #fb7185;
-            border-color: rgba(244, 63, 94, 0.4);
-        }
-
-        .chip-free {
-            background-color: rgba(16, 185, 129, 0.18);
-            color: #34d399;
-            border-color: rgba(16, 185, 129, 0.4);
-        }
-
-        .theme-select-dropdown {
-            padding: 10px 14px;
-            font-size: 14px;
-            font-weight: bold;
-            border-radius: 10px;
-            border: 2px solid var(--border-card);
-            background-color: var(--bg-card);
-            color: inherit;
-            cursor: pointer;
-            outline: none;
-            transition: all 0.2s ease;
-        }
-
-        /* ------------------------------------------------------------------ */
-        /* COMPONENTES EXCLUSIVOS DO TEMA OUTONO LUXURY */
-        /* ------------------------------------------------------------------ */
-        
+        /* COMPONENTES EXCLUSIVOS DO TEMA OUTONO */
         .pulse-dot {
             width: 8px;
             height: 8px;
@@ -341,8 +215,53 @@
             border-radius: 3px;
         }
 
-        h1 { font-size: 22px; font-weight: 700; margin: 0 0 16px 0; }
-        h2 { font-size: 17px; font-weight: 700; margin: 0; }
+        .segment-btn {
+            font-family: inherit;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: #a3998e;
+            transition: all 0.25s ease;
+        }
+        .segment-btn.active-cleaning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #000; font-weight: 700;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.35);
+        }
+        .segment-btn.active-occupancy {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff; font-weight: 700;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+        }
+        .clock-btn {
+            width: 48px; height: 48px; border-radius: 50%;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            color: #fff; font-size: 22px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .clock-btn.active {
+            background: linear-gradient(135deg, #ea580c, #c2410c);
+            box-shadow: 0 0 20px rgba(234, 88, 12, 0.5);
+        }
+
+        .theme-select-dropdown {
+            padding: 9px 14px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 8px;
+            border: 2px solid #ccc;
+            background-color: #ffffff;
+            color: #333;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s ease;
+        }
     `;
     document.head.appendChild(style);
 })();
@@ -371,18 +290,18 @@ let globalReservations = [];
 let cloudHistory = {};
 
 // Estados da Aplicação
-let currentView = "cleaning";
-let showHistoryMode = false;
-let selectedHouse = "achada";
-let showOccupancyStats = false;
-let showPastStatsMode = false;
-let selectedSnapshotDate = null;
+let currentView = "cleaning"; 
+let showHistoryMode = false;  
+let selectedHouse = "achada";  
+let showOccupancyStats = false; 
+let showPastStatsMode = false; 
+let selectedSnapshotDate = null; 
 
-// Gestão de Temas (Por defeito: "white" - Branco Clássico)
+// Gestão de Temas (Por defeito ao entrar: "white" - Branco Clássico Original)
 let currentTheme = localStorage.getItem("al_theme") || "white";
 document.body.setAttribute("data-theme", currentTheme);
 
-// Alterar Tema
+// Mudar de Tema
 window.setTheme = function(themeKey) {
     currentTheme = themeKey;
     try { localStorage.setItem("al_theme", themeKey); } catch(e){}
@@ -404,11 +323,20 @@ async function fetchWithTimeout(resource, options = {}, timeout = 10000) {
     const separator = resource.includes("?") ? "&" : "?";
     const noCacheUrl = `${resource}${separator}_t=${Date.now()}`;
 
+    const noCacheOptions = {
+        ...options,
+        cache: 'no-store',
+        headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+            ...(options.headers || {})
+        },
+        signal: controller.signal
+    };
+
     try {
-        const response = await fetch(noCacheUrl, {
-            ...options,
-            signal: controller.signal
-        });
+        const response = await fetch(noCacheUrl, noCacheOptions);
         clearTimeout(id);
         return response;
     } catch (error) {
@@ -417,7 +345,7 @@ async function fetchWithTimeout(resource, options = {}, timeout = 10000) {
     }
 }
 
-// Copiar texto para área de transferência
+// Copiar texto para a área de transferência
 window.copyFromData = function(btnElement, encodedText) {
     const text = decodeURIComponent(encodedText);
     navigator.clipboard.writeText(text).then(() => {
@@ -429,7 +357,7 @@ window.copyFromData = function(btnElement, encodedText) {
     });
 };
 
-// Alternar Vistas
+// Alternar entre Vistas Principais
 window.switchMainView = function(view) {
     currentView = view;
     if (currentView === "snapshots") selectedSnapshotDate = null;
@@ -489,7 +417,7 @@ async function saveToCloudHistory(newEntries) {
 }
 
 async function loadCalendars() {
-    result.innerHTML = "<div class='card'><p style='font-weight:bold; color:var(--accent-blue);'>⏳ A ligar à Cloud e a carregar calendários (aguarda)...</p></div>";
+    result.innerHTML = "<p style='font-size: 18px; font-weight: bold; color: #007bff;'>⏳ A ligar à Cloud e a carregar calendários (aguarda)...</p>";
 
     try {
         const historyPromise = fetchCloudHistory();
@@ -513,7 +441,7 @@ async function loadCalendars() {
         renderCurrentView();
 
     } catch (err) {
-        result.innerHTML = `<div class='card'><p style='color:red; font-weight:bold;'>Erro geral: ${err.message}</p></div>`;
+        result.innerHTML = `<p style="color: red; font-weight: bold;">Erro geral: ${err.message}</p>`;
     }
 }
 
@@ -521,6 +449,7 @@ function parseDate(icsDate) {
     const year = Number(icsDate.substring(0, 4));
     const month = Number(icsDate.substring(4, 6)) - 1;
     const day = Number(icsDate.substring(6, 8));
+
     return new Date(year, month, day);
 }
 
@@ -529,17 +458,20 @@ function parseICS(text, roomName) {
     if (!text || !text.includes("BEGIN:VEVENT")) return reservations;
 
     const events = text.split("BEGIN:VEVENT");
+
     for (const event of events) {
         const start = event.match(/DTSTART(?:;[^:]*)?:(\d{8})/);
         const end = event.match(/DTEND(?:;[^:]*)?:(\d{8})/);
 
         if (!start || !end) continue;
+
         reservations.push({
             room: roomName,
             checkIn: parseDate(start[1]),
             checkOut: parseDate(end[1])
         });
     }
+
     return reservations;
 }
 
@@ -568,6 +500,7 @@ function getDaysBetween(dateA, dateB) {
 
 function getCleaningInfo(reservation, allReservations) {
     const checkout = reservation.checkOut;
+
     const nextReservation = allReservations
         .filter(r => r.room === reservation.room && r.checkIn >= checkout)
         .sort((a, b) => a.checkIn - b.checkIn)[0];
@@ -595,6 +528,7 @@ function getCleaningInfo(reservation, allReservations) {
             if (isSunday(d)) continue;
 
             let score = 0;
+
             allReservations.forEach(r => {
                 if (sameDay(r.checkOut, d)) {
                     score += 1;
@@ -704,53 +638,86 @@ function updateCloudHistory() {
             cloudHistory = mergedHistory; 
         }
     } catch (err) {
-        console.error("Erro no histórico:", err);
+        console.error("Erro interno ao gerir histórico de limpezas:", err);
     }
 }
 
-// Cabeçalho de Navegação com Seletor de Temas
+// Cabeçalho de Navegação Principal
 function renderNavigation() {
     const isCleaning = currentView === "cleaning";
     const isOccupancy = currentView === "occupancy";
     const isSnapshots = currentView === "snapshots";
 
-    let brandingBanner = "";
+    const themeDropdown = `
+        <select class="theme-select-dropdown" onchange="window.setTheme(this.value)" title="Mudar Estilo Completo da Página">
+            <option value="white" ${currentTheme === 'white' ? 'selected' : ''}>⬜ Branco Clássico (Original)</option>
+            <option value="outono" ${currentTheme === 'outono' ? 'selected' : ''}>🍂 Outono Luxury (Traços de Outono)</option>
+            <option value="cyber" ${currentTheme === 'cyber' ? 'selected' : ''}>🌆 Cyber Neon 2099</option>
+            <option value="cappuccino" ${currentTheme === 'cappuccino' ? 'selected' : ''}>☕ Warm Cappuccino</option>
+            <option value="emerald" ${currentTheme === 'emerald' ? 'selected' : ''}>🌿 Nature Emerald</option>
+            <option value="glass" ${currentTheme === 'glass' ? 'selected' : ''}>🌙 Dark Glassmorphism</option>
+            <option value="ocean" ${currentTheme === 'ocean' ? 'selected' : ''}>🌊 Ocean Breeze</option>
+            <option value="royalgold" ${currentTheme === 'royalgold' ? 'selected' : ''}>👑 Royal Gold</option>
+        </select>
+    `;
+
     if (currentTheme === "outono") {
-        brandingBanner = `
+        return `
             <div style="margin-bottom: 22px;">
                 <h1 style="font-size: 26px; font-weight: 800; background: linear-gradient(135deg, #fff8f0 30%, #f59e0b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0;">🍂 Traços de Outono</h1>
-                <div style="font-size: 13px; color: var(--text-muted); font-weight: 500;">Gestão de Alojamento Local</div>
+                <div style="font-size: 13px; color: #a3998e; font-weight: 500;">Gestão de Alojamento Local</div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 10px; flex-wrap: wrap;">
+                <div style="display: inline-flex; background: rgba(255,255,255,0.04); padding: 5px; border-radius: 16px; border: 1px solid rgba(245,158,11,0.2); gap: 4px;">
+                    <button onclick="window.switchMainView('cleaning')" class="segment-btn ${isCleaning ? 'active-cleaning' : ''}">
+                        🧹 Limpezas
+                    </button>
+                    <button onclick="window.switchMainView('occupancy')" class="segment-btn ${isOccupancy ? 'active-occupancy' : ''}">
+                        📊 Disponibilidade
+                    </button>
+                </div>
+                
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    ${themeDropdown}
+                    <button onclick="window.switchMainView('snapshots')" class="clock-btn ${isSnapshots ? 'active' : ''}" title="Ver Previsões Guardadas (Snapshots)">
+                        🕒
+                    </button>
+                </div>
             </div>
         `;
     }
 
+    // Design Original Clássico nos botões para o tema Branco e restantes
     return `
-        ${brandingBanner}
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px; flex-wrap: wrap;">
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <button onclick="window.switchMainView('cleaning')" class="btn-ui ${isCleaning ? 'active-blue' : ''}">
+        <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button onclick="window.switchMainView('cleaning')" style="
+                    padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px;
+                    border: 2px solid #007bff; background-color: ${isCleaning ? '#007bff' : '#ffffff'};
+                    color: ${isCleaning ? '#ffffff' : '#007bff'}; font-weight: bold;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                ">
                     🧹 Plano de Limpezas
                 </button>
-                <button onclick="window.switchMainView('occupancy')" class="btn-ui ${isOccupancy ? 'active-green' : ''}">
+                <button onclick="window.switchMainView('occupancy')" style="
+                    padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px;
+                    border: 2px solid #28a745; background-color: ${isOccupancy ? '#28a745' : '#ffffff'};
+                    color: ${isOccupancy ? '#ffffff' : '#28a745'}; font-weight: bold;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                ">
                     📊 Disponibilidade da Casa
                 </button>
             </div>
             
             <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                <!-- DROPDOWN VISÍVEL PARA MUDAR O ESTILO COMPLETO DA PÁGINA -->
-                <select class="theme-select-dropdown" onchange="window.setTheme(this.value)" title="Mudar Estilo Completo da Página">
-                    <option value="white" ${currentTheme === 'white' ? 'selected' : ''}>⬜ Branco Clássico (Original)</option>
-                    <option value="outono" ${currentTheme === 'outono' ? 'selected' : ''}>🍂 Outono Luxury (Traços de Outono)</option>
-                    <option value="cyber" ${currentTheme === 'cyber' ? 'selected' : ''}>🌆 Cyber Neon 2099</option>
-                    <option value="cappuccino" ${currentTheme === 'cappuccino' ? 'selected' : ''}>☕ Warm Cappuccino</option>
-                    <option value="emerald" ${currentTheme === 'emerald' ? 'selected' : ''}>🌿 Nature Emerald</option>
-                    <option value="glass" ${currentTheme === 'glass' ? 'selected' : ''}>🌙 Dark Glassmorphism</option>
-                    <option value="ocean" ${currentTheme === 'ocean' ? 'selected' : ''}>🌊 Ocean Breeze</option>
-                    <option value="royalgold" ${currentTheme === 'royalgold' ? 'selected' : ''}>👑 Royal Gold</option>
-                </select>
-
-                <!-- BOTÃO RELÓGIO -->
-                <button onclick="window.switchMainView('snapshots')" class="btn-clock ${isSnapshots ? 'active' : ''}" title="Ver Previsões Guardadas (Snapshots)">
+                ${themeDropdown}
+                <button onclick="window.switchMainView('snapshots')" style="
+                    font-size: 26px; background-color: ${isSnapshots ? '#e2e6ea' : 'white'};
+                    border: 1px solid #ccc; border-radius: 50%; cursor: pointer; width: 50px; height: 50px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center;
+                    transition: 0.2s;
+                " title="Ver Previsões Guardadas (Snapshots)">
                     🕒
                 </button>
             </div>
@@ -767,20 +734,24 @@ function showSnapshotsPlan() {
     const snapshotKeys = Object.keys(snapshots).sort().reverse();
 
     if (snapshotKeys.length === 0) {
-        html += `<div class="card"><p style="color: var(--text-muted);">Ainda não há previsões guardadas de dias anteriores.</p></div>`;
+        html += `<p>Ainda não há previsões guardadas de dias anteriores. A primeira foi gerada agora mesmo!</p>`;
         result.innerHTML = html;
         return;
     }
 
     if (!selectedSnapshotDate) {
-        html += `<p style="color: var(--text-muted); margin-bottom: 14px;">Escolhe um dia para ver o plano de limpezas previsto nesse momento:</p>`;
-        html += `<div style="display: flex; gap: 8px; flex-wrap: wrap;">`;
+        html += `<p style="color: #555;">Escolhe um dia para ver o plano de limpezas (dos 7 dias seguintes) que estava previsto nesse exato momento:</p>`;
+        html += `<div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px;">`;
         
         snapshotKeys.forEach(key => {
             const dateObj = new Date(key);
             const label = dateObj.toLocaleDateString("pt-PT", { day: "numeric", month: "long", year: "numeric" });
             html += `
-                <button onclick="window.selectSnapshot('${key}')" class="btn-ui">
+                <button onclick="window.selectSnapshot('${key}')" style="
+                    padding: 10px 15px; font-size: 14px; cursor: pointer; border-radius: 6px;
+                    border: 1px solid #17a2b8; background-color: #f8f9fa; color: #17a2b8; font-weight: bold;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                ">
                     📅 ${label}
                 </button>
             `;
@@ -791,50 +762,53 @@ function showSnapshotsPlan() {
         const label = dateObj.toLocaleDateString("pt-PT", { day: "numeric", month: "long", year: "numeric" });
         
         html += `
-            <div style="margin-bottom: 16px;">
-                <button onclick="window.selectSnapshot(null)" class="btn-ui">
+            <div style="margin-bottom: 20px;">
+                <button onclick="window.selectSnapshot(null)" style="
+                    padding: 8px 14px; font-size: 14px; cursor: pointer; border-radius: 6px;
+                    border: 1px solid #6c757d; background-color: #6c757d; color: white; font-weight: bold;
+                ">
                     🔙 Voltar à Lista
                 </button>
             </div>
-            <div class="card">
-                <h2>Plano visualizado no dia: <span style="color: var(--accent-blue);">${label}</span></h2>
+            <h2 style="color: #007bff; border-bottom: 2px solid #eee; padding-bottom: 8px;">Plano visualizado no dia: <span style="color: #333;">${label}</span></h2>
         `;
 
         const plan = snapshots[selectedSnapshotDate];
         const planKeys = Object.keys(plan).sort();
 
         if (planKeys.length === 0) {
-            html += `<p style="color: var(--text-muted);">Não havia nenhuma limpeza planeada para os 7 dias seguintes.</p>`;
+            html += `<p>Não havia nenhuma limpeza planeada para os 7 dias seguintes a esta data.</p>`;
         }
 
         planKeys.forEach(key => {
             const day = plan[key];
             const d = new Date(day.dateIso);
             let title = d.toLocaleDateString("pt-PT", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+            
             if (day.rooms.some(r => r.sunday)) title = "🔴 " + title;
 
-            let chips = "";
+            let roomsHtml = "";
             day.rooms.sort((a, b) => a.room.localeCompare(b.room)).forEach(clean => {
-                const badgeClass = clean.urgent ? "chip-urgent" : "";
                 const emoji = clean.urgent ? "⚠️" : "🧹";
-                let tag = clean.urgent ? " (entrada no mesmo dia)" : ""; 
-                chips += `<span class="chip ${badgeClass}">${emoji} ${clean.room}${tag}</span>`;
+                let tag = clean.urgent ? " <b>(entrada no mesmo dia)</b>" : ""; 
+                
+                roomsHtml += `${emoji} ${clean.room}${tag}<br>`;
             });
 
             html += `
-                <div style="margin-top: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border-card);">
-                    <div style="font-weight: 700; margin-bottom: 6px;">${title}</div>
-                    <div>${chips}</div>
+                <div style="margin-top: 15px; margin-bottom: 15px;">
+                    <h3 style="margin: 0 0 8px 0; color: #333; font-size: 18px;">${title}</h3>
+                    <div style="font-size: 15px;">${roomsHtml}</div>
                 </div>
+                <hr style="border: 0; border-top: 1px solid #eee;">
             `;
         });
-        html += `</div>`;
     }
 
     result.innerHTML = html;
 }
 
-// VISTA 1: PLANO DE LIMPEZAS
+// VISTA 1: PLANO DE LIMPEZAS & HISTÓRICO
 function showCleaningPlan() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -856,6 +830,7 @@ function showCleaningPlan() {
     } else {
         globalReservations.forEach(reservation => {
             const info = getCleaningInfo(reservation, globalReservations);
+            
             if (info.date >= today) {
                 const dateKey = info.date.getFullYear() + "-" +
                     (info.date.getMonth() + 1).toString().padStart(2, '0') + "-" +
@@ -885,16 +860,19 @@ function showCleaningPlan() {
 
     let html = renderNavigation();
     html += `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
-            <h1>${mainTitle}</h1>
-            <button onclick="window.toggleHistoryView()" class="btn-ui">
+        <div style="margin-bottom: 25px;">
+            <button onclick="window.toggleHistoryView()" style="
+                padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px;
+                border: 1px solid #6c757d; background-color: #6c757d; color: white; font-weight: bold;
+            ">
                 ${buttonText}
             </button>
         </div>
+        <h1>${mainTitle}</h1>
     `;
 
     if (sortedKeys.length === 0) {
-        html += `<div class="card"><p style="color: var(--text-muted);">Não há limpezas registadas ${showHistoryMode ? 'anteriores a hoje' : 'agendadas'}.</p></div>`;
+        html += `<p>Não há limpezas registadas ${showHistoryMode ? 'anteriores a hoje no histórico' : 'agendadas'}.</p>`;
     }
 
     sortedKeys.forEach(key => {
@@ -916,7 +894,7 @@ function showCleaningPlan() {
         dateForCopyEs = dateForCopyEs.charAt(0).toUpperCase() + dateForCopyEs.slice(1);
         let copyLinesEs = [`🧹 Limpiezas - ${dateForCopyEs}:`];
 
-        let chips = "";
+        let roomsHtml = "";
 
         day.rooms.sort((a, b) => a.room.localeCompare(b.room)).forEach(clean => {
             const hasCheckout = globalReservations.some(r => r.room === clean.room && sameDay(r.checkOut, day.date));
@@ -924,44 +902,52 @@ function showCleaningPlan() {
 
             let tagTextPt = "";
             let tagTextEs = "";
+            let tagHtml = "";
 
             if (hasCheckout && hasCheckin) {
                 tagTextPt = " (sai e entra)";
                 tagTextEs = " (sale y entra)";
+                tagHtml = " <b>(sai e entra)</b>";
             } else if (hasCheckout) {
                 tagTextPt = " (sai hoje)";
                 tagTextEs = " (sale hoy)";
+                tagHtml = " <b>(sai hoje)</b>";
             } else if (hasCheckin) {
                 tagTextPt = " (entrada hoje)";
                 tagTextEs = " (entrada hoy)";
+                tagHtml = " <b>(entrada hoje)</b>";
             }
 
             const emoji = hasCheckin ? "⚠️" : "🧹";
-            const badgeClass = hasCheckin ? "chip-urgent" : "";
 
             copyLinesPt.push(`${emoji} ${clean.room}${tagTextPt}`);
             copyLinesEs.push(`${emoji} ${clean.room}${tagTextEs}`);
-            chips += `<span class="chip ${badgeClass}">${emoji} ${clean.room}<b>${tagTextPt}</b></span>`;
+            roomsHtml += `${emoji} ${clean.room}${tagHtml}<br>`;
         });
 
         const encodedCopyTextPt = encodeURIComponent(copyLinesPt.join("\n"));
         const encodedCopyTextEs = encodeURIComponent(copyLinesEs.join("\n"));
 
         html += `
-            <div class="card">
-                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
-                    <h2>${title}</h2>
-                    <div style="display: flex; gap: 6px;">
-                        <button onclick="window.copyFromData(this, '${encodedCopyTextPt}')" class="btn-ui" style="font-size:12px; padding:4px 10px;">
-                            🇵🇹 Copiar PT
-                        </button>
-                        <button onclick="window.copyFromData(this, '${encodedCopyTextEs}')" class="btn-ui" style="font-size:12px; padding:4px 10px;">
-                            🇪🇸 Copiar ES
-                        </button>
-                    </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
+                <h2 style="margin: 0;">${title}</h2>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button onclick="window.copyFromData(this, '${encodedCopyTextPt}')" style="
+                        padding: 6px 12px; font-size: 13px; cursor: pointer; border-radius: 6px;
+                        border: 1px solid #28a745; background-color: #28a745; color: white; font-weight: bold;
+                    ">
+                        🇵🇹 Copiar PT
+                    </button>
+                    <button onclick="window.copyFromData(this, '${encodedCopyTextEs}')" style="
+                        padding: 6px 12px; font-size: 13px; cursor: pointer; border-radius: 6px;
+                        border: 1px solid #17a2b8; background-color: #17a2b8; color: white; font-weight: bold;
+                    ">
+                        🇪🇸 Copiar ES
+                    </button>
                 </div>
-                <div>${chips}</div>
             </div>
+            <div style="margin-top: 8px;">${roomsHtml}</div>
+            <hr>
         `;
     });
 
@@ -969,9 +955,13 @@ function showCleaningPlan() {
 }
 
 function getHouseRooms(houseKey) {
-    if (houseKey === "achada") return ["Achada 1", "Achada 2", "Achada 3", "Achada 4", "Achada 5", "Achada 6"];
-    if (houseKey === "impasse") return ["Impasse 2", "Impasse 3", "Impasse 4"];
-    if (houseKey === "vizinho") return ["Vizinho 1", "Vizinho 2", "Vizinho 3"];
+    if (houseKey === "achada") {
+        return ["Achada 1", "Achada 2", "Achada 3", "Achada 4", "Achada 5", "Achada 6"];
+    } else if (houseKey === "impasse") {
+        return ["Impasse 2", "Impasse 3", "Impasse 4"];
+    } else if (houseKey === "vizinho") {
+        return ["Vizinho 1", "Vizinho 2", "Vizinho 3"];
+    }
     return [];
 }
 
@@ -1053,30 +1043,47 @@ function showOccupancyPlan() {
     let html = renderNavigation();
 
     html += `
-        <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
-            <button onclick="window.selectHouse('achada')" class="btn-ui ${selectedHouse === 'achada' ? 'active-blue' : ''}">
+        <div style="margin-bottom: 25px; display: flex; gap: 8px; flex-wrap: wrap;">
+            <button onclick="window.selectHouse('achada')" style="
+                padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px;
+                border: 2px solid #17a2b8; background-color: ${selectedHouse === 'achada' ? '#17a2b8' : '#ffffff'};
+                color: ${selectedHouse === 'achada' ? '#ffffff' : '#17a2b8'}; font-weight: bold;
+            ">
                 🏡 Achada
             </button>
-            <button onclick="window.selectHouse('impasse')" class="btn-ui ${selectedHouse === 'impasse' ? 'active-blue' : ''}">
+            <button onclick="window.selectHouse('impasse')" style="
+                padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px;
+                border: 2px solid #17a2b8; background-color: ${selectedHouse === 'impasse' ? '#17a2b8' : '#ffffff'};
+                color: ${selectedHouse === 'impasse' ? '#ffffff' : '#17a2b8'}; font-weight: bold;
+            ">
                 🏡 Impasse
             </button>
-            <button onclick="window.selectHouse('vizinho')" class="btn-ui ${selectedHouse === 'vizinho' ? 'active-blue' : ''}">
+            <button onclick="window.selectHouse('vizinho')" style="
+                padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px;
+                border: 2px solid #17a2b8; background-color: ${selectedHouse === 'vizinho' ? '#17a2b8' : '#ffffff'};
+                color: ${selectedHouse === 'vizinho' ? '#ffffff' : '#17a2b8'}; font-weight: bold;
+            ">
                 🏡 Vizinho
             </button>
         </div>
-
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
-            <h1>📊 Ocupação - ${houseLabels[selectedHouse]}</h1>
-            <div style="display: flex; gap: 8px;">
-                <button onclick="window.toggleOccupancyStats()" class="btn-ui ${showOccupancyStats ? 'active-purple' : ''}">
-                    ${showOccupancyStats ? '🔙 Ocultar Estatísticas' : '📈 Estatísticas Mensais'}
-                </button>
-                ${showOccupancyStats ? `
-                <button onclick="window.togglePastStats()" class="btn-ui">
-                    ${showPastStatsMode ? '📅 Meses Atuais e Futuros' : '📜 Meses Passados'}
-                </button>
-                ` : ''}
-            </div>
+        <h1>📊 Ocupação - ${houseLabels[selectedHouse]}</h1>
+        
+        <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+            <button onclick="window.toggleOccupancyStats()" style="
+                padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px;
+                border: 1px solid #ffc107; background-color: ${showOccupancyStats ? '#e0a800' : '#ffc107'}; color: #333; font-weight: bold;
+            ">
+                ${showOccupancyStats ? '🔙 Ocultar Estatísticas' : '📈 Ver Estatísticas Mensais'}
+            </button>
+            
+            ${showOccupancyStats ? `
+            <button onclick="window.togglePastStats()" style="
+                padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px;
+                border: 1px solid #6c757d; background-color: ${showPastStatsMode ? '#5a6268' : '#6c757d'}; color: white; font-weight: bold;
+            ">
+                ${showPastStatsMode ? '📅 Ver Meses Atuais e Futuros' : '📜 Ver Meses Passados'}
+            </button>
+            ` : ''}
         </div>
     `;
 
@@ -1094,24 +1101,24 @@ function showOccupancyPlan() {
         }
 
         if (statKeys.length === 0) {
-            html += `<div class="card"><p style="color: var(--text-muted);">Sem dados de estatísticas.</p></div>`;
+            html += `<p>Sem dados de estatísticas para mostrar nesta vista.</p><hr>`;
         } else {
-            html += `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 20px;">`;
+            html += `<div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 25px;">`;
             
             statKeys.forEach(key => {
                 const s = stats[key];
                 const taxa = s.totalCapacity > 0 ? Math.round((s.dormidas / s.totalCapacity) * 100) : 0;
                 
-                // Renderização Premium para o tema Outono Luxury
+                // Design Premium de Estatísticas para o tema Outono Luxury
                 if (currentTheme === "outono") {
                     html += `
-                        <div class="stat-box">
+                        <div class="stat-box" style="flex: 1; min-width: 220px;">
                             <div style="color: #fbbf24; font-weight: 700; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 6px;">${s.label}</div>
-                            <div class="stat-val">${taxa}% <span style="font-size: 13px; font-weight: 500; color: var(--text-muted);">ocupação</span></div>
+                            <div class="stat-val">${taxa}% <span style="font-size: 13px; font-weight: 500; color: #a3998e;">ocupação</span></div>
                             <div class="bar-bg">
                                 <div class="bar-fill" style="width: ${taxa}%;"></div>
                             </div>
-                            <div style="margin-top: 12px; font-size: 13px; color: var(--text-muted); display: flex; flex-direction: column; gap: 4px;">
+                            <div style="margin-top: 12px; font-size: 13px; color: #a3998e; display: flex; flex-direction: column; gap: 4px;">
                                 <span>🌙 Dormidas: <strong style="color: #fff;">${s.dormidas}</strong> / ${s.totalCapacity}</span>
                                 <span>🧳 Check-ins: <strong style="color: #fff;">${s.checkins}</strong></span>
                                 <span>🔥 Dias 100% cheios: <strong style="color: #34d399;">${s.diasEsgotados}</strong></span>
@@ -1120,12 +1127,12 @@ function showOccupancyPlan() {
                     `;
                 } else {
                     html += `
-                        <div class="card">
-                            <h3 style="margin-top:0; color: var(--accent-blue); text-transform: capitalize; border-bottom: 1px solid var(--border-card); padding-bottom: 6px;">${s.label}</h3>
-                            <p><strong>🛏️ Ocupação:</strong> ${taxa}%</p>
-                            <p><strong>🌙 Dormidas:</strong> ${s.dormidas} <span style="font-size:12px; color:var(--text-muted);">(de ${s.totalCapacity})</span></p>
-                            <p><strong>🧳 Check-ins:</strong> ${s.checkins}</p>
-                            <p><strong>🔥 Dias cheios:</strong> ${s.diasEsgotados}</p>
+                        <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; flex: 1; min-width: 220px; background-color: #f8f9fa; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                            <h3 style="margin-top: 0; color: #007bff; text-transform: capitalize; border-bottom: 1px solid #ccc; padding-bottom: 8px;">${s.label}</h3>
+                            <p style="margin: 8px 0; font-size: 15px;"><strong>🛏️ Ocupação:</strong> ${taxa}%</p>
+                            <p style="margin: 8px 0; font-size: 15px;"><strong>🌙 Dormidas:</strong> ${s.dormidas} <span style="font-size: 12px; color: #666;">(de ${s.totalCapacity})</span></p>
+                            <p style="margin: 8px 0; font-size: 15px;"><strong>🧳 Check-ins:</strong> ${s.checkins}</p>
+                            <p style="margin: 8px 0; font-size: 15px;"><strong>🔥 Dias 100% cheios:</strong> ${s.diasEsgotados}</p>
                         </div>
                     `;
                 }
@@ -1134,6 +1141,8 @@ function showOccupancyPlan() {
             html += `</div>`;
         }
     }
+
+    html += `<hr>`;
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -1153,6 +1162,7 @@ function showOccupancyPlan() {
 
     for (let i = 0; i < totalDays; i++) {
         const currentDate = addDays(today, i);
+
         let roomDetails = [];
 
         houseRooms.forEach(roomName => {
@@ -1169,14 +1179,14 @@ function showOccupancyPlan() {
             if (isOccupiedOvernight || hasCheckout || hasCheckin) {
                 let tag = "";
                 if (hasCheckout && hasCheckin) {
-                    tag = " (sai e entra)";
+                    tag = " <b>(sai e entra)</b>";
                 } else if (hasCheckout) {
-                    tag = " (sai)";
+                    tag = " <b>(sai)</b>";
                 } else if (hasCheckin) {
-                    tag = " (entra)";
+                    tag = " <b>(entra)</b>";
                 }
 
-                roomDetails.push(`${roomName}<b>${tag}</b>`);
+                roomDetails.push(`${roomName}${tag}`);
             }
         });
 
@@ -1185,28 +1195,18 @@ function showOccupancyPlan() {
             weekday: "long", day: "numeric", month: "long", year: "numeric"
         });
 
-        let statusBadge = "";
-        if (currentTheme === "outono") {
-            statusBadge = count === 0
-                ? `<span class="chip chip-free"><span class="pulse-dot pulse-green"></span> 0 Livre</span>`
-                : `<span class="chip chip-urgent"><span class="pulse-dot pulse-red"></span> ${count} / ${totalRooms} Ocupado</span>`;
+        html += `<h2>${dateFormatted}</h2>`;
+
+        if (count === 0) {
+            html += `<div style="font-size: 18px; font-weight: bold; color: #28a745; margin-bottom: 5px;">0 🟢</div>`;
         } else {
-            statusBadge = count === 0
-                ? `<span class="chip chip-free">0 🟢 Livre</span>`
-                : `<span class="chip chip-urgent">${count} / ${totalRooms} 🔴 Ocupado</span>`;
+            html += `<div style="font-size: 18px; font-weight: bold; color: #dc3545; margin-bottom: 5px;">
+                ${count} / ${totalRooms} 🔴
+            </div>`;
+            html += `<div style="font-size: 14px; color: #333;">Ocupados: ${roomDetails.join(", ")}</div>`;
         }
 
-        let chips = roomDetails.map(r => `<span class="chip">${r}</span>`).join("");
-
-        html += `
-            <div class="card">
-                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 6px;">
-                    <h2>${dateFormatted}</h2>
-                    ${statusBadge}
-                </div>
-                ${count > 0 ? `<div style="margin-top: 6px;">${chips}</div>` : ''}
-            </div>
-        `;
+        html += "<hr>";
     }
 
     result.innerHTML = html;
