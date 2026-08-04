@@ -1,4 +1,4 @@
-// Injeta todos os 8 temas CSS dinamicamente na página
+// Injeta dinamicamente os 8 temas no cabeçalho da página
 (function injectThemeStyles() {
     if (document.getElementById("al-app-multitheme")) return;
     const style = document.createElement("style");
@@ -22,40 +22,25 @@
         }
 
         /* ------------------------------------------------------------------ */
-        /* VARIÁVEIS DOS 8 TEMAS */
+        /* DEFINIÇÕES DOS 8 TEMAS */
         /* ------------------------------------------------------------------ */
 
-        /* 1. TEMA BRANCO (ORIGINAL) - PADRÃO */
+        /* 1. TEMA BRANCO (ORIGINAL) - PADRÃO AO ENTRAR */
         body[data-theme="white"], body:not([data-theme]) {
-            --bg-main: #f8f9fa;
+            --bg-main: #ffffff;
             --bg-card: #ffffff;
-            --border-card: #dee2e6;
-            --text-main: #212529;
-            --text-muted: #6c757d;
+            --border-card: #e5e7eb;
+            --text-main: #111827;
+            --text-muted: #6b7280;
             --accent-blue: #007bff;
             --accent-green: #28a745;
-            --accent-purple: #6f42c1;
-            --chip-bg: #e9ecef;
-            --chip-text: #212529;
-            --shadow-card: 0 2px 6px rgba(0,0,0,0.06);
+            --accent-purple: #6c757d;
+            --chip-bg: #f3f4f6;
+            --chip-text: #1f2937;
+            --shadow-card: 0 1px 3px rgba(0,0,0,0.08);
         }
 
-        /* 2. DARK GLASSMORPHISM */
-        body[data-theme="glass"] {
-            --bg-main: #0f172a;
-            --bg-card: rgba(30, 41, 59, 0.8);
-            --border-card: rgba(255, 255, 255, 0.1);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent-blue: #3b82f6;
-            --accent-green: #10b981;
-            --accent-purple: #8b5cf6;
-            --chip-bg: rgba(255, 255, 255, 0.08);
-            --chip-text: #f8fafc;
-            --shadow-card: 0 10px 25px -5px rgba(0,0,0,0.3);
-        }
-
-        /* 3. OUTONO LUXURY */
+        /* 2. OUTONO LUXURY (COM TÍTULO TRAÇOS DE OUTONO) */
         body[data-theme="outono"] {
             --bg-main: #12100e;
             --bg-card: rgba(28, 23, 20, 0.9);
@@ -68,6 +53,21 @@
             --chip-bg: rgba(245, 158, 11, 0.12);
             --chip-text: #fbbf24;
             --shadow-card: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+
+        /* 3. DARK GLASSMORPHISM */
+        body[data-theme="glass"] {
+            --bg-main: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.8);
+            --border-card: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-purple: #8b5cf6;
+            --chip-bg: rgba(255, 255, 255, 0.08);
+            --chip-text: #f8fafc;
+            --shadow-card: 0 10px 25px -5px rgba(0,0,0,0.3);
         }
 
         /* 4. NATURE EMERALD */
@@ -146,7 +146,7 @@
         }
 
         /* ------------------------------------------------------------------ */
-        /* ESTILOS DOS ELEMENTOS DA PÁGINA */
+        /* ELEMENTOS VISUAIS DA INTERFACE */
         /* ------------------------------------------------------------------ */
 
         body {
@@ -157,7 +157,7 @@
         .card {
             background-color: var(--bg-card);
             border: 1px solid var(--border-card);
-            border-radius: 14px;
+            border-radius: 12px;
             padding: 18px;
             margin-bottom: 16px;
             box-shadow: var(--shadow-card);
@@ -247,35 +247,21 @@
             border-color: rgba(40, 167, 69, 0.3);
         }
 
-        .theme-picker-panel {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-card);
-            border-radius: 14px;
-            padding: 16px;
-            margin-bottom: 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 10px;
-            box-shadow: var(--shadow-card);
-        }
-
-        .theme-opt-btn {
-            padding: 10px 12px;
-            font-size: 13px;
-            font-weight: 600;
+        .theme-select-dropdown {
+            padding: 9px 14px;
+            font-size: 14px;
+            font-weight: bold;
             border-radius: 8px;
-            cursor: pointer;
-            border: 1px solid var(--border-card);
-            background: rgba(0,0,0,0.03);
+            border: 2px solid var(--border-card);
+            background-color: var(--bg-card);
             color: var(--text-main);
-            text-align: left;
+            cursor: pointer;
+            outline: none;
             transition: all 0.2s ease;
         }
 
-        .theme-opt-btn:hover, .theme-opt-btn.current {
+        .theme-select-dropdown:hover {
             border-color: var(--accent-blue);
-            background-color: var(--accent-blue);
-            color: #ffffff;
         }
 
         h1 { font-size: 22px; font-weight: 700; margin: 0 0 16px 0; }
@@ -316,22 +302,15 @@ let showOccupancyStats = false;
 let showPastStatsMode = false;
 let selectedSnapshotDate = null;
 
-// Gestão de Temas (Por defeito: "white" - Branco Clássico)
+// Gestão de Temas (Por defeito ao entrar: "white" - Branco Clássico Original)
 let currentTheme = localStorage.getItem("al_theme") || "white";
-let showThemePicker = false;
 document.body.setAttribute("data-theme", currentTheme);
 
-// Mudar de Tema
+// Função global para Mudar o Tema da Página
 window.setTheme = function(themeKey) {
     currentTheme = themeKey;
     try { localStorage.setItem("al_theme", themeKey); } catch(e){}
     document.body.setAttribute("data-theme", currentTheme);
-    showThemePicker = false;
-    renderCurrentView();
-};
-
-window.toggleThemePicker = function() {
-    showThemePicker = !showThemePicker;
     renderCurrentView();
 };
 
@@ -341,7 +320,7 @@ function renderCurrentView() {
     else if (currentView === "snapshots") showSnapshotsPlan();
 }
 
-// Fetch com Anti-Cache seguro (sem bloquear CORS)
+// Fetch com Anti-Cache seguro (Sem erros de CORS)
 async function fetchWithTimeout(resource, options = {}, timeout = 10000) {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
@@ -362,7 +341,7 @@ async function fetchWithTimeout(resource, options = {}, timeout = 10000) {
     }
 }
 
-// Copiar texto para a área de transferência
+// Copiar dados para a área de transferência
 window.copyFromData = function(btnElement, encodedText) {
     const text = decodeURIComponent(encodedText);
     navigator.clipboard.writeText(text).then(() => {
@@ -374,7 +353,7 @@ window.copyFromData = function(btnElement, encodedText) {
     });
 };
 
-// Alternar Vistas
+// Alternar entre Vistas Principais
 window.switchMainView = function(view) {
     currentView = view;
     if (currentView === "snapshots") selectedSnapshotDate = null;
@@ -653,56 +632,53 @@ function updateCloudHistory() {
     }
 }
 
-// Cabeçalho de Navegação com Seletor de Temas
+// Cabeçalho de Navegação com Menu Dropdown Visível de Temas
 function renderNavigation() {
     const isCleaning = currentView === "cleaning";
     const isOccupancy = currentView === "occupancy";
     const isSnapshots = currentView === "snapshots";
 
-    const themesList = [
-        { key: "white", label: "⬜ Branco Clássico" },
-        { key: "glass", label: "🌙 Dark Glass" },
-        { key: "outono", label: "🍂 Outono Luxury" },
-        { key: "emerald", label: "🌿 Nature Emerald" },
-        { key: "cyber", label: "🌆 Cyber Neon" },
-        { key: "cappuccino", label: "☕ Cappuccino" },
-        { key: "ocean", label: "🌊 Ocean Breeze" },
-        { key: "royalgold", label: "👑 Royal Gold" }
-    ];
-
-    let themePickerHtml = "";
-    if (showThemePicker) {
-        themePickerHtml = `<div class="theme-picker-panel">`;
-        themesList.forEach(t => {
-            const isCurrent = currentTheme === t.key ? "current" : "";
-            themePickerHtml += `
-                <button onclick="window.setTheme('${t.key}')" class="theme-opt-btn ${isCurrent}">
-                    ${t.label}
-                </button>
-            `;
-        });
-        themePickerHtml += `</div>`;
+    let brandingBanner = "";
+    if (currentTheme === "outono") {
+        brandingBanner = `
+            <div style="margin-bottom: 20px;">
+                <h1 style="font-size: 26px; font-weight: 800; background: linear-gradient(135deg, #fff8f0 30%, #f59e0b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0;">🍂 Traços de Outono</h1>
+                <div style="font-size: 13px; color: var(--text-muted); font-weight: 500;">Gestão de Alojamento Local</div>
+            </div>
+        `;
     }
 
     return `
+        ${brandingBanner}
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px; flex-wrap: wrap;">
             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                 <button onclick="window.switchMainView('cleaning')" class="btn-ui ${isCleaning ? 'active-blue' : ''}">
                     🧹 Plano de Limpezas
                 </button>
                 <button onclick="window.switchMainView('occupancy')" class="btn-ui ${isOccupancy ? 'active-green' : ''}">
-                    📊 Disponibilidade
-                </button>
-                <button onclick="window.toggleThemePicker()" class="btn-ui">
-                    🎨 Temas
+                    📊 Disponibilidade da Casa
                 </button>
             </div>
             
-            <button onclick="window.switchMainView('snapshots')" class="btn-clock ${isSnapshots ? 'active' : ''}" title="Ver Previsões Guardadas">
-                🕒
-            </button>
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <!-- MENU DROPDOWN VISÍVEL DE SELEÇÃO DE TEMA -->
+                <select class="theme-select-dropdown" onchange="window.setTheme(this.value)" title="Mudar Estilo da Página">
+                    <option value="white" ${currentTheme === 'white' ? 'selected' : ''}>⬜ Branco Clássico (Original)</option>
+                    <option value="outono" ${currentTheme === 'outono' ? 'selected' : ''}>🍂 Outono Luxury (Traços de Outono)</option>
+                    <option value="glass" ${currentTheme === 'glass' ? 'selected' : ''}>🌙 Dark Glassmorphism</option>
+                    <option value="emerald" ${currentTheme === 'emerald' ? 'selected' : ''}>🌿 Nature Emerald</option>
+                    <option value="cyber" ${currentTheme === 'cyber' ? 'selected' : ''}>🌆 Cyber Neon</option>
+                    <option value="cappuccino" ${currentTheme === 'cappuccino' ? 'selected' : ''}>☕ Warm Cappuccino</option>
+                    <option value="ocean" ${currentTheme === 'ocean' ? 'selected' : ''}>🌊 Ocean Breeze</option>
+                    <option value="royalgold" ${currentTheme === 'royalgold' ? 'selected' : ''}>👑 Royal Gold</option>
+                </select>
+
+                <!-- BOTÃO RELÓGIO -->
+                <button onclick="window.switchMainView('snapshots')" class="btn-clock ${isSnapshots ? 'active' : ''}" title="Ver Previsões Guardadas (Snapshots)">
+                    🕒
+                </button>
+            </div>
         </div>
-        ${themePickerHtml}
     `;
 }
 
