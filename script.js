@@ -18,7 +18,7 @@
 
         body {
             margin: 0;
-            padding: 70px 16px 20px 16px; /* Aumentado o padding do topo para baixar o título */
+            padding: 70px 16px 20px 16px; /* Padding de topo para baixar o título */
             min-height: 100vh;
             transition: background-color 0.4s ease, color 0.3s ease;
             position: relative;
@@ -127,29 +127,23 @@
 
         /* ══════════════════════════════════════════════════ */
         /* 5. 🌿 FLORESTA ENCANTADA (MEGA ENHANCED)          */
-        /*    Floresta bioluminescente profunda, pirilampos   */
-        /*    por todo o lado, cogumelos brilhantes, nevoeiro */
-        /*    denso, copas de árvores sobrepostas, vida       */
         /* ══════════════════════════════════════════════════ */
         body[data-theme="emerald"] {
             font-family: 'Nunito', sans-serif;
             background-color: #010a01;
             color: #90e8a0;
             background-image:
-                /* Copas de árvores densas - múltiplas camadas */
                 radial-gradient(ellipse at 0% -10%, rgba(0,60,15,0.35) 0%, transparent 55%),
                 radial-gradient(ellipse at 100% -5%, rgba(0,50,20,0.3) 0%, transparent 50%),
                 radial-gradient(ellipse at 50% -15%, rgba(0,40,10,0.25) 0%, transparent 60%),
                 radial-gradient(ellipse at 30% 10%, rgba(5,70,25,0.15) 0%, transparent 40%),
                 radial-gradient(ellipse at 70% 5%, rgba(0,55,20,0.18) 0%, transparent 45%),
-                /* Cogumelos bioluminescentes - brilho grande e difuso */
                 radial-gradient(circle 18px at 5% 78%, rgba(80,255,140,0.18) 0%, rgba(40,200,100,0.04) 50%, transparent 100%),
                 radial-gradient(circle 14px at 95% 55%, rgba(60,255,170,0.15) 0%, rgba(30,200,120,0.03) 50%, transparent 100%),
                 radial-gradient(circle 20px at 40% 92%, rgba(100,255,100,0.12) 0%, rgba(50,200,80,0.03) 50%, transparent 100%),
                 radial-gradient(circle 12px at 75% 88%, rgba(70,255,130,0.14) 0%, rgba(35,200,90,0.03) 50%, transparent 100%),
                 radial-gradient(circle 16px at 15% 45%, rgba(90,255,160,0.1) 0%, rgba(45,200,110,0.02) 50%, transparent 100%),
                 radial-gradient(circle 10px at 88% 30%, rgba(110,255,120,0.12) 0%, rgba(55,200,80,0.02) 50%, transparent 100%),
-                /* Pirilampos - campo inteiro de luz */
                 radial-gradient(circle 2px at 8% 20%, rgba(200,255,100,0.8) 0%, transparent 100%),
                 radial-gradient(circle 1.5px at 12% 35%, rgba(180,255,80,0.7) 0%, transparent 100%),
                 radial-gradient(circle 2px at 18% 55%, rgba(210,255,120,0.65) 0%, transparent 100%),
@@ -170,9 +164,7 @@
                 radial-gradient(circle 1.5px at 92% 65%, rgba(200,255,140,0.5) 0%, transparent 100%),
                 radial-gradient(circle 1px at 96% 22%, rgba(170,255,90,0.7) 0%, transparent 100%),
                 radial-gradient(circle 2px at 50% 50%, rgba(160,255,110,0.4) 0%, transparent 100%),
-                /* Nevoeiro no chão da floresta */
                 linear-gradient(to top, rgba(5,30,10,0.6) 0%, rgba(5,25,8,0.3) 8%, transparent 25%),
-                /* Raios de luz a penetrar a copa */
                 linear-gradient(135deg, transparent 40%, rgba(120,255,80,0.02) 45%, transparent 50%),
                 linear-gradient(155deg, transparent 55%, rgba(100,230,60,0.015) 60%, transparent 65%);
             background-attachment: fixed;
@@ -210,16 +202,12 @@
 
         /* ══════════════════════════════════════════════════ */
         /* 6. 🌌 COSMOS (MEGA ENHANCED)                      */
-        /*    Espaço profundo com nebulosas em múltiplas      */
-        /*    cores, via láctea, campo estelar denso,         */
-        /*    galáxias distantes, grandiosidade cósmica       */
         /* ══════════════════════════════════════════════════ */
         body[data-theme="glass"] {
             font-family: 'Space Grotesk', sans-serif;
             background-color: #020008;
             color: #ddd0ff;
             background-image:
-                /* Nebulosas - múltiplas cores e camadas */
                 radial-gradient(ellipse at 15% 30%, rgba(139,92,246,0.2) 0%, transparent 45%),
                 radial-gradient(ellipse at 85% 20%, rgba(59,130,246,0.15) 0%, transparent 40%),
                 radial-gradient(ellipse at 60% 75%, rgba(236,72,153,0.12) 0%, transparent 45%),
@@ -228,9 +216,7 @@
                 radial-gradient(ellipse at 5% 60%, rgba(168,85,247,0.08) 0%, transparent 35%),
                 radial-gradient(ellipse at 50% 10%, rgba(56,189,248,0.07) 0%, transparent 30%),
                 radial-gradient(ellipse at 70% 45%, rgba(192,38,211,0.05) 0%, transparent 30%),
-                /* Via Láctea - faixa diagonal */
                 linear-gradient(135deg, transparent 30%, rgba(139,92,246,0.04) 40%, rgba(200,180,255,0.03) 50%, rgba(100,150,255,0.04) 60%, transparent 70%),
-                /* Campo estelar denso */
                 radial-gradient(circle 1px at 3% 8%, rgba(255,255,255,0.9) 0%, transparent 100%),
                 radial-gradient(circle 1.5px at 7% 45%, rgba(255,255,255,0.7) 0%, transparent 100%),
                 radial-gradient(circle 1px at 11% 72%, rgba(255,255,255,0.8) 0%, transparent 100%),
@@ -256,7 +242,6 @@
                 radial-gradient(circle 1px at 91% 55%, rgba(255,255,255,0.8) 0%, transparent 100%),
                 radial-gradient(circle 0.5px at 95% 25%, rgba(200,255,255,0.7) 0%, transparent 100%),
                 radial-gradient(circle 1px at 98% 82%, rgba(255,255,255,0.6) 0%, transparent 100%),
-                /* Galáxias distantes */
                 radial-gradient(ellipse 6px 3px at 20% 60%, rgba(200,180,255,0.15) 0%, transparent 100%),
                 radial-gradient(ellipse 4px 2px at 75% 35%, rgba(180,200,255,0.12) 0%, transparent 100%);
             background-attachment: fixed;
@@ -284,35 +269,27 @@
 
         /* ══════════════════════════════════════════════════ */
         /* 7. 🌊 ABISMO MARINHO (MEGA ENHANCED)              */
-        /*    Oceano profundo com cáusticas de luz, ondas,    */
-        /*    criaturas bioluminescentes, pressão abissal,    */
-        /*    correntes marinhas, vida submarina              */
         /* ══════════════════════════════════════════════════ */
         body[data-theme="ocean"] {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: #000610;
             color: #7dd3fc;
             background-image:
-                /* Luz da superfície a filtrar - cáusticas */
                 radial-gradient(ellipse at 50% -20%, rgba(14,165,233,0.1) 0%, transparent 60%),
                 radial-gradient(ellipse at 30% -10%, rgba(56,189,248,0.06) 0%, transparent 40%),
                 radial-gradient(ellipse at 70% -5%, rgba(34,211,238,0.05) 0%, transparent 35%),
-                /* Padrão de cáusticas (luz a ondular na água) */
                 radial-gradient(ellipse 40px 30px at 20% 15%, rgba(56,189,248,0.04) 0%, transparent 100%),
                 radial-gradient(ellipse 50px 35px at 50% 10%, rgba(34,211,238,0.03) 0%, transparent 100%),
                 radial-gradient(ellipse 35px 25px at 80% 18%, rgba(56,189,248,0.04) 0%, transparent 100%),
                 radial-gradient(ellipse 45px 30px at 35% 8%, rgba(14,165,233,0.03) 0%, transparent 100%),
-                /* Correntes marinhas */
                 linear-gradient(170deg, transparent 20%, rgba(6,182,212,0.03) 30%, transparent 40%),
                 linear-gradient(190deg, transparent 50%, rgba(8,145,178,0.02) 60%, transparent 70%),
-                /* Criaturas bioluminescentes - águas-vivas e plâncton */
                 radial-gradient(circle 8px at 10% 60%, rgba(34,211,238,0.15) 0%, rgba(6,182,212,0.03) 60%, transparent 100%),
                 radial-gradient(circle 12px at 85% 45%, rgba(56,189,248,0.12) 0%, rgba(14,165,233,0.02) 60%, transparent 100%),
                 radial-gradient(circle 6px at 45% 75%, rgba(34,211,238,0.18) 0%, rgba(6,182,212,0.03) 60%, transparent 100%),
                 radial-gradient(circle 10px at 70% 85%, rgba(103,232,249,0.1) 0%, rgba(34,211,238,0.02) 60%, transparent 100%),
                 radial-gradient(circle 8px at 25% 90%, rgba(56,189,248,0.13) 0%, rgba(14,165,233,0.02) 60%, transparent 100%),
                 radial-gradient(circle 5px at 90% 70%, rgba(34,211,238,0.16) 0%, rgba(6,182,212,0.03) 60%, transparent 100%),
-                /* Plâncton bioluminescente disperso */
                 radial-gradient(circle 2px at 15% 40%, rgba(34,211,238,0.3) 0%, transparent 100%),
                 radial-gradient(circle 1.5px at 30% 55%, rgba(56,189,248,0.25) 0%, transparent 100%),
                 radial-gradient(circle 2px at 55% 35%, rgba(103,232,249,0.2) 0%, transparent 100%),
@@ -323,9 +300,7 @@
                 radial-gradient(circle 1.5px at 75% 30%, rgba(56,189,248,0.22) 0%, transparent 100%),
                 radial-gradient(circle 2px at 50% 90%, rgba(34,211,238,0.18) 0%, transparent 100%),
                 radial-gradient(circle 1px at 92% 25%, rgba(34,211,238,0.25) 0%, transparent 100%),
-                /* Gradiente de profundidade - cada vez mais escuro */
                 linear-gradient(to bottom, rgba(0,20,40,0.0) 0%, rgba(0,10,25,0.3) 60%, rgba(0,5,15,0.6) 100%),
-                /* Fundo oceânico */
                 radial-gradient(ellipse at 50% 100%, rgba(8,47,73,0.2) 0%, transparent 50%);
             background-attachment: fixed;
         }
@@ -358,27 +333,20 @@
 
         /* ══════════════════════════════════════════════════ */
         /* 8. 👑 MANUSCRITO MEDIEVAL (MEGA ENHANCED)          */
-        /*    Manuscrito iluminado, ouro rico, bordas         */
-        /*    ornamentais, pergaminho antigo, tochas,         */
-        /*    caligrafia gótica, heráldica                    */
         /* ══════════════════════════════════════════════════ */
         body[data-theme="royalgold"] {
             font-family: 'Cinzel', serif;
             background-color: #0c0604;
             color: #f0deb0;
             background-image:
-                /* Brilho de tochas nas paredes do castelo */
                 radial-gradient(ellipse at 5% 20%, rgba(212,175,55,0.08) 0%, transparent 40%),
                 radial-gradient(ellipse at 95% 25%, rgba(212,175,55,0.06) 0%, transparent 35%),
                 radial-gradient(ellipse at 50% 0%, rgba(180,130,50,0.07) 0%, transparent 50%),
                 radial-gradient(ellipse at 50% 100%, rgba(120,60,20,0.1) 0%, transparent 50%),
-                /* Brilho vermelho de braseiro */
                 radial-gradient(ellipse at 10% 80%, rgba(180,40,20,0.06) 0%, transparent 35%),
                 radial-gradient(ellipse at 90% 85%, rgba(160,50,25,0.05) 0%, transparent 30%),
-                /* Textura de pedra do castelo - padrão subtil */
                 repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(212,175,55,0.01) 40px, rgba(212,175,55,0.01) 41px),
                 repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(212,175,55,0.008) 60px, rgba(212,175,55,0.008) 61px),
-                /* Bordas decorativas - linhas douradas nas laterais */
                 linear-gradient(90deg, rgba(212,175,55,0.06) 0%, transparent 2%, transparent 98%, rgba(212,175,55,0.06) 100%);
             background-attachment: fixed;
         }
@@ -515,30 +483,23 @@
 
         /* ══════════════════════════════════════════════════ */
         /* 11. 🔥 VULCÃO (MEGA ENHANCED)                     */
-        /*     Vulcão ativo com rios de magma, fissuras       */
-        /*     incandescentes, chuva de brasas, rocha         */
-        /*     derretida, calor extremo, fumo e cinzas        */
         /* ══════════════════════════════════════════════════ */
         body[data-theme="lava"] {
             font-family: 'Russo One', sans-serif;
             background-color: #080000;
             color: #ff6b35;
             background-image:
-                /* Rios de magma - faixas de lava a fluir */
                 linear-gradient(175deg, transparent 30%, rgba(220,38,38,0.06) 35%, rgba(249,115,22,0.04) 40%, transparent 45%),
                 linear-gradient(185deg, transparent 55%, rgba(234,88,12,0.05) 60%, rgba(220,38,38,0.03) 65%, transparent 70%),
                 linear-gradient(170deg, transparent 75%, rgba(249,115,22,0.04) 80%, transparent 85%),
-                /* Zonas de calor intenso */
                 radial-gradient(ellipse at 25% 75%, rgba(220,38,38,0.18) 0%, transparent 45%),
                 radial-gradient(ellipse at 75% 25%, rgba(249,115,22,0.14) 0%, transparent 40%),
                 radial-gradient(ellipse at 50% 100%, rgba(220,38,38,0.12) 0%, transparent 35%),
                 radial-gradient(ellipse at 15% 30%, rgba(234,88,12,0.08) 0%, transparent 35%),
                 radial-gradient(ellipse at 85% 70%, rgba(239,68,68,0.1) 0%, transparent 35%),
-                /* Fissuras na rocha (linhas finas brilhantes) */
                 linear-gradient(45deg, transparent 48%, rgba(249,115,22,0.04) 49%, rgba(253,186,116,0.02) 50%, transparent 51%),
                 linear-gradient(135deg, transparent 52%, rgba(220,38,38,0.03) 53%, transparent 54%),
                 linear-gradient(80deg, transparent 30%, rgba(249,115,22,0.02) 31%, transparent 32%),
-                /* Campo de brasas */
                 radial-gradient(circle 2px at 8% 25%, rgba(255,100,30,0.6) 0%, transparent 100%),
                 radial-gradient(circle 1.5px at 15% 60%, rgba(255,80,20,0.5) 0%, transparent 100%),
                 radial-gradient(circle 1px at 22% 40%, rgba(255,120,40,0.55) 0%, transparent 100%),
@@ -552,7 +513,6 @@
                 radial-gradient(circle 1.5px at 82% 85%, rgba(255,115,38,0.5) 0%, transparent 100%),
                 radial-gradient(circle 1px at 90% 20%, rgba(255,90,25,0.55) 0%, transparent 100%),
                 radial-gradient(circle 2px at 95% 55%, rgba(255,105,32,0.4) 0%, transparent 100%),
-                /* Fumo e cinza no topo */
                 linear-gradient(to bottom, rgba(20,5,0,0.4) 0%, rgba(15,3,0,0.2) 10%, transparent 25%);
             background-attachment: fixed;
         }
@@ -598,9 +558,6 @@
 
         /* ══════════════════════════════════════════════════ */
         /* 12. ❄️ ÁRTICO (MEGA ENHANCED)                     */
-        /*     Noite polar com aurora boreal animada,         */
-        /*     cristais de gelo cintilantes, campo de neve,   */
-        /*     estrelas árticas, frio cortante, majestade     */
         /* ══════════════════════════════════════════════════ */
         body[data-theme="arctic"] {
             font-family: 'Raleway', sans-serif;
@@ -608,13 +565,11 @@
             background-color: #040e1c;
             color: #c7d2fe;
             background-image:
-                /* Aurora boreal - faixas de cor */
                 radial-gradient(ellipse 80% 15% at 30% 15%, rgba(52,211,153,0.12) 0%, transparent 100%),
                 radial-gradient(ellipse 60% 10% at 55% 12%, rgba(96,165,250,0.1) 0%, transparent 100%),
                 radial-gradient(ellipse 70% 12% at 75% 18%, rgba(167,139,250,0.08) 0%, transparent 100%),
                 radial-gradient(ellipse 50% 8% at 20% 20%, rgba(52,211,153,0.06) 0%, transparent 100%),
                 radial-gradient(ellipse 65% 10% at 85% 10%, rgba(56,189,248,0.07) 0%, transparent 100%),
-                /* Campo estelar polar */
                 radial-gradient(circle 1px at 5% 8%, rgba(255,255,255,0.9) 0%, transparent 100%),
                 radial-gradient(circle 0.5px at 12% 22%, rgba(255,255,255,0.7) 0%, transparent 100%),
                 radial-gradient(circle 1px at 18% 45%, rgba(200,220,255,0.8) 0%, transparent 100%),
@@ -630,15 +585,12 @@
                 radial-gradient(circle 1px at 85% 48%, rgba(255,255,255,0.5) 0%, transparent 100%),
                 radial-gradient(circle 0.5px at 92% 18%, rgba(255,255,255,0.8) 0%, transparent 100%),
                 radial-gradient(circle 1px at 98% 65%, rgba(220,225,255,0.6) 0%, transparent 100%),
-                /* Cristais de gelo - pontos brilhantes maiores */
                 radial-gradient(circle 3px at 15% 35%, rgba(147,197,253,0.2) 0%, transparent 100%),
                 radial-gradient(circle 2px at 45% 25%, rgba(165,180,252,0.18) 0%, transparent 100%),
                 radial-gradient(circle 3px at 75% 60%, rgba(147,197,253,0.15) 0%, transparent 100%),
                 radial-gradient(circle 2px at 35% 75%, rgba(200,220,255,0.2) 0%, transparent 100%),
                 radial-gradient(circle 3px at 85% 40%, rgba(147,197,253,0.16) 0%, transparent 100%),
-                /* Campo de neve no horizonte */
                 linear-gradient(to top, rgba(15,25,50,0.4) 0%, rgba(10,20,40,0.2) 8%, transparent 20%),
-                /* Gelo no topo */
                 linear-gradient(to bottom, rgba(96,165,250,0.04) 0%, transparent 15%);
             background-attachment: fixed;
         }
@@ -683,9 +635,6 @@
 
         /* ══════════════════════════════════════════════════ */
         /* 13. 🔮 CRISTAL MÍSTICO (NOVO - substitui Pop Art)  */
-        /*     Interior de uma geode de ametista gigante,     */
-        /*     prismas de luz a refratar arco-íris, gemas     */
-        /*     brilhantes por todo o lado, magia cristalina   */
         /* ══════════════════════════════════════════════════ */
         body[data-theme="crystal"] {
             font-family: 'Raleway', sans-serif;
@@ -693,27 +642,20 @@
             background-color: #08001a;
             color: #d8c0ff;
             background-image:
-                /* Aura de ametista - brilho roxo profundo */
                 radial-gradient(ellipse at 20% 30%, rgba(147,51,234,0.18) 0%, transparent 50%),
                 radial-gradient(ellipse at 80% 70%, rgba(168,85,247,0.14) 0%, transparent 45%),
                 radial-gradient(ellipse at 50% 50%, rgba(126,34,206,0.08) 0%, transparent 55%),
-                /* Safira - brilho azul */
                 radial-gradient(ellipse at 75% 20%, rgba(59,130,246,0.12) 0%, transparent 40%),
                 radial-gradient(ellipse at 15% 75%, rgba(96,165,250,0.08) 0%, transparent 35%),
-                /* Esmeralda - brilho verde */
                 radial-gradient(ellipse at 85% 50%, rgba(16,185,129,0.08) 0%, transparent 35%),
                 radial-gradient(ellipse at 10% 45%, rgba(52,211,153,0.06) 0%, transparent 30%),
-                /* Rubi - brilho vermelho-rosa */
                 radial-gradient(ellipse at 40% 80%, rgba(244,63,94,0.07) 0%, transparent 35%),
                 radial-gradient(ellipse at 60% 10%, rgba(236,72,153,0.06) 0%, transparent 30%),
-                /* Refração prismática - arco-íris sutil */
                 linear-gradient(45deg, transparent 20%, rgba(239,68,68,0.02) 22%, rgba(249,115,22,0.02) 24%, rgba(234,179,8,0.02) 26%, rgba(34,197,94,0.02) 28%, rgba(59,130,246,0.02) 30%, rgba(147,51,234,0.02) 32%, transparent 34%),
                 linear-gradient(225deg, transparent 60%, rgba(147,51,234,0.02) 62%, rgba(59,130,246,0.02) 64%, rgba(34,197,94,0.02) 66%, rgba(234,179,8,0.02) 68%, rgba(249,115,22,0.02) 70%, rgba(239,68,68,0.02) 72%, transparent 74%),
-                /* Facetas cristalinas - ângulos geométricos */
                 linear-gradient(60deg, transparent 45%, rgba(200,180,255,0.015) 48%, transparent 51%),
                 linear-gradient(120deg, transparent 35%, rgba(180,200,255,0.012) 38%, transparent 41%),
                 linear-gradient(30deg, transparent 55%, rgba(220,180,255,0.01) 58%, transparent 61%),
-                /* Pontos de brilho de gemas */
                 radial-gradient(circle 2px at 12% 18%, rgba(200,180,255,0.7) 0%, transparent 100%),
                 radial-gradient(circle 1.5px at 25% 52%, rgba(147,197,253,0.6) 0%, transparent 100%),
                 radial-gradient(circle 2px at 35% 30%, rgba(192,132,252,0.65) 0%, transparent 100%),
@@ -773,8 +715,6 @@
 
         /* ══════════════════════════════════════════════════ */
         /* 14. ⚡ SYNTHWAVE (NOVO - tema retro 80s neon)      */
-        /*     Retro-futurismo com sunset gradient, grid neon,*/
-        /*     chrome, hot pink e cyan, noite eléctrica       */
         /* ══════════════════════════════════════════════════ */
         body[data-theme="synthwave"] {
             font-family: 'Orbitron', sans-serif;
@@ -782,7 +722,6 @@
             background-color: #0a0020;
             color: #e0d0ff;
             background-image:
-                /* Sunset no horizonte */
                 linear-gradient(to top,
                     rgba(255,50,100,0.0) 0%,
                     rgba(255,50,100,0.06) 30%,
@@ -792,7 +731,6 @@
                     rgba(100,0,150,0.03) 65%,
                     transparent 75%
                 ),
-                /* Grid de perspectiva no chão */
                 repeating-linear-gradient(
                     90deg,
                     transparent,
@@ -807,13 +745,11 @@
                     rgba(0,240,255,0.03) 39px,
                     rgba(0,240,255,0.03) 40px
                 ),
-                /* Brilho neon difuso */
                 radial-gradient(ellipse at 20% 60%, rgba(255,45,149,0.12) 0%, transparent 45%),
                 radial-gradient(ellipse at 80% 40%, rgba(0,240,255,0.1) 0%, transparent 45%),
                 radial-gradient(ellipse at 50% 80%, rgba(168,85,247,0.08) 0%, transparent 40%),
                 radial-gradient(ellipse at 35% 20%, rgba(255,45,149,0.05) 0%, transparent 30%),
                 radial-gradient(ellipse at 65% 75%, rgba(0,240,255,0.06) 0%, transparent 35%),
-                /* Scan lines retro */
                 repeating-linear-gradient(
                     0deg,
                     transparent,
@@ -821,7 +757,6 @@
                     rgba(255,255,255,0.008) 3px,
                     rgba(255,255,255,0.008) 4px
                 ),
-                /* Estrelas neon */
                 radial-gradient(circle 1.5px at 10% 10%, rgba(255,45,149,0.5) 0%, transparent 100%),
                 radial-gradient(circle 1px at 20% 30%, rgba(0,240,255,0.4) 0%, transparent 100%),
                 radial-gradient(circle 1.5px at 35% 8%, rgba(255,255,255,0.5) 0%, transparent 100%),
@@ -1053,13 +988,58 @@ let showOccupancyStats = false;
 let showPastStatsMode = false;
 let selectedSnapshotDate = null;
 
-let currentTheme = localStorage.getItem("al_theme") || "white";
+// TEMA INICIAL PADRÃO (OUTONO)
+let currentTheme = localStorage.getItem("al_theme") || "outono";
 document.body.setAttribute("data-theme", currentTheme);
+
+// NOVA FUNÇÃO: Injetar os botões do relógio e do tema fora da "caixa" principal
+// para garantir que ficam SEMPRE fixos, mesmo ao fazer scroll da página.
+window.createOrUpdateFixedControls = function() {
+    let controls = document.getElementById("al-fixed-controls");
+    if (!controls) {
+        controls = document.createElement("div");
+        controls.id = "al-fixed-controls";
+        // Position fixed injetado diretamente no body com z-index muito alto
+        controls.style.cssText = "position: fixed; top: 16px; right: 16px; display: flex; align-items: center; gap: 8px; z-index: 999999;";
+        document.body.appendChild(controls);
+    }
+
+    const isSnapshots = currentView === "snapshots";
+    controls.innerHTML = `
+        <select class="theme-select-dropdown" onchange="window.setTheme(this.value)" title="Mudar Estilo" style="
+            padding: 4px 8px; font-size: 13px; border-radius: 6px;
+            border: 1px solid rgba(0,0,0,0.2); background-color: rgba(255,255,255,0.9); color: #333;
+            cursor: pointer; outline: none; box-shadow: 0 2px 6px rgba(0,0,0,0.15); backdrop-filter: blur(5px);
+        ">
+            <option value="white" ${currentTheme==='white'?'selected':''}>⬜ Original</option>
+            <option value="outono" ${currentTheme==='outono'?'selected':''}>🍂 Outono</option>
+            <option value="cyber" ${currentTheme==='cyber'?'selected':''}>🖥️ Terminal</option>
+            <option value="cappuccino" ${currentTheme==='cappuccino'?'selected':''}>📓 Caderno</option>
+            <option value="emerald" ${currentTheme==='emerald'?'selected':''}>🌿 Floresta</option>
+            <option value="glass" ${currentTheme==='glass'?'selected':''}>🌌 Cosmos</option>
+            <option value="ocean" ${currentTheme==='ocean'?'selected':''}>🌊 Abismo</option>
+            <option value="royalgold" ${currentTheme==='royalgold'?'selected':''}>👑 Medieval</option>
+            <option value="carnival" ${currentTheme==='carnival'?'selected':''}>🎪 Carnaval</option>
+            <option value="sakura" ${currentTheme==='sakura'?'selected':''}>🌸 Sakura</option>
+            <option value="lava" ${currentTheme==='lava'?'selected':''}>🔥 Vulcão</option>
+            <option value="arctic" ${currentTheme==='arctic'?'selected':''}>❄️ Ártico</option>
+            <option value="crystal" ${currentTheme==='crystal'?'selected':''}>🔮 Cristal</option>
+            <option value="synthwave" ${currentTheme==='synthwave'?'selected':''}>⚡ Synthwave</option>
+        </select>
+        <button onclick="window.toggleSnapshots()" class="clock-btn ${isSnapshots?'active':''}" style="
+            font-size: 16px; background-color: ${isSnapshots?'#e2e6ea':'rgba(255,255,255,0.9)'};
+            border: 1px solid rgba(0,0,0,0.2); width: 34px; height: 34px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15); padding: 0; backdrop-filter: blur(5px);
+        " title="${isSnapshots?'Voltar ao Início':'Ver Previsões'}">🕒</button>
+    `;
+};
+window.createOrUpdateFixedControls();
 
 window.setTheme = function(themeKey) {
     currentTheme = themeKey;
     try { localStorage.setItem("al_theme", themeKey); } catch(e){}
     document.body.setAttribute("data-theme", currentTheme);
+    window.createOrUpdateFixedControls();
     renderCurrentView();
 };
 
@@ -1076,6 +1056,7 @@ window.toggleSnapshots = function() {
         currentView = "snapshots";
         selectedSnapshotDate = null;
     }
+    window.createOrUpdateFixedControls();
     renderCurrentView();
 };
 
@@ -1116,7 +1097,8 @@ async function saveToCloudHistory(newEntries) {
 }
 
 async function loadCalendars() {
-    result.innerHTML = "<p style='font-size: 18px; font-weight: bold; color: #007bff;'>⏳ A ligar à Cloud e a carregar calendários (aguarda)...</p>";
+    // TEXTO INICIAL ATUALIZADO 
+    result.innerHTML = "<p style='font-size: 18px; font-weight: bold;'>⏳ Está quase...</p>";
     try {
         const historyPromise = fetchCloudHistory();
         const calendarPromises = calendars.map(async (calendar) => {
@@ -1191,40 +1173,12 @@ function updateCloudHistory() {
     } catch(err) { console.error("Erro histórico:",err); }
 }
 
+// Removidos os controlos da renderNavigation para evitar serem reescritos e perderem a fixação
 function renderNavigation() {
     const isCleaning=currentView==="cleaning", isOccupancy=currentView==="occupancy", isSnapshots=currentView==="snapshots";
 
-    const topRightControls = `
-        <div style="position: fixed; top: 16px; right: 16px; display: flex; align-items: center; gap: 8px; z-index: 9999;">
-            <select class="theme-select-dropdown" onchange="window.setTheme(this.value)" title="Mudar Estilo" style="
-                padding: 4px 8px; font-size: 13px; border-radius: 6px;
-                border: 1px solid rgba(0,0,0,0.2); background-color: rgba(255,255,255,0.9); color: #333;
-                cursor: pointer; outline: none; box-shadow: 0 2px 6px rgba(0,0,0,0.15); backdrop-filter: blur(5px);
-            ">
-                <option value="white" ${currentTheme==='white'?'selected':''}>⬜ Original</option>
-                <option value="outono" ${currentTheme==='outono'?'selected':''}>🍂 Outono</option>
-                <option value="cyber" ${currentTheme==='cyber'?'selected':''}>🖥️ Terminal</option>
-                <option value="cappuccino" ${currentTheme==='cappuccino'?'selected':''}>📓 Caderno</option>
-                <option value="emerald" ${currentTheme==='emerald'?'selected':''}>🌿 Floresta</option>
-                <option value="glass" ${currentTheme==='glass'?'selected':''}>🌌 Cosmos</option>
-                <option value="ocean" ${currentTheme==='ocean'?'selected':''}>🌊 Abismo</option>
-                <option value="royalgold" ${currentTheme==='royalgold'?'selected':''}>👑 Medieval</option>
-                <option value="carnival" ${currentTheme==='carnival'?'selected':''}>🎪 Carnaval</option>
-                <option value="sakura" ${currentTheme==='sakura'?'selected':''}>🌸 Sakura</option>
-                <option value="lava" ${currentTheme==='lava'?'selected':''}>🔥 Vulcão</option>
-                <option value="arctic" ${currentTheme==='arctic'?'selected':''}>❄️ Ártico</option>
-                <option value="crystal" ${currentTheme==='crystal'?'selected':''}>🔮 Cristal</option>
-                <option value="synthwave" ${currentTheme==='synthwave'?'selected':''}>⚡ Synthwave</option>
-            </select>
-            <button onclick="window.toggleSnapshots()" class="clock-btn ${isSnapshots?'active':''}" style="
-                font-size: 16px; background-color: ${isSnapshots?'#e2e6ea':'rgba(255,255,255,0.9)'};
-                border: 1px solid rgba(0,0,0,0.2); width: 34px; height: 34px;
-                box-shadow: 0 2px 6px rgba(0,0,0,0.15); padding: 0; backdrop-filter: blur(5px);
-            " title="${isSnapshots?'Voltar ao Início':'Ver Previsões'}">🕒</button>
-        </div>`;
-
     if (currentTheme==="outono") {
-        return `${topRightControls}
+        return `
             <div style="margin-bottom: 22px;">
                 <h1 style="font-size: 26px; font-weight: 800; background: linear-gradient(135deg, #fff8f0 30%, #f59e0b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0;">🍂 Traços de Outono</h1>
                 <div style="font-size: 13px; color: #a3998e; font-weight: 500;">Gestão de Alojamento Local</div>
@@ -1237,7 +1191,7 @@ function renderNavigation() {
             </div>`;
     }
 
-    return `${topRightControls}
+    return `
         <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
             <button onclick="window.switchMainView('cleaning')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #007bff; background-color: ${isCleaning?'#007bff':'#ffffff'}; color: ${isCleaning?'#ffffff':'#007bff'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">🧹 Plano de Limpezas</button>
             <button onclick="window.switchMainView('occupancy')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #28a745; background-color: ${isOccupancy?'#28a745':'#ffffff'}; color: ${isOccupancy?'#ffffff':'#28a745'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">📊 Disponibilidade da Casa</button>
