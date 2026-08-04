@@ -1,321 +1,286 @@
-// Injeta dinamicamente o tema "Outono Luxury" na página
-(function injectAutumnLuxuryTheme() {
-    if (document.getElementById("al-app-theme")) return;
+// Injeta todos os 8 temas CSS dinamicamente na página
+(function injectThemeStyles() {
+    if (document.getElementById("al-app-multitheme")) return;
     const style = document.createElement("style");
-    style.id = "al-app-theme";
+    style.id = "al-app-multitheme";
     style.textContent = `
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-        :root {
-            --bg-main: #12100e;
-            --bg-card: rgba(26, 22, 19, 0.85);
-            --border-amber: rgba(245, 158, 11, 0.15);
-            --border-amber-glow: rgba(245, 158, 11, 0.4);
-            --text-primary: #fff8f0;
-            --text-muted: #a3998e;
-            --gold-primary: #f59e0b;
-            --copper-accent: #ea580c;
-            --emerald-glow: #10b981;
-            --rose-flame: #f43f5e;
-            --cyan-accent: #06b6d4;
-        }
+        * { box-sizing: border-box; }
 
         body {
-            font-family: 'Outfit', -apple-system, sans-serif;
-            background-color: var(--bg-main);
-            color: var(--text-primary);
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
             margin: 0;
-            padding: 24px 16px;
+            padding: 20px 16px;
             min-height: 100vh;
-            background-image: 
-                radial-gradient(at 10% 10%, rgba(245, 158, 11, 0.12) 0px, transparent 45%),
-                radial-gradient(at 90% 90%, rgba(234, 88, 12, 0.10) 0px, transparent 45%);
-            background-attachment: fixed;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         #result {
-            max-width: 920px;
+            max-width: 900px;
             margin: 0 auto;
         }
 
-        /* Branding Header */
-        .brand-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 24px;
+        /* ------------------------------------------------------------------ */
+        /* VARIÁVEIS DOS 8 TEMAS */
+        /* ------------------------------------------------------------------ */
+
+        /* 1. TEMA BRANCO (ORIGINAL) - PADRÃO */
+        body[data-theme="white"], body:not([data-theme]) {
+            --bg-main: #f8f9fa;
+            --bg-card: #ffffff;
+            --border-card: #dee2e6;
+            --text-main: #212529;
+            --text-muted: #6c757d;
+            --accent-blue: #007bff;
+            --accent-green: #28a745;
+            --accent-purple: #6f42c1;
+            --chip-bg: #e9ecef;
+            --chip-text: #212529;
+            --shadow-card: 0 2px 6px rgba(0,0,0,0.06);
         }
 
-        .brand-title {
-            font-size: 24px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #fff8f0 30%, #f59e0b 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -0.02em;
-            margin: 0;
+        /* 2. DARK GLASSMORPHISM */
+        body[data-theme="glass"] {
+            --bg-main: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.8);
+            --border-card: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-purple: #8b5cf6;
+            --chip-bg: rgba(255, 255, 255, 0.08);
+            --chip-text: #f8fafc;
+            --shadow-card: 0 10px 25px -5px rgba(0,0,0,0.3);
         }
 
-        .brand-subtitle {
-            font-size: 13px;
-            color: var(--text-muted);
-            font-weight: 500;
+        /* 3. OUTONO LUXURY */
+        body[data-theme="outono"] {
+            --bg-main: #12100e;
+            --bg-card: rgba(28, 23, 20, 0.9);
+            --border-card: rgba(245, 158, 11, 0.25);
+            --text-main: #fff8f0;
+            --text-muted: #a3998e;
+            --accent-blue: #ea580c;
+            --accent-green: #10b981;
+            --accent-purple: #f59e0b;
+            --chip-bg: rgba(245, 158, 11, 0.12);
+            --chip-text: #fbbf24;
+            --shadow-card: 0 10px 30px -10px rgba(0,0,0,0.5);
         }
 
-        /* Contentor de Navegação Estilo iOS Segmented Bar */
-        .nav-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 28px;
-            gap: 12px;
-            flex-wrap: wrap;
+        /* 4. NATURE EMERALD */
+        body[data-theme="emerald"] {
+            --bg-main: #064e3b;
+            --bg-card: rgba(6, 78, 59, 0.85);
+            --border-card: rgba(52, 211, 153, 0.25);
+            --text-main: #ecfdf5;
+            --text-muted: #a7f3d0;
+            --accent-blue: #10b981;
+            --accent-green: #34d399;
+            --accent-purple: #059669;
+            --chip-bg: rgba(52, 211, 153, 0.15);
+            --chip-text: #a7f3d0;
+            --shadow-card: 0 10px 25px -5px rgba(0,0,0,0.4);
         }
 
-        .segmented-bar {
-            display: inline-flex;
-            background: rgba(255, 255, 255, 0.04);
-            padding: 5px;
-            border-radius: 16px;
-            border: 1px solid var(--border-amber);
-            gap: 4px;
+        /* 5. CYBER NEON */
+        body[data-theme="cyber"] {
+            --bg-main: #09090b;
+            --bg-card: rgba(24, 24, 27, 0.9);
+            --border-card: rgba(168, 85, 247, 0.35);
+            --text-main: #fafafa;
+            --text-muted: #a1a1aa;
+            --accent-blue: #06b6d4;
+            --accent-green: #10b981;
+            --accent-purple: #a855f7;
+            --chip-bg: rgba(168, 85, 247, 0.15);
+            --chip-text: #c084fc;
+            --shadow-card: 0 0 20px rgba(168, 85, 247, 0.25);
         }
 
-        .segment-btn {
+        /* 6. WARM CAPPUCCINO */
+        body[data-theme="cappuccino"] {
+            --bg-main: #f5f0eb;
+            --bg-card: #ffffff;
+            --border-card: #e6ded6;
+            --text-main: #3d342d;
+            --text-muted: #8c7e72;
+            --accent-blue: #8c5a3c;
+            --accent-green: #5a8c5a;
+            --accent-purple: #c29b7f;
+            --chip-bg: #efe8e0;
+            --chip-text: #3d342d;
+            --shadow-card: 0 4px 15px rgba(61, 52, 45, 0.08);
+        }
+
+        /* 7. OCEAN BREEZE */
+        body[data-theme="ocean"] {
+            --bg-main: #0f2b3c;
+            --bg-card: rgba(21, 50, 67, 0.85);
+            --border-card: rgba(56, 189, 248, 0.25);
+            --text-main: #f0f9ff;
+            --text-muted: #7dd3fc;
+            --accent-blue: #0284c7;
+            --accent-green: #06b6d4;
+            --accent-purple: #38bdf8;
+            --chip-bg: rgba(56, 189, 248, 0.12);
+            --chip-text: #38bdf8;
+            --shadow-card: 0 10px 25px -5px rgba(0,0,0,0.35);
+        }
+
+        /* 8. ROYAL GOLD */
+        body[data-theme="royalgold"] {
+            --bg-main: #0a0a0a;
+            --bg-card: rgba(20, 20, 20, 0.9);
+            --border-card: rgba(234, 179, 8, 0.35);
+            --text-main: #fef08a;
+            --text-muted: #ca8a04;
+            --accent-blue: #eab308;
+            --accent-green: #10b981;
+            --accent-purple: #ca8a04;
+            --chip-bg: rgba(234, 179, 8, 0.12);
+            --chip-text: #fde047;
+            --shadow-card: 0 10px 30px rgba(234, 179, 8, 0.15);
+        }
+
+        /* ------------------------------------------------------------------ */
+        /* ESTILOS DOS ELEMENTOS DA PÁGINA */
+        /* ------------------------------------------------------------------ */
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-card);
+            transition: all 0.2s ease;
+        }
+
+        .btn-ui {
             font-family: inherit;
-            padding: 10px 20px;
+            padding: 10px 16px;
             font-size: 14px;
             font-weight: 600;
-            border-radius: 12px;
+            border-radius: 8px;
             cursor: pointer;
-            border: none;
-            background: transparent;
-            color: var(--text-muted);
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .segment-btn:hover {
-            color: var(--text-primary);
-        }
-
-        .segment-btn.active-cleaning {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            color: #000;
-            font-weight: 700;
-            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.35);
-        }
-
-        .segment-btn.active-occupancy {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: #fff;
-            font-weight: 700;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
-        }
-
-        /* Botão do Relógio Dourado */
-        .clock-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid var(--border-amber);
-            color: var(--text-primary);
-            font-size: 22px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-
-        .clock-btn:hover {
-            transform: rotate(20deg) scale(1.08);
-            border-color: var(--gold-primary);
-            box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
-            background: rgba(245, 158, 11, 0.15);
-        }
-
-        .clock-btn.active {
-            background: linear-gradient(135deg, #ea580c, #c2410c);
-            border-color: #f97316;
-            box-shadow: 0 0 20px rgba(234, 88, 12, 0.5);
-        }
-
-        /* Cartões Principais */
-        .luxury-card {
-            background: var(--bg-card);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border-amber);
-            border-radius: 20px;
-            padding: 22px;
-            margin-bottom: 18px;
-            box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.5);
-            transition: all 0.25s ease;
-        }
-
-        .luxury-card:hover {
-            border-color: var(--border-amber-glow);
-            transform: translateY(-2px);
-        }
-
-        /* Badges / Chips */
-        .badge {
+            border: 1px solid var(--border-card);
+            background-color: var(--bg-card);
+            color: var(--text-main);
+            transition: all 0.2s ease;
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 6px 14px;
-            border-radius: 30px;
-            font-size: 13px;
-            font-weight: 600;
-            margin: 4px 6px 4px 0;
         }
 
-        .badge-urgent {
-            background: rgba(244, 63, 94, 0.15);
-            color: #fb7185;
-            border: 1px solid rgba(244, 63, 94, 0.3);
-        }
-
-        .badge-normal {
-            background: rgba(245, 158, 11, 0.15);
-            color: #fbbf24;
-            border: 1px solid rgba(245, 158, 11, 0.3);
-        }
-
-        .badge-free {
-            background: rgba(16, 185, 129, 0.15);
-            color: #34d399;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-        }
-
-        /* Botões de Ação */
-        .btn-action {
-            font-family: inherit;
-            padding: 8px 16px;
-            font-size: 13px;
-            font-weight: 600;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: 1px solid transparent;
-        }
-
-        .btn-action:hover {
+        .btn-ui:hover {
+            opacity: 0.9;
             transform: translateY(-1px);
         }
 
-        .btn-pt {
-            background: rgba(16, 185, 129, 0.15);
-            color: #34d399;
-            border-color: rgba(16, 185, 129, 0.3);
+        .btn-ui.active-blue {
+            background-color: var(--accent-blue);
+            color: #ffffff;
+            border-color: var(--accent-blue);
         }
 
-        .btn-pt:hover {
-            background: rgba(16, 185, 129, 0.25);
+        .btn-ui.active-green {
+            background-color: var(--accent-green);
+            color: #ffffff;
+            border-color: var(--accent-green);
         }
 
-        .btn-es {
-            background: rgba(6, 182, 212, 0.15);
-            color: #38bdf8;
-            border-color: rgba(6, 182, 212, 0.3);
+        .btn-ui.active-purple {
+            background-color: var(--accent-purple);
+            color: #ffffff;
+            border-color: var(--accent-purple);
         }
 
-        .btn-es:hover {
-            background: rgba(6, 182, 212, 0.25);
-        }
-
-        .btn-house {
-            padding: 10px 18px;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 14px;
+        .btn-clock {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
             cursor: pointer;
-            border: 1px solid var(--border-amber);
-            background: rgba(255, 255, 255, 0.03);
-            color: var(--text-muted);
+            border: 1px solid var(--border-card);
+            background-color: var(--bg-card);
+            color: var(--text-main);
             transition: all 0.2s ease;
         }
 
-        .btn-house.active {
-            background: linear-gradient(135deg, #ea580c, #c2410c);
-            color: #fff;
-            border-color: #f97316;
-            box-shadow: 0 4px 14px rgba(234, 88, 12, 0.35);
+        .btn-clock.active {
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 10px var(--accent-purple);
         }
 
-        /* Indicador Pulsante */
-        .pulse-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
+        .chip {
             display: inline-block;
-            box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7);
-            animation: pulse 1.6s infinite;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            background-color: var(--chip-bg);
+            color: var(--chip-text);
+            margin: 3px 4px 3px 0;
+            border: 1px solid var(--border-card);
         }
 
-        .pulse-red {
-            background-color: #f43f5e;
-            box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7);
+        .chip-urgent {
+            background-color: rgba(220, 53, 69, 0.15);
+            color: #dc3545;
+            border-color: rgba(220, 53, 69, 0.3);
         }
 
-        .pulse-green {
-            background-color: #10b981;
-            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        .chip-free {
+            background-color: rgba(40, 167, 69, 0.15);
+            color: #28a745;
+            border-color: rgba(40, 167, 69, 0.3);
         }
 
-        @keyframes pulse {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(244, 63, 94, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
-        }
-
-        /* Estatísticas Mensais */
-        .stats-container {
+        .theme-picker-panel {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 20px;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-            gap: 14px;
-            margin-bottom: 24px;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 10px;
+            box-shadow: var(--shadow-card);
         }
 
-        .stat-box {
-            background: rgba(18, 16, 14, 0.7);
-            border: 1px solid var(--border-amber);
-            border-radius: 16px;
-            padding: 18px;
+        .theme-opt-btn {
+            padding: 10px 12px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid var(--border-card);
+            background: rgba(0,0,0,0.03);
+            color: var(--text-main);
+            text-align: left;
+            transition: all 0.2s ease;
         }
 
-        .stat-val {
-            font-size: 26px;
-            font-weight: 800;
+        .theme-opt-btn:hover, .theme-opt-btn.current {
+            border-color: var(--accent-blue);
+            background-color: var(--accent-blue);
             color: #ffffff;
-            margin-top: 4px;
         }
 
-        .bar-bg {
-            height: 6px;
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 3px;
-            overflow: hidden;
-            margin-top: 10px;
-        }
-
-        .bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #f59e0b, #ea580c);
-            border-radius: 3px;
-        }
-
-        /* Spinner */
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .spin-loader {
-            width: 24px;
-            height: 24px;
-            border: 3px solid rgba(245, 158, 11, 0.2);
-            border-top-color: #f59e0b;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            display: inline-block;
-        }
+        h1 { font-size: 22px; font-weight: 700; margin: 0 0 16px 0; }
+        h2 { font-size: 16px; font-weight: 700; margin: 0; }
+        p { margin: 6px 0; }
     `;
     document.head.appendChild(style);
 })();
@@ -351,7 +316,32 @@ let showOccupancyStats = false;
 let showPastStatsMode = false;
 let selectedSnapshotDate = null;
 
-// Função de Fetch com Anti-Cache seguro (sem quebrar CORS)
+// Gestão de Temas (Por defeito: "white" - Branco Clássico)
+let currentTheme = localStorage.getItem("al_theme") || "white";
+let showThemePicker = false;
+document.body.setAttribute("data-theme", currentTheme);
+
+// Mudar de Tema
+window.setTheme = function(themeKey) {
+    currentTheme = themeKey;
+    try { localStorage.setItem("al_theme", themeKey); } catch(e){}
+    document.body.setAttribute("data-theme", currentTheme);
+    showThemePicker = false;
+    renderCurrentView();
+};
+
+window.toggleThemePicker = function() {
+    showThemePicker = !showThemePicker;
+    renderCurrentView();
+};
+
+function renderCurrentView() {
+    if (currentView === "cleaning") showCleaningPlan();
+    else if (currentView === "occupancy") showOccupancyPlan();
+    else if (currentView === "snapshots") showSnapshotsPlan();
+}
+
+// Fetch com Anti-Cache seguro (sem bloquear CORS)
 async function fetchWithTimeout(resource, options = {}, timeout = 10000) {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
@@ -372,7 +362,7 @@ async function fetchWithTimeout(resource, options = {}, timeout = 10000) {
     }
 }
 
-// Copiar texto para área de transferência
+// Copiar texto para a área de transferência
 window.copyFromData = function(btnElement, encodedText) {
     const text = decodeURIComponent(encodedText);
     navigator.clipboard.writeText(text).then(() => {
@@ -384,15 +374,11 @@ window.copyFromData = function(btnElement, encodedText) {
     });
 };
 
-// Navegação entre Vistas
+// Alternar Vistas
 window.switchMainView = function(view) {
     currentView = view;
-    if (currentView === "cleaning") showCleaningPlan();
-    else if (currentView === "occupancy") showOccupancyPlan();
-    else if (currentView === "snapshots") {
-        selectedSnapshotDate = null;
-        showSnapshotsPlan();
-    }
+    if (currentView === "snapshots") selectedSnapshotDate = null;
+    renderCurrentView();
 };
 
 window.toggleHistoryView = function() {
@@ -430,7 +416,7 @@ async function fetchCloudHistory() {
             cloudHistory = {};
         }
     } catch (e) {
-        console.warn("Aviso: Histórico da cloud não carregou a tempo.", e);
+        console.warn("Aviso: Histórico da cloud não carregou.", e);
         cloudHistory = {};
     }
 }
@@ -448,14 +434,7 @@ async function saveToCloudHistory(newEntries) {
 }
 
 async function loadCalendars() {
-    result.innerHTML = `
-        <div class="luxury-card" style="text-align: center; padding: 45px 20px;">
-            <div class="spin-loader"></div>
-            <div style="font-size: 16px; font-weight: 600; color: #fbbf24; margin-top: 14px;">
-                A carregar calendários e histórico da Cloud...
-            </div>
-        </div>
-    `;
+    result.innerHTML = "<div class='card'><p style='font-weight:bold; color:var(--accent-blue);'>⏳ A ligar à Cloud e a carregar calendários (aguarda)...</p></div>";
 
     try {
         const historyPromise = fetchCloudHistory();
@@ -476,17 +455,10 @@ async function loadCalendars() {
         globalReservations = results.flat();
 
         updateCloudHistory();
-        
-        if (currentView === "cleaning") showCleaningPlan();
-        else if (currentView === "occupancy") showOccupancyPlan();
-        else if (currentView === "snapshots") showSnapshotsPlan();
+        renderCurrentView();
 
     } catch (err) {
-        result.innerHTML = `
-            <div class="luxury-card" style="border-color: rgba(244, 63, 94, 0.4); text-align: center;">
-                <p style="color: #fb7185; font-weight: 700; margin: 0;">Erro geral: ${err.message}</p>
-            </div>
-        `;
+        result.innerHTML = `<div class='card'><p style='color:red; font-weight:bold;'>Erro geral: ${err.message}</p></div>`;
     }
 }
 
@@ -677,64 +649,86 @@ function updateCloudHistory() {
             cloudHistory = mergedHistory; 
         }
     } catch (err) {
-        console.error("Erro interno no histórico:", err);
+        console.error("Erro no histórico:", err);
     }
 }
 
-// Cabeçalho de Navegação Principal
+// Cabeçalho de Navegação com Seletor de Temas
 function renderNavigation() {
     const isCleaning = currentView === "cleaning";
     const isOccupancy = currentView === "occupancy";
     const isSnapshots = currentView === "snapshots";
 
-    return `
-        <div class="brand-header">
-            <div>
-                <h1 class="brand-title">🍂 Traços de Outono</h1>
-                <div class="brand-subtitle">Gestão de Alojamento Local</div>
-            </div>
-        </div>
+    const themesList = [
+        { key: "white", label: "⬜ Branco Clássico" },
+        { key: "glass", label: "🌙 Dark Glass" },
+        { key: "outono", label: "🍂 Outono Luxury" },
+        { key: "emerald", label: "🌿 Nature Emerald" },
+        { key: "cyber", label: "🌆 Cyber Neon" },
+        { key: "cappuccino", label: "☕ Cappuccino" },
+        { key: "ocean", label: "🌊 Ocean Breeze" },
+        { key: "royalgold", label: "👑 Royal Gold" }
+    ];
 
-        <div class="nav-container">
-            <div class="segmented-bar">
-                <button onclick="window.switchMainView('cleaning')" class="segment-btn ${isCleaning ? 'active-cleaning' : ''}">
-                    🧹 Limpezas
+    let themePickerHtml = "";
+    if (showThemePicker) {
+        themePickerHtml = `<div class="theme-picker-panel">`;
+        themesList.forEach(t => {
+            const isCurrent = currentTheme === t.key ? "current" : "";
+            themePickerHtml += `
+                <button onclick="window.setTheme('${t.key}')" class="theme-opt-btn ${isCurrent}">
+                    ${t.label}
                 </button>
-                <button onclick="window.switchMainView('occupancy')" class="segment-btn ${isOccupancy ? 'active-occupancy' : ''}">
+            `;
+        });
+        themePickerHtml += `</div>`;
+    }
+
+    return `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px; flex-wrap: wrap;">
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button onclick="window.switchMainView('cleaning')" class="btn-ui ${isCleaning ? 'active-blue' : ''}">
+                    🧹 Plano de Limpezas
+                </button>
+                <button onclick="window.switchMainView('occupancy')" class="btn-ui ${isOccupancy ? 'active-green' : ''}">
                     📊 Disponibilidade
+                </button>
+                <button onclick="window.toggleThemePicker()" class="btn-ui">
+                    🎨 Temas
                 </button>
             </div>
             
-            <button onclick="window.switchMainView('snapshots')" class="clock-btn ${isSnapshots ? 'active' : ''}" title="Ver Previsões Guardadas (Snapshots)">
+            <button onclick="window.switchMainView('snapshots')" class="btn-clock ${isSnapshots ? 'active' : ''}" title="Ver Previsões Guardadas">
                 🕒
             </button>
         </div>
+        ${themePickerHtml}
     `;
 }
 
-// VISTA 3: SNAPSHOTS
+// VISTA 3: PREVISÕES GUARDADAS (SNAPSHOTS)
 function showSnapshotsPlan() {
     let html = renderNavigation();
-    html += `<h2 style="font-size: 22px; margin-bottom: 16px;">🕒 Previsões Passadas</h2>`;
+    html += `<h1>🕒 Previsões Passadas</h1>`;
 
     const snapshots = cloudHistory["_snapshots"] || {};
     const snapshotKeys = Object.keys(snapshots).sort().reverse();
 
     if (snapshotKeys.length === 0) {
-        html += `<div class="luxury-card"><p style="color: var(--text-muted); margin:0;">Ainda não existem previsões guardadas.</p></div>`;
+        html += `<div class="card"><p style="color: var(--text-muted);">Ainda não há previsões guardadas de dias anteriores.</p></div>`;
         result.innerHTML = html;
         return;
     }
 
     if (!selectedSnapshotDate) {
-        html += `<p style="color: var(--text-muted); margin-bottom: 16px;">Escolhe um dia para consultar a previsão dos 7 dias seguintes guardada nessa data:</p>`;
-        html += `<div style="display: flex; gap: 10px; flex-wrap: wrap;">`;
+        html += `<p style="color: var(--text-muted); margin-bottom: 14px;">Escolhe um dia para ver o plano de limpezas previsto nesse momento:</p>`;
+        html += `<div style="display: flex; gap: 8px; flex-wrap: wrap;">`;
         
         snapshotKeys.forEach(key => {
             const dateObj = new Date(key);
             const label = dateObj.toLocaleDateString("pt-PT", { day: "numeric", month: "long", year: "numeric" });
             html += `
-                <button onclick="window.selectSnapshot('${key}')" class="btn-house">
+                <button onclick="window.selectSnapshot('${key}')" class="btn-ui">
                     📅 ${label}
                 </button>
             `;
@@ -745,20 +739,20 @@ function showSnapshotsPlan() {
         const label = dateObj.toLocaleDateString("pt-PT", { day: "numeric", month: "long", year: "numeric" });
         
         html += `
-            <div style="margin-bottom: 20px;">
-                <button onclick="window.selectSnapshot(null)" class="btn-house">
+            <div style="margin-bottom: 16px;">
+                <button onclick="window.selectSnapshot(null)" class="btn-ui">
                     🔙 Voltar à Lista
                 </button>
             </div>
-            <div class="luxury-card">
-                <h3 style="color: #fbbf24; font-size: 18px; margin-bottom: 16px;">Previsão gerada no dia: <span style="color: #fff;">${label}</span></h3>
+            <div class="card">
+                <h2>Plano visualizado no dia: <span style="color: var(--accent-blue);">${label}</span></h2>
         `;
 
         const plan = snapshots[selectedSnapshotDate];
         const planKeys = Object.keys(plan).sort();
 
         if (planKeys.length === 0) {
-            html += `<p style="color: var(--text-muted);">Sem limpezas previstes para os 7 dias seguintes.</p>`;
+            html += `<p style="color: var(--text-muted);">Não havia nenhuma limpeza planeada para os 7 dias seguintes.</p>`;
         }
 
         planKeys.forEach(key => {
@@ -767,18 +761,18 @@ function showSnapshotsPlan() {
             let title = d.toLocaleDateString("pt-PT", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
             if (day.rooms.some(r => r.sunday)) title = "🔴 " + title;
 
-            let badges = "";
+            let chips = "";
             day.rooms.sort((a, b) => a.room.localeCompare(b.room)).forEach(clean => {
-                const bClass = clean.urgent ? "badge-urgent" : "badge-normal";
+                const badgeClass = clean.urgent ? "chip-urgent" : "";
                 const emoji = clean.urgent ? "⚠️" : "🧹";
                 let tag = clean.urgent ? " (entrada no mesmo dia)" : ""; 
-                badges += `<span class="badge ${bClass}">${emoji} ${clean.room}${tag}</span>`;
+                chips += `<span class="chip ${badgeClass}">${emoji} ${clean.room}${tag}</span>`;
             });
 
             html += `
-                <div style="margin-top: 14px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">
-                    <div style="font-weight: 700; color: #fff; margin-bottom: 8px;">${title}</div>
-                    <div>${badges}</div>
+                <div style="margin-top: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border-card);">
+                    <div style="font-weight: 700; margin-bottom: 6px;">${title}</div>
+                    <div>${chips}</div>
                 </div>
             `;
         });
@@ -834,21 +828,21 @@ function showCleaningPlan() {
     let sortedKeys = Object.keys(grouped).sort();
     if (showHistoryMode) sortedKeys.reverse();
 
-    let buttonText = showHistoryMode ? "📅 Próximas Limpezas" : "📜 Histórico Anterior";
-    let mainTitle = showHistoryMode ? "📜 Histórico de Limpezas" : "🧹 Plano de Limpezas";
+    let buttonText = showHistoryMode ? "📅 Ver Próximas Limpezas" : "📜 Ver Dias Anteriores";
+    let mainTitle = showHistoryMode ? "📜 Histórico de Limpezas (Cloud)" : "🧹 Plano de Limpezas";
 
     let html = renderNavigation();
     html += `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; flex-wrap: wrap; gap: 10px;">
-            <h2 style="font-size: 22px; margin:0;">${mainTitle}</h2>
-            <button onclick="window.toggleHistoryView()" class="btn-house">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+            <h1>${mainTitle}</h1>
+            <button onclick="window.toggleHistoryView()" class="btn-ui">
                 ${buttonText}
             </button>
         </div>
     `;
 
     if (sortedKeys.length === 0) {
-        html += `<div class="luxury-card"><p style="color: var(--text-muted); margin:0;">Não há limpezas para exibir.</p></div>`;
+        html += `<div class="card"><p style="color: var(--text-muted);">Não há limpezas registadas ${showHistoryMode ? 'anteriores a hoje' : 'agendadas'}.</p></div>`;
     }
 
     sortedKeys.forEach(key => {
@@ -870,7 +864,7 @@ function showCleaningPlan() {
         dateForCopyEs = dateForCopyEs.charAt(0).toUpperCase() + dateForCopyEs.slice(1);
         let copyLinesEs = [`🧹 Limpiezas - ${dateForCopyEs}:`];
 
-        let roomsChips = "";
+        let chips = "";
 
         day.rooms.sort((a, b) => a.room.localeCompare(b.room)).forEach(clean => {
             const hasCheckout = globalReservations.some(r => r.room === clean.room && sameDay(r.checkOut, day.date));
@@ -891,30 +885,30 @@ function showCleaningPlan() {
             }
 
             const emoji = hasCheckin ? "⚠️" : "🧹";
-            const badgeClass = hasCheckin ? "badge-urgent" : "badge-normal";
+            const badgeClass = hasCheckin ? "chip-urgent" : "";
 
             copyLinesPt.push(`${emoji} ${clean.room}${tagTextPt}`);
             copyLinesEs.push(`${emoji} ${clean.room}${tagTextEs}`);
-            roomsChips += `<span class="badge ${badgeClass}">${emoji} ${clean.room}<b>${tagTextPt}</b></span>`;
+            chips += `<span class="chip ${badgeClass}">${emoji} ${clean.room}<b>${tagTextPt}</b></span>`;
         });
 
         const encodedCopyTextPt = encodeURIComponent(copyLinesPt.join("\n"));
         const encodedCopyTextEs = encodeURIComponent(copyLinesEs.join("\n"));
 
         html += `
-            <div class="luxury-card">
-                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
-                    <span style="font-weight: 700; font-size: 17px; color: #fff;">${title}</span>
-                    <div style="display: flex; gap: 8px;">
-                        <button onclick="window.copyFromData(this, '${encodedCopyTextPt}')" class="btn-action btn-pt">
+            <div class="card">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
+                    <h2>${title}</h2>
+                    <div style="display: flex; gap: 6px;">
+                        <button onclick="window.copyFromData(this, '${encodedCopyTextPt}')" class="btn-ui" style="font-size:12px; padding:4px 10px;">
                             🇵🇹 Copiar PT
                         </button>
-                        <button onclick="window.copyFromData(this, '${encodedCopyTextEs}')" class="btn-action btn-es">
+                        <button onclick="window.copyFromData(this, '${encodedCopyTextEs}')" class="btn-ui" style="font-size:12px; padding:4px 10px;">
                             🇪🇸 Copiar ES
                         </button>
                     </div>
                 </div>
-                <div>${roomsChips}</div>
+                <div>${chips}</div>
             </div>
         `;
     });
@@ -1008,25 +1002,25 @@ function showOccupancyPlan() {
 
     html += `
         <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
-            <button onclick="window.selectHouse('achada')" class="btn-house ${selectedHouse === 'achada' ? 'active' : ''}">
+            <button onclick="window.selectHouse('achada')" class="btn-ui ${selectedHouse === 'achada' ? 'active-blue' : ''}">
                 🏡 Achada
             </button>
-            <button onclick="window.selectHouse('impasse')" class="btn-house ${selectedHouse === 'impasse' ? 'active' : ''}">
+            <button onclick="window.selectHouse('impasse')" class="btn-ui ${selectedHouse === 'impasse' ? 'active-blue' : ''}">
                 🏡 Impasse
             </button>
-            <button onclick="window.selectHouse('vizinho')" class="btn-house ${selectedHouse === 'vizinho' ? 'active' : ''}">
+            <button onclick="window.selectHouse('vizinho')" class="btn-ui ${selectedHouse === 'vizinho' ? 'active-blue' : ''}">
                 🏡 Vizinho
             </button>
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
-            <h2 style="font-size: 22px; margin:0;">📊 Ocupação - ${houseLabels[selectedHouse]}</h2>
+            <h1>📊 Ocupação - ${houseLabels[selectedHouse]}</h1>
             <div style="display: flex; gap: 8px;">
-                <button onclick="window.toggleOccupancyStats()" class="btn-house">
-                    ${showOccupancyStats ? '🔙 Esconder Estatísticas' : '📈 Estatísticas Mensais'}
+                <button onclick="window.toggleOccupancyStats()" class="btn-ui ${showOccupancyStats ? 'active-purple' : ''}">
+                    ${showOccupancyStats ? '🔙 Ocultar Estatísticas' : '📈 Estatísticas Mensais'}
                 </button>
                 ${showOccupancyStats ? `
-                <button onclick="window.togglePastStats()" class="btn-house">
+                <button onclick="window.togglePastStats()" class="btn-ui">
                     ${showPastStatsMode ? '📅 Meses Atuais e Futuros' : '📜 Meses Passados'}
                 </button>
                 ` : ''}
@@ -1048,26 +1042,21 @@ function showOccupancyPlan() {
         }
 
         if (statKeys.length === 0) {
-            html += `<div class="luxury-card"><p style="color: var(--text-muted); margin:0;">Sem estatísticas registradas.</p></div>`;
+            html += `<div class="card"><p style="color: var(--text-muted);">Sem dados de estatísticas.</p></div>`;
         } else {
-            html += `<div class="stats-container">`;
+            html += `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px;">`;
             
             statKeys.forEach(key => {
                 const s = stats[key];
                 const taxa = s.totalCapacity > 0 ? Math.round((s.dormidas / s.totalCapacity) * 100) : 0;
                 
                 html += `
-                    <div class="stat-box">
-                        <div style="color: #fbbf24; font-weight: 700; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 6px;">${s.label}</div>
-                        <div class="stat-val">${taxa}% <span style="font-size: 13px; font-weight: 500; color: var(--text-muted);">ocupação</span></div>
-                        <div class="bar-bg">
-                            <div class="bar-fill" style="width: ${taxa}%;"></div>
-                        </div>
-                        <div style="margin-top: 12px; font-size: 13px; color: var(--text-muted); display: flex; flex-direction: column; gap: 4px;">
-                            <span>🌙 Dormidas: <strong style="color: #fff;">${s.dormidas}</strong> / ${s.totalCapacity}</span>
-                            <span>🧳 Check-ins: <strong style="color: #fff;">${s.checkins}</strong></span>
-                            <span>🔥 Dias 100% cheios: <strong style="color: #34d399;">${s.diasEsgotados}</strong></span>
-                        </div>
+                    <div class="card">
+                        <h3 style="margin-top:0; color: var(--accent-blue); text-transform: capitalize; border-bottom: 1px solid var(--border-card); padding-bottom: 6px;">${s.label}</h3>
+                        <p><strong>🛏️ Ocupação:</strong> ${taxa}%</p>
+                        <p><strong>🌙 Dormidas:</strong> ${s.dormidas} <span style="font-size:12px; color:var(--text-muted);">(de ${s.totalCapacity})</span></p>
+                        <p><strong>🧳 Check-ins:</strong> ${s.checkins}</p>
+                        <p><strong>🔥 Dias cheios:</strong> ${s.diasEsgotados}</p>
                     </div>
                 `;
             });
@@ -1127,18 +1116,18 @@ function showOccupancyPlan() {
         });
 
         const statusBadge = count === 0
-            ? `<span class="badge badge-free"><span class="pulse-dot pulse-green"></span> 0 Livre</span>`
-            : `<span class="badge badge-urgent"><span class="pulse-dot pulse-red"></span> ${count} / ${totalRooms} Ocupado</span>`;
+            ? `<span class="chip chip-free">0 🟢 Livre</span>`
+            : `<span class="chip chip-urgent">${count} / ${totalRooms} 🔴 Ocupado</span>`;
 
-        let roomsChips = roomDetails.map(r => `<span class="badge badge-normal">${r}</span>`).join("");
+        let chips = roomDetails.map(r => `<span class="chip">${r}</span>`).join("");
 
         html += `
-            <div class="luxury-card">
-                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 8px;">
-                    <span style="font-weight: 700; font-size: 16px; color: #fff;">${dateFormatted}</span>
+            <div class="card">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 6px;">
+                    <h2>${dateFormatted}</h2>
                     ${statusBadge}
                 </div>
-                ${count > 0 ? `<div style="margin-top: 8px;">${roomsChips}</div>` : ''}
+                ${count > 0 ? `<div style="margin-top: 6px;">${chips}</div>` : ''}
             </div>
         `;
     }
