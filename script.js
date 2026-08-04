@@ -1,3 +1,267 @@
+// Injeta automaticamente os novos estilos CSS modernos no cabeçalho da página
+(function injectModernStyles() {
+    if (document.getElementById("al-app-styles")) return;
+    const style = document.createElement("style");
+    style.id = "al-app-styles";
+    style.textContent = `
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --bg-main: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.75);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-green: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-rose: #f43f5e;
+            --accent-cyan: #06b6d4;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 24px 16px;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.15) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        #result {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Cartões com efeito Glassmorphism */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 18px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Botões Modernos */
+        .btn-modern {
+            font-family: inherit;
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+        }
+
+        .btn-modern:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .btn-active-blue {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-active-green {
+            background: linear-gradient(135deg, #10b981, #047857);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-active-purple {
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-active-cyan {
+            background: linear-gradient(135deg, #06b6d4, #0e7490);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(6, 182, 212, 0.4);
+        }
+
+        .btn-copy-pt {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            font-size: 13px;
+            padding: 6px 14px;
+        }
+
+        .btn-copy-es {
+            background: rgba(6, 182, 212, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            font-size: 13px;
+            padding: 6px 14px;
+        }
+
+        /* Botão do Relógio no Canto Superior Direito */
+        .btn-clock {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-clock:hover {
+            transform: rotate(15deg) scale(1.08);
+            background: rgba(139, 92, 246, 0.25);
+            border-color: #8b5cf6;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-clock.active {
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            border-color: #a78bfa;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
+        }
+
+        /* Chips / Badges */
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin: 4px 6px 4px 0;
+        }
+
+        .chip-urgent {
+            background: rgba(244, 63, 94, 0.15);
+            color: #fb7185;
+            border: 1px solid rgba(244, 63, 94, 0.3);
+        }
+
+        .chip-normal {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .chip-free {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        /* Títulos */
+        h1 {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin: 0 0 20px 0;
+            background: linear-gradient(135deg, #ffffff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        h2 {
+            font-size: 17px;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin: 0;
+        }
+
+        /* Spinner de Carregamento */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            width: 22px;
+            height: 22px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        /* Grelha de Estatísticas Mensais */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 14px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 16px;
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-top: 4px;
+        }
+
+        .progress-bar-bg {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            border-radius: 3px;
+        }
+    `;
+    document.head.appendChild(style);
+})();
+
 const WORKER_BASE_URL = "https://al.tracosdeoutono.workers.dev";
 
 const calendars = [
@@ -22,19 +286,18 @@ let globalReservations = [];
 let cloudHistory = {};
 
 // Estados da Aplicação
-let currentView = "cleaning"; // "cleaning", "occupancy" ou "snapshots"
-let showHistoryMode = false;  // modo histórico das limpezas
-let selectedHouse = "achada";  // "achada", "impasse", "vizinho"
-let showOccupancyStats = false; // estado para mostrar as estatísticas
-let showPastStatsMode = false; // estado para mostrar estatísticas de meses passados
-let selectedSnapshotDate = null; // estado para ver o snapshot de um dia específico
+let currentView = "cleaning";
+let showHistoryMode = false;
+let selectedHouse = "achada";
+let showOccupancyStats = false;
+let showPastStatsMode = false;
+let selectedSnapshotDate = null;
 
-// Função auxiliar com Timeout e Anti-Cache seguro (sem quebrar CORS)
+// Função auxiliar com Timeout + Anti-Cache Seguro
 async function fetchWithTimeout(resource, options = {}, timeout = 10000) {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
 
-    // Adiciona timestamp ao URL para garantir dados sempre atualizados no telemóvel
     const separator = resource.includes("?") ? "&" : "?";
     const noCacheUrl = `${resource}${separator}_t=${Date.now()}`;
 
@@ -76,32 +339,27 @@ window.switchMainView = function(view) {
     }
 };
 
-// Alternar Histórico no modo Limpezas
 window.toggleHistoryView = function() {
     showHistoryMode = !showHistoryMode;
     showCleaningPlan();
 };
 
-// Alternar Estatísticas no modo Disponibilidade
 window.toggleOccupancyStats = function() {
     showOccupancyStats = !showOccupancyStats;
     if (!showOccupancyStats) showPastStatsMode = false;
     showOccupancyPlan();
 };
 
-// Alternar meses passados nas estatísticas
 window.togglePastStats = function() {
     showPastStatsMode = !showPastStatsMode;
     showOccupancyPlan();
 };
 
-// Selecionar Casa no modo Disponibilidade
 window.selectHouse = function(house) {
     selectedHouse = house;
     showOccupancyPlan();
 };
 
-// Selecionar um Snapshot guardado para visualizar
 window.selectSnapshot = function(dateKey) {
     selectedSnapshotDate = dateKey;
     showSnapshotsPlan();
@@ -135,7 +393,14 @@ async function saveToCloudHistory(newEntries) {
 }
 
 async function loadCalendars() {
-    result.innerHTML = "<p style='font-size: 18px; font-weight: bold; color: #007bff;'>⏳ A ligar à Cloud e a carregar calendários (aguarda)...</p>";
+    result.innerHTML = `
+        <div class="glass-card" style="text-align: center; padding: 40px 20px;">
+            <div class="spinner"></div>
+            <span style="font-size: 16px; font-weight: 600; color: #60a5fa;">
+                A ligar à Cloud e a sincronizar calendários...
+            </span>
+        </div>
+    `;
 
     try {
         const historyPromise = fetchCloudHistory();
@@ -147,7 +412,7 @@ async function loadCalendars() {
                 const text = await response.text();
                 return parseICS(text, calendar.name);
             } catch (e) {
-                console.warn("Erro ou atraso extremo ao carregar " + calendar.name + ". A ignorar este calendário por agora.");
+                console.warn("Erro ou atraso extremo ao carregar " + calendar.name + ". A ignorar por agora.");
                 return [];
             }
         });
@@ -162,7 +427,11 @@ async function loadCalendars() {
         else if (currentView === "snapshots") showSnapshotsPlan();
 
     } catch (err) {
-        result.innerHTML = `<p style="color: red; font-weight: bold;">Erro geral ao carregar dados: ${err.message}</p>`;
+        result.innerHTML = `
+            <div class="glass-card" style="border-color: rgba(244, 63, 94, 0.4); text-align: center;">
+                <p style="color: #fb7185; font-weight: 700; margin: 0;">❌ Erro ao carregar dados: ${err.message}</p>
+            </div>
+        `;
     }
 }
 
@@ -370,32 +639,17 @@ function renderNavigation() {
     const isSnapshots = currentView === "snapshots";
 
     return `
-        <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; gap: 12px; flex-wrap: wrap;">
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <button onclick="window.switchMainView('cleaning')" style="
-                    padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px;
-                    border: 2px solid #007bff; background-color: ${isCleaning ? '#007bff' : '#ffffff'};
-                    color: ${isCleaning ? '#ffffff' : '#007bff'}; font-weight: bold;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                ">
+                <button onclick="window.switchMainView('cleaning')" class="btn-modern ${isCleaning ? 'btn-active-blue' : 'btn-secondary'}">
                     🧹 Plano de Limpezas
                 </button>
-                <button onclick="window.switchMainView('occupancy')" style="
-                    padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px;
-                    border: 2px solid #28a745; background-color: ${isOccupancy ? '#28a745' : '#ffffff'};
-                    color: ${isOccupancy ? '#ffffff' : '#28a745'}; font-weight: bold;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                ">
-                    📊 Disponibilidade da Casa
+                <button onclick="window.switchMainView('occupancy')" class="btn-modern ${isOccupancy ? 'btn-active-green' : 'btn-secondary'}">
+                    📊 Disponibilidade
                 </button>
             </div>
             
-            <button onclick="window.switchMainView('snapshots')" style="
-                font-size: 26px; background-color: ${isSnapshots ? '#e2e6ea' : 'white'};
-                border: 1px solid #ccc; border-radius: 50%; cursor: pointer; width: 50px; height: 50px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center;
-                transition: 0.2s;
-            " title="Ver Previsões Guardadas (Snapshots)">
+            <button onclick="window.switchMainView('snapshots')" class="btn-clock ${isSnapshots ? 'active' : ''}" title="Ver Previsões Guardadas (Snapshots)">
                 🕒
             </button>
         </div>
@@ -411,24 +665,24 @@ function showSnapshotsPlan() {
     const snapshotKeys = Object.keys(snapshots).sort().reverse();
 
     if (snapshotKeys.length === 0) {
-        html += `<p>Ainda não há previsões guardadas de dias anteriores. A primeira foi gerada agora mesmo!</p>`;
+        html += `
+            <div class="glass-card">
+                <p style="color: var(--text-muted); margin: 0;">Ainda não há previsões guardadas de dias anteriores. A primeira foi gerada agora mesmo!</p>
+            </div>
+        `;
         result.innerHTML = html;
         return;
     }
 
     if (!selectedSnapshotDate) {
-        html += `<p style="color: #555;">Escolhe um dia para ver o plano de limpezas (dos 7 dias seguintes) que estava previsto nesse exato momento:</p>`;
-        html += `<div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px;">`;
+        html += `<p style="color: var(--text-muted); margin-bottom: 16px;">Escolhe um dia para ver o plano de limpezas (dos 7 dias seguintes) que estava previsto nesse exato momento:</p>`;
+        html += `<div style="display: flex; gap: 10px; flex-wrap: wrap;">`;
         
         snapshotKeys.forEach(key => {
             const dateObj = new Date(key);
             const label = dateObj.toLocaleDateString("pt-PT", { day: "numeric", month: "long", year: "numeric" });
             html += `
-                <button onclick="window.selectSnapshot('${key}')" style="
-                    padding: 10px 15px; font-size: 14px; cursor: pointer; border-radius: 6px;
-                    border: 1px solid #17a2b8; background-color: #f8f9fa; color: #17a2b8; font-weight: bold;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-                ">
+                <button onclick="window.selectSnapshot('${key}')" class="btn-modern btn-secondary">
                     📅 ${label}
                 </button>
             `;
@@ -440,21 +694,19 @@ function showSnapshotsPlan() {
         
         html += `
             <div style="margin-bottom: 20px;">
-                <button onclick="window.selectSnapshot(null)" style="
-                    padding: 8px 14px; font-size: 14px; cursor: pointer; border-radius: 6px;
-                    border: 1px solid #6c757d; background-color: #6c757d; color: white; font-weight: bold;
-                ">
+                <button onclick="window.selectSnapshot(null)" class="btn-modern btn-secondary">
                     🔙 Voltar à Lista
                 </button>
             </div>
-            <h2 style="color: #007bff; border-bottom: 2px solid #eee; padding-bottom: 8px;">Plano visualizado no dia: <span style="color: #333;">${label}</span></h2>
+            <div class="glass-card">
+                <h2 style="color: #60a5fa; margin-bottom: 16px;">Plano visualizado no dia: <span style="color: #fff;">${label}</span></h2>
         `;
 
         const plan = snapshots[selectedSnapshotDate];
         const planKeys = Object.keys(plan).sort();
 
         if (planKeys.length === 0) {
-            html += `<p>Não havia nenhuma limpeza planeada para os 7 dias seguintes a esta data.</p>`;
+            html += `<p style="color: var(--text-muted);">Não havia nenhuma limpeza planeada para os 7 dias seguintes a esta data.</p>`;
         }
 
         planKeys.forEach(key => {
@@ -464,22 +716,23 @@ function showSnapshotsPlan() {
             
             if (day.rooms.some(r => r.sunday)) title = "🔴 " + title;
 
-            let roomsHtml = "";
+            let roomsChips = "";
             day.rooms.sort((a, b) => a.room.localeCompare(b.room)).forEach(clean => {
+                const badgeClass = clean.urgent ? "chip-urgent" : "chip-normal";
                 const emoji = clean.urgent ? "⚠️" : "🧹";
-                let tag = clean.urgent ? " <b>(entrada no mesmo dia)</b>" : ""; 
+                let tag = clean.urgent ? " (entrada no mesmo dia)" : ""; 
                 
-                roomsHtml += `${emoji} ${clean.room}${tag}<br>`;
+                roomsChips += `<span class="chip ${badgeClass}">${emoji} ${clean.room}${tag}</span>`;
             });
 
             html += `
-                <div style="margin-top: 15px; margin-bottom: 15px;">
-                    <h3 style="margin: 0 0 8px 0; color: #333; font-size: 18px;">${title}</h3>
-                    <div style="font-size: 15px;">${roomsHtml}</div>
+                <div style="margin-top: 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+                    <h3 style="color: #f1f5f9; font-size: 16px; margin-bottom: 8px;">${title}</h3>
+                    <div>${roomsChips}</div>
                 </div>
-                <hr style="border: 0; border-top: 1px solid #eee;">
             `;
         });
+        html += `</div>`;
     }
 
     result.innerHTML = html;
@@ -537,19 +790,20 @@ function showCleaningPlan() {
 
     let html = renderNavigation();
     html += `
-        <div style="margin-bottom: 25px;">
-            <button onclick="window.toggleHistoryView()" style="
-                padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px;
-                border: 1px solid #6c757d; background-color: #6c757d; color: white; font-weight: bold;
-            ">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+            <h1>${mainTitle}</h1>
+            <button onclick="window.toggleHistoryView()" class="btn-modern btn-secondary">
                 ${buttonText}
             </button>
         </div>
-        <h1>${mainTitle}</h1>
     `;
 
     if (sortedKeys.length === 0) {
-        html += `<p>Não há limpezas registadas ${showHistoryMode ? 'anteriores a hoje no histórico' : 'agendadas'}.</p>`;
+        html += `
+            <div class="glass-card">
+                <p style="color: var(--text-muted); margin: 0;">Não há limpezas registadas ${showHistoryMode ? 'anteriores a hoje no histórico' : 'agendadas'}.</p>
+            </div>
+        `;
     }
 
     sortedKeys.forEach(key => {
@@ -571,7 +825,7 @@ function showCleaningPlan() {
         dateForCopyEs = dateForCopyEs.charAt(0).toUpperCase() + dateForCopyEs.slice(1);
         let copyLinesEs = [`🧹 Limpiezas - ${dateForCopyEs}:`];
 
-        let roomsHtml = "";
+        let roomsChips = "";
 
         day.rooms.sort((a, b) => a.room.localeCompare(b.room)).forEach(clean => {
             const hasCheckout = globalReservations.some(r => r.room === clean.room && sameDay(r.checkOut, day.date));
@@ -579,52 +833,44 @@ function showCleaningPlan() {
 
             let tagTextPt = "";
             let tagTextEs = "";
-            let tagHtml = "";
 
             if (hasCheckout && hasCheckin) {
                 tagTextPt = " (sai e entra)";
                 tagTextEs = " (sale y entra)";
-                tagHtml = " <b>(sai e entra)</b>";
             } else if (hasCheckout) {
                 tagTextPt = " (sai hoje)";
                 tagTextEs = " (sale hoy)";
-                tagHtml = " <b>(sai hoje)</b>";
             } else if (hasCheckin) {
                 tagTextPt = " (entrada hoje)";
                 tagTextEs = " (entrada hoy)";
-                tagHtml = " <b>(entrada hoje)</b>";
             }
 
             const emoji = hasCheckin ? "⚠️" : "🧹";
+            const badgeClass = hasCheckin ? "chip-urgent" : "chip-normal";
 
             copyLinesPt.push(`${emoji} ${clean.room}${tagTextPt}`);
             copyLinesEs.push(`${emoji} ${clean.room}${tagTextEs}`);
-            roomsHtml += `${emoji} ${clean.room}${tagHtml}<br>`;
+            roomsChips += `<span class="chip ${badgeClass}">${emoji} ${clean.room}<b>${tagTextPt}</b></span>`;
         });
 
         const encodedCopyTextPt = encodeURIComponent(copyLinesPt.join("\n"));
         const encodedCopyTextEs = encodeURIComponent(copyLinesEs.join("\n"));
 
         html += `
-            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
-                <h2 style="margin: 0;">${title}</h2>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <button onclick="window.copyFromData(this, '${encodedCopyTextPt}')" style="
-                        padding: 6px 12px; font-size: 13px; cursor: pointer; border-radius: 6px;
-                        border: 1px solid #28a745; background-color: #28a745; color: white; font-weight: bold;
-                    ">
-                        🇵🇹 Copiar PT
-                    </button>
-                    <button onclick="window.copyFromData(this, '${encodedCopyTextEs}')" style="
-                        padding: 6px 12px; font-size: 13px; cursor: pointer; border-radius: 6px;
-                        border: 1px solid #17a2b8; background-color: #17a2b8; color: white; font-weight: bold;
-                    ">
-                        🇪🇸 Copiar ES
-                    </button>
+            <div class="glass-card">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+                    <h2>${title}</h2>
+                    <div style="display: flex; gap: 8px;">
+                        <button onclick="window.copyFromData(this, '${encodedCopyTextPt}')" class="btn-modern btn-copy-pt">
+                            🇵🇹 Copiar PT
+                        </button>
+                        <button onclick="window.copyFromData(this, '${encodedCopyTextEs}')" class="btn-modern btn-copy-es">
+                            🇪🇸 Copiar ES
+                        </button>
+                    </div>
                 </div>
+                <div>${roomsChips}</div>
             </div>
-            <div style="margin-top: 8px;">${roomsHtml}</div>
-            <hr>
         `;
     });
 
@@ -720,47 +966,30 @@ function showOccupancyPlan() {
     let html = renderNavigation();
 
     html += `
-        <div style="margin-bottom: 25px; display: flex; gap: 8px; flex-wrap: wrap;">
-            <button onclick="window.selectHouse('achada')" style="
-                padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px;
-                border: 2px solid #17a2b8; background-color: ${selectedHouse === 'achada' ? '#17a2b8' : '#ffffff'};
-                color: ${selectedHouse === 'achada' ? '#ffffff' : '#17a2b8'}; font-weight: bold;
-            ">
+        <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
+            <button onclick="window.selectHouse('achada')" class="btn-modern ${selectedHouse === 'achada' ? 'btn-active-cyan' : 'btn-secondary'}">
                 🏡 Achada
             </button>
-            <button onclick="window.selectHouse('impasse')" style="
-                padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px;
-                border: 2px solid #17a2b8; background-color: ${selectedHouse === 'impasse' ? '#17a2b8' : '#ffffff'};
-                color: ${selectedHouse === 'impasse' ? '#ffffff' : '#17a2b8'}; font-weight: bold;
-            ">
+            <button onclick="window.selectHouse('impasse')" class="btn-modern ${selectedHouse === 'impasse' ? 'btn-active-cyan' : 'btn-secondary'}">
                 🏡 Impasse
             </button>
-            <button onclick="window.selectHouse('vizinho')" style="
-                padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px;
-                border: 2px solid #17a2b8; background-color: ${selectedHouse === 'vizinho' ? '#17a2b8' : '#ffffff'};
-                color: ${selectedHouse === 'vizinho' ? '#ffffff' : '#17a2b8'}; font-weight: bold;
-            ">
+            <button onclick="window.selectHouse('vizinho')" class="btn-modern ${selectedHouse === 'vizinho' ? 'btn-active-cyan' : 'btn-secondary'}">
                 🏡 Vizinho
             </button>
         </div>
-        <h1>📊 Ocupação - ${houseLabels[selectedHouse]}</h1>
-        
-        <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-            <button onclick="window.toggleOccupancyStats()" style="
-                padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px;
-                border: 1px solid #ffc107; background-color: ${showOccupancyStats ? '#e0a800' : '#ffc107'}; color: #333; font-weight: bold;
-            ">
-                ${showOccupancyStats ? '🔙 Ocultar Estatísticas' : '📈 Ver Estatísticas Mensais'}
-            </button>
-            
-            ${showOccupancyStats ? `
-            <button onclick="window.togglePastStats()" style="
-                padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px;
-                border: 1px solid #6c757d; background-color: ${showPastStatsMode ? '#5a6268' : '#6c757d'}; color: white; font-weight: bold;
-            ">
-                ${showPastStatsMode ? '📅 Ver Meses Atuais e Futuros' : '📜 Ver Meses Passados'}
-            </button>
-            ` : ''}
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+            <h1>📊 Ocupação - ${houseLabels[selectedHouse]}</h1>
+            <div style="display: flex; gap: 8px;">
+                <button onclick="window.toggleOccupancyStats()" class="btn-modern ${showOccupancyStats ? 'btn-active-purple' : 'btn-secondary'}">
+                    ${showOccupancyStats ? '🔙 Ocultar Estatísticas' : '📈 Estatísticas Mensais'}
+                </button>
+                ${showOccupancyStats ? `
+                <button onclick="window.togglePastStats()" class="btn-modern btn-secondary">
+                    ${showPastStatsMode ? '📅 Meses Atuais e Futuros' : '📜 Meses Passados'}
+                </button>
+                ` : ''}
+            </div>
         </div>
     `;
 
@@ -778,21 +1007,26 @@ function showOccupancyPlan() {
         }
 
         if (statKeys.length === 0) {
-            html += `<p>Sem dados de estatísticas para mostrar nesta vista.</p><hr>`;
+            html += `<div class="glass-card"><p style="color: var(--text-muted); margin:0;">Sem estatísticas registradas para esta seleção.</p></div>`;
         } else {
-            html += `<div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 25px;">`;
+            html += `<div class="stat-grid">`;
             
             statKeys.forEach(key => {
                 const s = stats[key];
                 const taxa = s.totalCapacity > 0 ? Math.round((s.dormidas / s.totalCapacity) * 100) : 0;
                 
                 html += `
-                    <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; flex: 1; min-width: 220px; background-color: #f8f9fa; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                        <h3 style="margin-top: 0; color: #007bff; text-transform: capitalize; border-bottom: 1px solid #ccc; padding-bottom: 8px;">${s.label}</h3>
-                        <p style="margin: 8px 0; font-size: 15px;"><strong>🛏️ Ocupação:</strong> ${taxa}%</p>
-                        <p style="margin: 8px 0; font-size: 15px;"><strong>🌙 Dormidas:</strong> ${s.dormidas} <span style="font-size: 12px; color: #666;">(de ${s.totalCapacity})</span></p>
-                        <p style="margin: 8px 0; font-size: 15px;"><strong>🧳 Check-ins:</strong> ${s.checkins}</p>
-                        <p style="margin: 8px 0; font-size: 15px;"><strong>🔥 Dias 100% cheios:</strong> ${s.diasEsgotados}</p>
+                    <div class="stat-card">
+                        <div style="color: #60a5fa; font-weight: 700; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 6px;">${s.label}</div>
+                        <div class="stat-value">${taxa}% <span style="font-size: 13px; font-weight: 500; color: var(--text-muted);">ocupação</span></div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" style="width: ${taxa}%;"></div>
+                        </div>
+                        <div style="margin-top: 12px; font-size: 13px; color: var(--text-muted); display: flex; flex-direction: column; gap: 4px;">
+                            <span>🌙 Dormidas: <strong style="color: #fff;">${s.dormidas}</strong> / ${s.totalCapacity}</span>
+                            <span>🧳 Check-ins: <strong style="color: #fff;">${s.checkins}</strong></span>
+                            <span>🔥 Dias 100% cheios: <strong style="color: #34d399;">${s.diasEsgotados}</strong></span>
+                        </div>
                     </div>
                 `;
             });
@@ -800,8 +1034,6 @@ function showOccupancyPlan() {
             html += `</div>`;
         }
     }
-
-    html += `<hr>`;
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -838,14 +1070,14 @@ function showOccupancyPlan() {
             if (isOccupiedOvernight || hasCheckout || hasCheckin) {
                 let tag = "";
                 if (hasCheckout && hasCheckin) {
-                    tag = " <b>(sai e entra)</b>";
+                    tag = " (sai e entra)";
                 } else if (hasCheckout) {
-                    tag = " <b>(sai)</b>";
+                    tag = " (sai)";
                 } else if (hasCheckin) {
-                    tag = " <b>(entra)</b>";
+                    tag = " (entra)";
                 }
 
-                roomDetails.push(`${roomName}${tag}`);
+                roomDetails.push(`${roomName}<b>${tag}</b>`);
             }
         });
 
@@ -854,18 +1086,21 @@ function showOccupancyPlan() {
             weekday: "long", day: "numeric", month: "long", year: "numeric"
         });
 
-        html += `<h2>${dateFormatted}</h2>`;
+        const statusBadge = count === 0
+            ? `<span class="chip chip-free">0 🟢 Livre</span>`
+            : `<span class="chip chip-urgent">${count} / ${totalRooms} 🔴 Ocupado</span>`;
 
-        if (count === 0) {
-            html += `<div style="font-size: 18px; font-weight: bold; color: #28a745; margin-bottom: 5px;">0 🟢</div>`;
-        } else {
-            html += `<div style="font-size: 18px; font-weight: bold; color: #dc3545; margin-bottom: 5px;">
-                ${count} / ${totalRooms} 🔴
-            </div>`;
-            html += `<div style="font-size: 14px; color: #333;">Ocupados: ${roomDetails.join(", ")}</div>`;
-        }
+        let roomsChips = roomDetails.map(r => `<span class="chip chip-normal">${r}</span>`).join("");
 
-        html += "<hr>";
+        html += `
+            <div class="glass-card">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 8px;">
+                    <h2>${dateFormatted}</h2>
+                    ${statusBadge}
+                </div>
+                ${count > 0 ? `<div style="margin-top: 8px;">${roomsChips}</div>` : ''}
+            </div>
+        `;
     }
 
     result.innerHTML = html;
