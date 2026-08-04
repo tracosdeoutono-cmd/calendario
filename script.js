@@ -11,9 +11,9 @@
         body {
             margin: 0;
             padding: 20px 16px;
-            padding-top: 45px; /* Espaço extra no topo para não chocar com o relógio */
             min-height: 100vh;
             transition: all 0.3s ease;
+            position: relative; /* Importante para segurar os botões no topo */
         }
 
         #result {
@@ -176,7 +176,6 @@
         body[data-theme="glass"] .theme-select-dropdown,
         body[data-theme="royalgold"] .theme-select-dropdown {
             background-color: rgba(15, 15, 15, 0.8) !important;
-            color: #fff !important;
             border-color: rgba(255,255,255,0.2) !important;
         }
         body[data-theme="outono"] .clock-btn, body[data-theme="cyber"] .clock-btn, 
@@ -646,27 +645,27 @@ function renderNavigation() {
     const isOccupancy = currentView === "occupancy";
     const isSnapshots = currentView === "snapshots";
 
-    // MENU SUSPENSO FIXO NO CANTO SUPERIOR DIREITO
+    // MENU SUSPENSO E RELÓGIO COM POSITION ABSOLUTE (Presos ao topo do ecrã, não acompanham o scroll)
     const topRightControls = `
-        <div style="position: fixed; top: 12px; right: 12px; display: flex; align-items: center; gap: 8px; z-index: 9999;">
+        <div style="position: absolute; top: 12px; right: 12px; display: flex; align-items: center; gap: 8px; z-index: 9999;">
             <select class="theme-select-dropdown" onchange="window.setTheme(this.value)" title="Mudar Estilo da Página" style="
-                padding: 4px 6px; font-size: 11px; font-weight: bold; border-radius: 6px;
+                padding: 4px; font-size: 16px; border-radius: 6px;
                 border: 1px solid rgba(0,0,0,0.2); background-color: rgba(255,255,255,0.9); color: #333;
                 cursor: pointer; outline: none; box-shadow: 0 2px 6px rgba(0,0,0,0.15); backdrop-filter: blur(5px);
             ">
-                <option value="white" ${currentTheme === 'white' ? 'selected' : ''}>⬜ Original</option>
-                <option value="outono" ${currentTheme === 'outono' ? 'selected' : ''}>🍂 Outono</option>
-                <option value="cyber" ${currentTheme === 'cyber' ? 'selected' : ''}>🌆 Cyber</option>
-                <option value="cappuccino" ${currentTheme === 'cappuccino' ? 'selected' : ''}>☕ Cafe</option>
-                <option value="emerald" ${currentTheme === 'emerald' ? 'selected' : ''}>🌿 Nature</option>
-                <option value="glass" ${currentTheme === 'glass' ? 'selected' : ''}>🌙 Glass</option>
-                <option value="ocean" ${currentTheme === 'ocean' ? 'selected' : ''}>🌊 Ocean</option>
-                <option value="royalgold" ${currentTheme === 'royalgold' ? 'selected' : ''}>👑 Gold</option>
+                <option value="white" title="Original" ${currentTheme === 'white' ? 'selected' : ''}>⬜</option>
+                <option value="outono" title="Outono" ${currentTheme === 'outono' ? 'selected' : ''}>🍂</option>
+                <option value="cyber" title="Cyber" ${currentTheme === 'cyber' ? 'selected' : ''}>🌆</option>
+                <option value="cappuccino" title="Café" ${currentTheme === 'cappuccino' ? 'selected' : ''}>☕</option>
+                <option value="emerald" title="Natureza" ${currentTheme === 'emerald' ? 'selected' : ''}>🌿</option>
+                <option value="glass" title="Vidro" ${currentTheme === 'glass' ? 'selected' : ''}>🌙</option>
+                <option value="ocean" title="Oceano" ${currentTheme === 'ocean' ? 'selected' : ''}>🌊</option>
+                <option value="royalgold" title="Ouro" ${currentTheme === 'royalgold' ? 'selected' : ''}>👑</option>
             </select>
             
             <button onclick="window.switchMainView('snapshots')" class="clock-btn ${isSnapshots ? 'active' : ''}" style="
                 font-size: 16px; background-color: ${isSnapshots ? '#e2e6ea' : 'rgba(255,255,255,0.9)'};
-                border: 1px solid rgba(0,0,0,0.2); width: 32px; height: 32px;
+                border: 1px solid rgba(0,0,0,0.2); width: 34px; height: 34px;
                 box-shadow: 0 2px 6px rgba(0,0,0,0.15); padding: 0; backdrop-filter: blur(5px);
             " title="Ver Previsões">
                 🕒
