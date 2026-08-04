@@ -1,10 +1,18 @@
-// Injeta os 13 temas visuais na página
+// Injeta os 14 temas visuais na página (versão ENHANCED)
 (function injectAllThemes() {
     if (document.getElementById("al-app-allthemes")) return;
+
+    // Overlay animado para efeitos vivos
+    if (!document.getElementById("al-theme-overlay")) {
+        const overlay = document.createElement("div");
+        overlay.id = "al-theme-overlay";
+        document.body.appendChild(overlay);
+    }
+
     const style = document.createElement("style");
     style.id = "al-app-allthemes";
     style.textContent = `
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;600;700;800&family=VT323&family=Caveat:wght@400;700&family=Nunito:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Cinzel:wght@400;600;700;800&family=Fredoka:wght@400;600;700&family=Quicksand:wght@300;400;600;700&family=Russo+One&family=Raleway:wght@200;300;400;600;700&family=Bangers&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;600;700;800&family=VT323&family=Caveat:wght@400;700&family=Nunito:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Cinzel:wght@400;600;700;800&family=Cinzel+Decorative:wght@400;700;900&family=Fredoka:wght@400;600;700&family=Quicksand:wght@300;400;600;700&family=Russo+One&family=Raleway:wght@200;300;400;600;700&family=Bangers&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
 
         * { box-sizing: border-box; }
 
@@ -12,11 +20,21 @@
             margin: 0;
             padding: 20px 16px;
             min-height: 100vh;
-            transition: all 0.3s ease;
+            transition: background-color 0.4s ease, color 0.3s ease;
             position: relative;
         }
 
-        #result { max-width: 920px; margin: 0 auto; }
+        #result { max-width: 920px; margin: 0 auto; position: relative; z-index: 2; }
+
+        /* Overlay animado global */
+        #al-theme-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
 
         /* ══════════════════════════════════════════ */
         /* 1. ⬜ BRANCO CLÁSSICO (INTOCADO)           */
@@ -26,6 +44,8 @@
             background-color: #ffffff;
             color: #212529;
         }
+        body[data-theme="white"] #al-theme-overlay,
+        body:not([data-theme]) #al-theme-overlay { opacity: 0; }
 
         /* ══════════════════════════════════════════ */
         /* 2. 🍂 OUTONO LUXURY (INTOCADO)             */
@@ -34,7 +54,7 @@
             font-family: 'Outfit', sans-serif;
             background-color: #12100e;
             color: #fff8f0;
-            background-image: 
+            background-image:
                 radial-gradient(at 10% 10%, rgba(245, 158, 11, 0.14) 0px, transparent 45%),
                 radial-gradient(at 90% 90%, rgba(234, 88, 12, 0.12) 0px, transparent 45%);
             background-attachment: fixed;
@@ -48,9 +68,10 @@
             box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5) !important;
         }
         body[data-theme="outono"] h2, body[data-theme="outono"] h3 { color: #fff !important; }
+        body[data-theme="outono"] #al-theme-overlay { opacity: 0; }
 
         /* ══════════════════════════════════════════ */
-        /* 3. 🖥️ RETRO TERMINAL (Ecrã fósforo verde)  */
+        /* 3. 🖥️ RETRO TERMINAL (INTOCADO)            */
         /* ══════════════════════════════════════════ */
         body[data-theme="cyber"] {
             font-family: 'VT323', monospace;
@@ -76,9 +97,10 @@
         body[data-theme="cyber"] button { border-radius: 0px !important; font-family: 'VT323', monospace !important; text-transform: uppercase; letter-spacing: 1px; }
         body[data-theme="cyber"] hr { border-color: rgba(0,255,65,0.2) !important; }
         body[data-theme="cyber"] p, body[data-theme="cyber"] div, body[data-theme="cyber"] span { text-shadow: 0 0 4px rgba(0,255,65,0.15); }
+        body[data-theme="cyber"] #al-theme-overlay { opacity: 0; }
 
         /* ══════════════════════════════════════════ */
-        /* 4. 📓 CADERNO (Folha escrita à mão)        */
+        /* 4. 📓 CADERNO (INTOCADO)                   */
         /* ══════════════════════════════════════════ */
         body[data-theme="cappuccino"] {
             font-family: 'Caveat', cursive;
@@ -101,133 +123,324 @@
         body[data-theme="cappuccino"] h2, body[data-theme="cappuccino"] h3 { color: #c0392b !important; font-weight: 700; }
         body[data-theme="cappuccino"] button { font-family: 'Caveat', cursive !important; font-size: 17px !important; border-radius: 4px !important; border-style: dashed !important; }
         body[data-theme="cappuccino"] hr { border: none !important; border-bottom: 2px dashed #d4b896 !important; }
+        body[data-theme="cappuccino"] #al-theme-overlay { opacity: 0; }
 
-        /* ══════════════════════════════════════════ */
-        /* 5. 🌿 FLORESTA ENCANTADA (Pirilampos)      */
-        /* ══════════════════════════════════════════ */
+        /* ══════════════════════════════════════════════════ */
+        /* 5. 🌿 FLORESTA ENCANTADA (MEGA ENHANCED)          */
+        /*    Floresta bioluminescente profunda, pirilampos   */
+        /*    por todo o lado, cogumelos brilhantes, nevoeiro */
+        /*    denso, copas de árvores sobrepostas, vida       */
+        /* ══════════════════════════════════════════════════ */
         body[data-theme="emerald"] {
             font-family: 'Nunito', sans-serif;
-            background-color: #060f06;
-            color: #b8f0b0;
+            background-color: #010a01;
+            color: #90e8a0;
             background-image:
-                radial-gradient(ellipse at 15% 80%, rgba(34,197,94,0.08) 0%, transparent 50%),
-                radial-gradient(ellipse at 85% 20%, rgba(74,222,128,0.06) 0%, transparent 50%),
-                radial-gradient(circle 2px at 20% 30%, rgba(134,239,172,0.4) 0%, transparent 100%),
-                radial-gradient(circle 2px at 70% 65%, rgba(134,239,172,0.3) 0%, transparent 100%),
-                radial-gradient(circle 1px at 40% 80%, rgba(190,242,100,0.5) 0%, transparent 100%),
-                radial-gradient(circle 1px at 90% 40%, rgba(190,242,100,0.4) 0%, transparent 100%),
-                radial-gradient(circle 2px at 10% 60%, rgba(74,222,128,0.35) 0%, transparent 100%),
-                radial-gradient(circle 1px at 60% 15%, rgba(134,239,172,0.45) 0%, transparent 100%);
+                /* Copas de árvores densas - múltiplas camadas */
+                radial-gradient(ellipse at 0% -10%, rgba(0,60,15,0.35) 0%, transparent 55%),
+                radial-gradient(ellipse at 100% -5%, rgba(0,50,20,0.3) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% -15%, rgba(0,40,10,0.25) 0%, transparent 60%),
+                radial-gradient(ellipse at 30% 10%, rgba(5,70,25,0.15) 0%, transparent 40%),
+                radial-gradient(ellipse at 70% 5%, rgba(0,55,20,0.18) 0%, transparent 45%),
+                /* Cogumelos bioluminescentes - brilho grande e difuso */
+                radial-gradient(circle 18px at 5% 78%, rgba(80,255,140,0.18) 0%, rgba(40,200,100,0.04) 50%, transparent 100%),
+                radial-gradient(circle 14px at 95% 55%, rgba(60,255,170,0.15) 0%, rgba(30,200,120,0.03) 50%, transparent 100%),
+                radial-gradient(circle 20px at 40% 92%, rgba(100,255,100,0.12) 0%, rgba(50,200,80,0.03) 50%, transparent 100%),
+                radial-gradient(circle 12px at 75% 88%, rgba(70,255,130,0.14) 0%, rgba(35,200,90,0.03) 50%, transparent 100%),
+                radial-gradient(circle 16px at 15% 45%, rgba(90,255,160,0.1) 0%, rgba(45,200,110,0.02) 50%, transparent 100%),
+                radial-gradient(circle 10px at 88% 30%, rgba(110,255,120,0.12) 0%, rgba(55,200,80,0.02) 50%, transparent 100%),
+                /* Pirilampos - campo inteiro de luz */
+                radial-gradient(circle 2px at 8% 20%, rgba(200,255,100,0.8) 0%, transparent 100%),
+                radial-gradient(circle 1.5px at 12% 35%, rgba(180,255,80,0.7) 0%, transparent 100%),
+                radial-gradient(circle 2px at 18% 55%, rgba(210,255,120,0.65) 0%, transparent 100%),
+                radial-gradient(circle 1px at 22% 72%, rgba(190,255,90,0.75) 0%, transparent 100%),
+                radial-gradient(circle 1.5px at 28% 15%, rgba(170,255,110,0.6) 0%, transparent 100%),
+                radial-gradient(circle 2px at 33% 42%, rgba(220,255,130,0.55) 0%, transparent 100%),
+                radial-gradient(circle 1px at 38% 68%, rgba(200,255,70,0.7) 0%, transparent 100%),
+                radial-gradient(circle 2px at 42% 28%, rgba(160,255,100,0.65) 0%, transparent 100%),
+                radial-gradient(circle 1.5px at 48% 85%, rgba(210,255,140,0.5) 0%, transparent 100%),
+                radial-gradient(circle 1px at 52% 12%, rgba(180,255,60,0.75) 0%, transparent 100%),
+                radial-gradient(circle 2px at 58% 48%, rgba(190,255,110,0.6) 0%, transparent 100%),
+                radial-gradient(circle 1.5px at 62% 75%, rgba(200,255,90,0.55) 0%, transparent 100%),
+                radial-gradient(circle 1px at 68% 32%, rgba(170,255,130,0.7) 0%, transparent 100%),
+                radial-gradient(circle 2px at 72% 58%, rgba(220,255,80,0.5) 0%, transparent 100%),
+                radial-gradient(circle 1.5px at 78% 18%, rgba(190,255,100,0.65) 0%, transparent 100%),
+                radial-gradient(circle 1px at 82% 82%, rgba(210,255,120,0.6) 0%, transparent 100%),
+                radial-gradient(circle 2px at 88% 45%, rgba(180,255,70,0.55) 0%, transparent 100%),
+                radial-gradient(circle 1.5px at 92% 65%, rgba(200,255,140,0.5) 0%, transparent 100%),
+                radial-gradient(circle 1px at 96% 22%, rgba(170,255,90,0.7) 0%, transparent 100%),
+                radial-gradient(circle 2px at 50% 50%, rgba(160,255,110,0.4) 0%, transparent 100%),
+                /* Nevoeiro no chão da floresta */
+                linear-gradient(to top, rgba(5,30,10,0.6) 0%, rgba(5,25,8,0.3) 8%, transparent 25%),
+                /* Raios de luz a penetrar a copa */
+                linear-gradient(135deg, transparent 40%, rgba(120,255,80,0.02) 45%, transparent 50%),
+                linear-gradient(155deg, transparent 55%, rgba(100,230,60,0.015) 60%, transparent 65%);
             background-attachment: fixed;
+        }
+        body[data-theme="emerald"] #al-theme-overlay {
+            opacity: 1;
+            background:
+                radial-gradient(circle 3px at 25% 30%, rgba(150,255,80,0.6) 0%, transparent 100%),
+                radial-gradient(circle 2px at 55% 65%, rgba(130,255,100,0.5) 0%, transparent 100%),
+                radial-gradient(circle 3px at 80% 25%, rgba(170,255,60,0.55) 0%, transparent 100%),
+                radial-gradient(circle 2px at 15% 70%, rgba(140,255,90,0.5) 0%, transparent 100%),
+                radial-gradient(circle 2.5px at 65% 85%, rgba(160,255,70,0.45) 0%, transparent 100%),
+                radial-gradient(circle 2px at 40% 15%, rgba(180,255,110,0.5) 0%, transparent 100%),
+                radial-gradient(circle 3px at 90% 50%, rgba(120,255,80,0.4) 0%, transparent 100%);
+            animation: fireflyDrift 7s ease-in-out infinite alternate;
         }
         body[data-theme="emerald"] div[style*="background-color: #f8f9fa"],
         body[data-theme="emerald"] div[style*="border: 1px solid #ddd"] {
-            background: linear-gradient(135deg, rgba(6,78,59,0.5) 0%, rgba(6,95,70,0.3) 100%) !important;
-            border: 1px solid rgba(52,211,153,0.25) !important;
-            border-left: 4px solid #34d399 !important;
+            background: linear-gradient(145deg, rgba(4,60,30,0.55) 0%, rgba(2,45,20,0.4) 50%, rgba(6,70,35,0.3) 100%) !important;
+            border: 1px solid rgba(52,211,153,0.2) !important;
+            border-left: 4px solid rgba(52,211,153,0.6) !important;
             border-radius: 24px 8px 24px 8px !important;
-            color: #b8f0b0 !important;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 20px rgba(34,197,94,0.05) !important;
+            color: #90e8a0 !important;
+            box-shadow: 0 8px 35px rgba(0,0,0,0.5), 0 0 25px rgba(34,197,94,0.06), inset 0 1px 0 rgba(100,255,100,0.04) !important;
+            backdrop-filter: blur(8px) !important;
         }
-        body[data-theme="emerald"] h2, body[data-theme="emerald"] h3 { color: #4ade80 !important; font-weight: 800; }
+        body[data-theme="emerald"] h1 {
+            background: linear-gradient(135deg, #4ade80, #22c55e, #86efac);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-shadow: none; filter: drop-shadow(0 0 15px rgba(34,197,94,0.3));
+        }
+        body[data-theme="emerald"] h2, body[data-theme="emerald"] h3 { color: #4ade80 !important; font-weight: 800; text-shadow: 0 0 12px rgba(74,222,128,0.2); }
         body[data-theme="emerald"] button { border-radius: 50px !important; font-family: 'Nunito', sans-serif !important; font-weight: 700 !important; }
-        body[data-theme="emerald"] hr { border-color: rgba(52,211,153,0.15) !important; }
+        body[data-theme="emerald"] hr { border: none !important; height: 1px !important; background: linear-gradient(90deg, transparent, rgba(52,211,153,0.25), rgba(74,222,128,0.15), transparent) !important; }
 
-        /* ══════════════════════════════════════════ */
-        /* 6. 🌌 COSMOS (Espaço profundo + nebulosas) */
-        /* ══════════════════════════════════════════ */
+        /* ══════════════════════════════════════════════════ */
+        /* 6. 🌌 COSMOS (MEGA ENHANCED)                      */
+        /*    Espaço profundo com nebulosas em múltiplas      */
+        /*    cores, via láctea, campo estelar denso,         */
+        /*    galáxias distantes, grandiosidade cósmica       */
+        /* ══════════════════════════════════════════════════ */
         body[data-theme="glass"] {
             font-family: 'Space Grotesk', sans-serif;
-            background-color: #07000f;
-            color: #e0d4ff;
+            background-color: #020008;
+            color: #ddd0ff;
             background-image:
-                radial-gradient(ellipse at 20% 50%, rgba(139,92,246,0.15) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 30%, rgba(59,130,246,0.1) 0%, transparent 50%),
-                radial-gradient(ellipse at 60% 80%, rgba(236,72,153,0.08) 0%, transparent 50%),
-                radial-gradient(circle 1px at 10% 20%, rgba(255,255,255,0.7) 0%, transparent 100%),
-                radial-gradient(circle 1px at 25% 45%, rgba(255,255,255,0.5) 0%, transparent 100%),
-                radial-gradient(circle 1px at 40% 10%, rgba(255,255,255,0.6) 0%, transparent 100%),
-                radial-gradient(circle 1px at 55% 70%, rgba(255,255,255,0.4) 0%, transparent 100%),
-                radial-gradient(circle 1px at 70% 85%, rgba(255,255,255,0.5) 0%, transparent 100%),
-                radial-gradient(circle 1px at 85% 55%, rgba(255,255,255,0.6) 0%, transparent 100%),
-                radial-gradient(circle 1px at 95% 15%, rgba(255,255,255,0.7) 0%, transparent 100%),
-                radial-gradient(circle 1px at 50% 35%, rgba(255,255,255,0.55) 0%, transparent 100%);
+                /* Nebulosas - múltiplas cores e camadas */
+                radial-gradient(ellipse at 15% 30%, rgba(139,92,246,0.2) 0%, transparent 45%),
+                radial-gradient(ellipse at 85% 20%, rgba(59,130,246,0.15) 0%, transparent 40%),
+                radial-gradient(ellipse at 60% 75%, rgba(236,72,153,0.12) 0%, transparent 45%),
+                radial-gradient(ellipse at 35% 80%, rgba(6,182,212,0.1) 0%, transparent 40%),
+                radial-gradient(ellipse at 90% 70%, rgba(249,115,22,0.06) 0%, transparent 35%),
+                radial-gradient(ellipse at 5% 60%, rgba(168,85,247,0.08) 0%, transparent 35%),
+                radial-gradient(ellipse at 50% 10%, rgba(56,189,248,0.07) 0%, transparent 30%),
+                radial-gradient(ellipse at 70% 45%, rgba(192,38,211,0.05) 0%, transparent 30%),
+                /* Via Láctea - faixa diagonal */
+                linear-gradient(135deg, transparent 30%, rgba(139,92,246,0.04) 40%, rgba(200,180,255,0.03) 50%, rgba(100,150,255,0.04) 60%, transparent 70%),
+                /* Campo estelar denso */
+                radial-gradient(circle 1px at 3% 8%, rgba(255,255,255,0.9) 0%, transparent 100%),
+                radial-gradient(circle 1.5px at 7% 45%, rgba(255,255,255,0.7) 0%, transparent 100%),
+                radial-gradient(circle 1px at 11% 72%, rgba(255,255,255,0.8) 0%, transparent 100%),
+                radial-gradient(circle 0.5px at 15% 22%, rgba(255,255,255,0.6) 0%, transparent 100%),
+                radial-gradient(circle 1px at 19% 88%, rgba(255,255,255,0.7) 0%, transparent 100%),
+                radial-gradient(circle 1.5px at 23% 55%, rgba(255,255,255,0.5) 0%, transparent 100%),
+                radial-gradient(circle 1px at 27% 12%, rgba(255,255,255,0.8) 0%, transparent 100%),
+                radial-gradient(circle 0.5px at 31% 68%, rgba(255,255,255,0.6) 0%, transparent 100%),
+                radial-gradient(circle 1px at 35% 35%, rgba(200,180,255,0.7) 0%, transparent 100%),
+                radial-gradient(circle 1.5px at 39% 92%, rgba(255,255,255,0.5) 0%, transparent 100%),
+                radial-gradient(circle 1px at 43% 18%, rgba(180,200,255,0.8) 0%, transparent 100%),
+                radial-gradient(circle 0.5px at 47% 78%, rgba(255,255,255,0.7) 0%, transparent 100%),
+                radial-gradient(circle 1px at 51% 42%, rgba(255,220,255,0.6) 0%, transparent 100%),
+                radial-gradient(circle 1.5px at 55% 5%, rgba(255,255,255,0.8) 0%, transparent 100%),
+                radial-gradient(circle 1px at 59% 62%, rgba(255,255,255,0.5) 0%, transparent 100%),
+                radial-gradient(circle 0.5px at 63% 28%, rgba(200,220,255,0.7) 0%, transparent 100%),
+                radial-gradient(circle 1px at 67% 85%, rgba(255,255,255,0.6) 0%, transparent 100%),
+                radial-gradient(circle 1.5px at 71% 48%, rgba(255,200,255,0.5) 0%, transparent 100%),
+                radial-gradient(circle 1px at 75% 15%, rgba(255,255,255,0.8) 0%, transparent 100%),
+                radial-gradient(circle 0.5px at 79% 72%, rgba(255,255,255,0.7) 0%, transparent 100%),
+                radial-gradient(circle 1px at 83% 38%, rgba(220,200,255,0.6) 0%, transparent 100%),
+                radial-gradient(circle 1.5px at 87% 95%, rgba(255,255,255,0.5) 0%, transparent 100%),
+                radial-gradient(circle 1px at 91% 55%, rgba(255,255,255,0.8) 0%, transparent 100%),
+                radial-gradient(circle 0.5px at 95% 25%, rgba(200,255,255,0.7) 0%, transparent 100%),
+                radial-gradient(circle 1px at 98% 82%, rgba(255,255,255,0.6) 0%, transparent 100%),
+                /* Galáxias distantes */
+                radial-gradient(ellipse 6px 3px at 20% 60%, rgba(200,180,255,0.15) 0%, transparent 100%),
+                radial-gradient(ellipse 4px 2px at 75% 35%, rgba(180,200,255,0.12) 0%, transparent 100%);
             background-attachment: fixed;
+        }
+        body[data-theme="glass"] #al-theme-overlay {
+            opacity: 1;
+            background:
+                radial-gradient(ellipse at 20% 40%, rgba(139,92,246,0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 60%, rgba(236,72,153,0.04) 0%, transparent 50%);
+            animation: cosmosBreath 12s ease-in-out infinite alternate;
         }
         body[data-theme="glass"] div[style*="background-color: #f8f9fa"],
         body[data-theme="glass"] div[style*="border: 1px solid #ddd"] {
-            background: linear-gradient(135deg, rgba(139,92,246,0.12) 0%, rgba(59,130,246,0.08) 100%) !important;
-            border: 1px solid rgba(139,92,246,0.25) !important;
+            background: linear-gradient(135deg, rgba(139,92,246,0.1) 0%, rgba(59,130,246,0.06) 50%, rgba(236,72,153,0.04) 100%) !important;
+            border: 1px solid rgba(139,92,246,0.2) !important;
             border-radius: 16px !important;
-            color: #e0d4ff !important;
-            backdrop-filter: blur(20px) saturate(1.5) !important;
-            box-shadow: 0 10px 40px rgba(139,92,246,0.1), inset 0 1px 0 rgba(255,255,255,0.06) !important;
+            color: #ddd0ff !important;
+            backdrop-filter: blur(24px) saturate(1.6) !important;
+            box-shadow: 0 12px 45px rgba(139,92,246,0.1), 0 0 1px rgba(255,255,255,0.1), inset 0 1px 0 rgba(255,255,255,0.06) !important;
         }
-        body[data-theme="glass"] h1 { background: linear-gradient(135deg, #c084fc, #60a5fa, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        body[data-theme="glass"] h2, body[data-theme="glass"] h3 { color: #c084fc !important; }
+        body[data-theme="glass"] h1 { background: linear-gradient(135deg, #c084fc, #60a5fa, #f472b6, #22d3ee); background-size: 300% 100%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: gradientShift 6s ease infinite; }
+        body[data-theme="glass"] h2, body[data-theme="glass"] h3 { color: #c084fc !important; text-shadow: 0 0 15px rgba(192,132,252,0.2); }
         body[data-theme="glass"] button { font-family: 'Space Grotesk', sans-serif !important; border-radius: 12px !important; }
-        body[data-theme="glass"] hr { border-color: rgba(139,92,246,0.15) !important; }
+        body[data-theme="glass"] hr { border: none !important; height: 1px !important; background: linear-gradient(90deg, transparent, rgba(139,92,246,0.2), rgba(236,72,153,0.15), transparent) !important; }
 
-        /* ══════════════════════════════════════════ */
-        /* 7. 🌊 ABISMO SUBMARINO (Bioluminescência)  */
-        /* ══════════════════════════════════════════ */
+        /* ══════════════════════════════════════════════════ */
+        /* 7. 🌊 ABISMO MARINHO (MEGA ENHANCED)              */
+        /*    Oceano profundo com cáusticas de luz, ondas,    */
+        /*    criaturas bioluminescentes, pressão abissal,    */
+        /*    correntes marinhas, vida submarina              */
+        /* ══════════════════════════════════════════════════ */
         body[data-theme="ocean"] {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #010a15;
+            background-color: #000610;
             color: #7dd3fc;
             background-image:
-                radial-gradient(ellipse at 50% 0%, rgba(14,165,233,0.08) 0%, transparent 60%),
-                radial-gradient(ellipse at 30% 100%, rgba(6,182,212,0.06) 0%, transparent 50%),
-                radial-gradient(circle 3px at 20% 40%, rgba(34,211,238,0.25) 0%, transparent 100%),
-                radial-gradient(circle 2px at 75% 25%, rgba(34,211,238,0.2) 0%, transparent 100%),
-                radial-gradient(circle 4px at 60% 70%, rgba(34,211,238,0.15) 0%, transparent 100%),
-                radial-gradient(circle 2px at 85% 80%, rgba(34,211,238,0.2) 0%, transparent 100%),
-                radial-gradient(circle 3px at 10% 90%, rgba(34,211,238,0.18) 0%, transparent 100%);
+                /* Luz da superfície a filtrar - cáusticas */
+                radial-gradient(ellipse at 50% -20%, rgba(14,165,233,0.1) 0%, transparent 60%),
+                radial-gradient(ellipse at 30% -10%, rgba(56,189,248,0.06) 0%, transparent 40%),
+                radial-gradient(ellipse at 70% -5%, rgba(34,211,238,0.05) 0%, transparent 35%),
+                /* Padrão de cáusticas (luz a ondular na água) */
+                radial-gradient(ellipse 40px 30px at 20% 15%, rgba(56,189,248,0.04) 0%, transparent 100%),
+                radial-gradient(ellipse 50px 35px at 50% 10%, rgba(34,211,238,0.03) 0%, transparent 100%),
+                radial-gradient(ellipse 35px 25px at 80% 18%, rgba(56,189,248,0.04) 0%, transparent 100%),
+                radial-gradient(ellipse 45px 30px at 35% 8%, rgba(14,165,233,0.03) 0%, transparent 100%),
+                /* Correntes marinhas */
+                linear-gradient(170deg, transparent 20%, rgba(6,182,212,0.03) 30%, transparent 40%),
+                linear-gradient(190deg, transparent 50%, rgba(8,145,178,0.02) 60%, transparent 70%),
+                /* Criaturas bioluminescentes - águas-vivas e plâncton */
+                radial-gradient(circle 8px at 10% 60%, rgba(34,211,238,0.15) 0%, rgba(6,182,212,0.03) 60%, transparent 100%),
+                radial-gradient(circle 12px at 85% 45%, rgba(56,189,248,0.12) 0%, rgba(14,165,233,0.02) 60%, transparent 100%),
+                radial-gradient(circle 6px at 45% 75%, rgba(34,211,238,0.18) 0%, rgba(6,182,212,0.03) 60%, transparent 100%),
+                radial-gradient(circle 10px at 70% 85%, rgba(103,232,249,0.1) 0%, rgba(34,211,238,0.02) 60%, transparent 100%),
+                radial-gradient(circle 8px at 25% 90%, rgba(56,189,248,0.13) 0%, rgba(14,165,233,0.02) 60%, transparent 100%),
+                radial-gradient(circle 5px at 90% 70%, rgba(34,211,238,0.16) 0%, rgba(6,182,212,0.03) 60%, transparent 100%),
+                /* Plâncton bioluminescente disperso */
+                radial-gradient(circle 2px at 15% 40%, rgba(34,211,238,0.3) 0%, transparent 100%),
+                radial-gradient(circle 1.5px at 30% 55%, rgba(56,189,248,0.25) 0%, transparent 100%),
+                radial-gradient(circle 2px at 55% 35%, rgba(103,232,249,0.2) 0%, transparent 100%),
+                radial-gradient(circle 1px at 65% 60%, rgba(34,211,238,0.3) 0%, transparent 100%),
+                radial-gradient(circle 1.5px at 80% 50%, rgba(56,189,248,0.25) 0%, transparent 100%),
+                radial-gradient(circle 2px at 40% 80%, rgba(34,211,238,0.2) 0%, transparent 100%),
+                radial-gradient(circle 1px at 20% 70%, rgba(103,232,249,0.28) 0%, transparent 100%),
+                radial-gradient(circle 1.5px at 75% 30%, rgba(56,189,248,0.22) 0%, transparent 100%),
+                radial-gradient(circle 2px at 50% 90%, rgba(34,211,238,0.18) 0%, transparent 100%),
+                radial-gradient(circle 1px at 92% 25%, rgba(34,211,238,0.25) 0%, transparent 100%),
+                /* Gradiente de profundidade - cada vez mais escuro */
+                linear-gradient(to bottom, rgba(0,20,40,0.0) 0%, rgba(0,10,25,0.3) 60%, rgba(0,5,15,0.6) 100%),
+                /* Fundo oceânico */
+                radial-gradient(ellipse at 50% 100%, rgba(8,47,73,0.2) 0%, transparent 50%);
             background-attachment: fixed;
+        }
+        body[data-theme="ocean"] #al-theme-overlay {
+            opacity: 1;
+            background:
+                radial-gradient(circle 3px at 30% 50%, rgba(34,211,238,0.2) 0%, transparent 100%),
+                radial-gradient(circle 4px at 60% 70%, rgba(56,189,248,0.15) 0%, transparent 100%),
+                radial-gradient(circle 2px at 80% 35%, rgba(103,232,249,0.18) 0%, transparent 100%);
+            animation: underwaterDrift 10s ease-in-out infinite alternate;
         }
         body[data-theme="ocean"] div[style*="background-color: #f8f9fa"],
         body[data-theme="ocean"] div[style*="border: 1px solid #ddd"] {
-            background: linear-gradient(180deg, rgba(8,47,73,0.6) 0%, rgba(8,51,68,0.4) 100%) !important;
-            border: 1px solid rgba(34,211,238,0.2) !important;
-            border-bottom: 3px solid rgba(34,211,238,0.3) !important;
+            background: linear-gradient(180deg, rgba(8,47,73,0.5) 0%, rgba(6,40,65,0.35) 50%, rgba(4,30,50,0.45) 100%) !important;
+            border: 1px solid rgba(34,211,238,0.15) !important;
+            border-bottom: 3px solid rgba(34,211,238,0.25) !important;
             border-radius: 20px !important;
             color: #7dd3fc !important;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.5), 0 0 30px rgba(34,211,238,0.04) !important;
+            box-shadow: 0 15px 45px rgba(0,0,0,0.5), 0 0 35px rgba(34,211,238,0.04), inset 0 -1px 0 rgba(34,211,238,0.06) !important;
+            backdrop-filter: blur(12px) !important;
         }
-        body[data-theme="ocean"] h1 { text-shadow: 0 0 20px rgba(34,211,238,0.3); }
-        body[data-theme="ocean"] h2, body[data-theme="ocean"] h3 { color: #22d3ee !important; text-shadow: 0 0 12px rgba(34,211,238,0.25); }
+        body[data-theme="ocean"] h1 {
+            background: linear-gradient(135deg, #22d3ee, #38bdf8, #7dd3fc);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 20px rgba(34,211,238,0.3));
+        }
+        body[data-theme="ocean"] h2, body[data-theme="ocean"] h3 { color: #22d3ee !important; text-shadow: 0 0 15px rgba(34,211,238,0.25); }
         body[data-theme="ocean"] button { border-radius: 16px !important; }
-        body[data-theme="ocean"] hr { border: none !important; height: 1px !important; background: linear-gradient(90deg, transparent, rgba(34,211,238,0.2), transparent) !important; }
+        body[data-theme="ocean"] hr { border: none !important; height: 1px !important; background: linear-gradient(90deg, transparent, rgba(34,211,238,0.2), rgba(56,189,248,0.15), transparent) !important; }
 
-        /* ══════════════════════════════════════════ */
-        /* 8. 👑 MANUSCRITO MEDIEVAL (Pergaminho)      */
-        /* ══════════════════════════════════════════ */
+        /* ══════════════════════════════════════════════════ */
+        /* 8. 👑 MANUSCRITO MEDIEVAL (MEGA ENHANCED)          */
+        /*    Manuscrito iluminado, ouro rico, bordas         */
+        /*    ornamentais, pergaminho antigo, tochas,         */
+        /*    caligrafia gótica, heráldica                    */
+        /* ══════════════════════════════════════════════════ */
         body[data-theme="royalgold"] {
             font-family: 'Cinzel', serif;
-            background-color: #110805;
-            color: #f4e4bc;
+            background-color: #0c0604;
+            color: #f0deb0;
             background-image:
-                radial-gradient(ellipse at 50% 0%, rgba(180,130,50,0.06) 0%, transparent 60%),
-                radial-gradient(ellipse at 50% 100%, rgba(120,60,20,0.08) 0%, transparent 60%);
+                /* Brilho de tochas nas paredes do castelo */
+                radial-gradient(ellipse at 5% 20%, rgba(212,175,55,0.08) 0%, transparent 40%),
+                radial-gradient(ellipse at 95% 25%, rgba(212,175,55,0.06) 0%, transparent 35%),
+                radial-gradient(ellipse at 50% 0%, rgba(180,130,50,0.07) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 100%, rgba(120,60,20,0.1) 0%, transparent 50%),
+                /* Brilho vermelho de braseiro */
+                radial-gradient(ellipse at 10% 80%, rgba(180,40,20,0.06) 0%, transparent 35%),
+                radial-gradient(ellipse at 90% 85%, rgba(160,50,25,0.05) 0%, transparent 30%),
+                /* Textura de pedra do castelo - padrão subtil */
+                repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(212,175,55,0.01) 40px, rgba(212,175,55,0.01) 41px),
+                repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(212,175,55,0.008) 60px, rgba(212,175,55,0.008) 61px),
+                /* Bordas decorativas - linhas douradas nas laterais */
+                linear-gradient(90deg, rgba(212,175,55,0.06) 0%, transparent 2%, transparent 98%, rgba(212,175,55,0.06) 100%);
             background-attachment: fixed;
+        }
+        body[data-theme="royalgold"] #al-theme-overlay {
+            opacity: 1;
+            background:
+                radial-gradient(ellipse at 5% 20%, rgba(255,180,50,0.05) 0%, transparent 40%),
+                radial-gradient(ellipse at 95% 25%, rgba(255,180,50,0.04) 0%, transparent 35%);
+            animation: torchFlicker 4s ease-in-out infinite alternate;
         }
         body[data-theme="royalgold"] div[style*="background-color: #f8f9fa"],
         body[data-theme="royalgold"] div[style*="border: 1px solid #ddd"] {
-            background: linear-gradient(135deg, rgba(35,18,8,0.9) 0%, rgba(50,25,10,0.8) 100%) !important;
-            border: 2px solid rgba(212,175,55,0.35) !important;
+            background: linear-gradient(135deg, rgba(30,16,6,0.92) 0%, rgba(40,22,8,0.85) 50%, rgba(35,18,6,0.9) 100%) !important;
+            border: 2px solid rgba(212,175,55,0.3) !important;
+            border-top: 3px solid rgba(212,175,55,0.45) !important;
             border-radius: 4px !important;
-            color: #f4e4bc !important;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(212,175,55,0.1) !important;
+            color: #f0deb0 !important;
+            box-shadow:
+                0 8px 25px rgba(0,0,0,0.5),
+                inset 0 1px 0 rgba(212,175,55,0.12),
+                inset 0 -1px 0 rgba(212,175,55,0.06),
+                0 0 0 1px rgba(212,175,55,0.08) !important;
+            position: relative;
         }
-        body[data-theme="royalgold"] h1 { text-transform: uppercase; letter-spacing: 3px; font-weight: 700; color: #d4af37; text-shadow: 0 2px 4px rgba(0,0,0,0.5); border-bottom: 2px double #d4af37; padding-bottom: 10px; }
-        body[data-theme="royalgold"] h2, body[data-theme="royalgold"] h3 { color: #d4af37 !important; font-variant: small-caps; letter-spacing: 1.5px; }
-        body[data-theme="royalgold"] button { font-family: 'Cinzel', serif !important; border-radius: 3px !important; font-variant: small-caps; letter-spacing: 1px; }
-        body[data-theme="royalgold"] hr { border: none !important; height: 2px !important; background: linear-gradient(90deg, transparent, #d4af37, transparent) !important; margin: 20px 0 !important; }
+        body[data-theme="royalgold"] h1 {
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            font-weight: 800;
+            font-family: 'Cinzel Decorative', 'Cinzel', serif;
+            background: linear-gradient(135deg, #d4af37, #f5d77a, #d4af37, #b8860b);
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: goldShimmer 4s ease-in-out infinite;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+            border-bottom: 2px double #d4af37;
+            padding-bottom: 12px;
+        }
+        body[data-theme="royalgold"] h2, body[data-theme="royalgold"] h3 {
+            color: #d4af37 !important;
+            font-variant: small-caps;
+            letter-spacing: 2px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+            border-bottom: 1px solid rgba(212,175,55,0.15);
+            padding-bottom: 6px;
+        }
+        body[data-theme="royalgold"] button {
+            font-family: 'Cinzel', serif !important;
+            border-radius: 3px !important;
+            font-variant: small-caps;
+            letter-spacing: 1px;
+            border: 1px solid rgba(212,175,55,0.4) !important;
+        }
+        body[data-theme="royalgold"] hr {
+            border: none !important;
+            height: 3px !important;
+            background: linear-gradient(90deg, transparent 5%, rgba(212,175,55,0.15) 15%, #d4af37 40%, #f5d77a 50%, #d4af37 60%, rgba(212,175,55,0.15) 85%, transparent 95%) !important;
+            margin: 22px 0 !important;
+        }
 
         /* ══════════════════════════════════════════ */
-        /* 9. 🎪 CARNAVAL (Feira popular, cores vivas) */
-        /*    Riscas de tenda de circo, letras gordas, */
-        /*    cores primárias, festa e alegria          */
+        /* 9. 🎪 CARNAVAL (INTOCADO)                  */
         /* ══════════════════════════════════════════ */
         body[data-theme="carnival"] {
             font-family: 'Fredoka', sans-serif;
@@ -262,11 +475,10 @@
             box-shadow: 3px 3px 0px rgba(0,0,0,0.15) !important;
         }
         body[data-theme="carnival"] hr { border: none !important; height: 4px !important; background: repeating-linear-gradient(90deg, #ff0050, #ff0050 10px, #0066ff 10px, #0066ff 20px, #ffcc00 20px, #ffcc00 30px) !important; border-radius: 2px !important; }
+        body[data-theme="carnival"] #al-theme-overlay { opacity: 0; }
 
         /* ══════════════════════════════════════════ */
-        /* 10. 🌸 SAKURA (Cerejeiras japonesas, zen)   */
-        /*     Delicado, rosa suave, pétalas a cair,   */
-        /*     minimalismo japonês, paz interior        */
+        /* 10. 🌸 SAKURA (INTOCADO)                   */
         /* ══════════════════════════════════════════ */
         body[data-theme="sakura"] {
             font-family: 'Quicksand', sans-serif;
@@ -299,112 +511,475 @@
             font-weight: 600 !important;
         }
         body[data-theme="sakura"] hr { border: none !important; height: 1px !important; background: linear-gradient(90deg, transparent, #f9a8d4, transparent) !important; }
+        body[data-theme="sakura"] #al-theme-overlay { opacity: 0; }
 
-        /* ══════════════════════════════════════════ */
-        /* 11. 🔥 VULCÃO (Lava fundida, calor extremo) */
-        /*     Rocha negra, fissuras incandescentes,   */
-        /*     brilho avermelhado, perigo e poder       */
-        /* ══════════════════════════════════════════ */
+        /* ══════════════════════════════════════════════════ */
+        /* 11. 🔥 VULCÃO (MEGA ENHANCED)                     */
+        /*     Vulcão ativo com rios de magma, fissuras       */
+        /*     incandescentes, chuva de brasas, rocha         */
+        /*     derretida, calor extremo, fumo e cinzas        */
+        /* ══════════════════════════════════════════════════ */
         body[data-theme="lava"] {
             font-family: 'Russo One', sans-serif;
-            background-color: #0f0000;
+            background-color: #080000;
             color: #ff6b35;
             background-image:
-                radial-gradient(ellipse at 30% 70%, rgba(220,38,38,0.12) 0%, transparent 50%),
-                radial-gradient(ellipse at 70% 30%, rgba(249,115,22,0.1) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 100%, rgba(220,38,38,0.08) 0%, transparent 40%);
+                /* Rios de magma - faixas de lava a fluir */
+                linear-gradient(175deg, transparent 30%, rgba(220,38,38,0.06) 35%, rgba(249,115,22,0.04) 40%, transparent 45%),
+                linear-gradient(185deg, transparent 55%, rgba(234,88,12,0.05) 60%, rgba(220,38,38,0.03) 65%, transparent 70%),
+                linear-gradient(170deg, transparent 75%, rgba(249,115,22,0.04) 80%, transparent 85%),
+                /* Zonas de calor intenso */
+                radial-gradient(ellipse at 25% 75%, rgba(220,38,38,0.18) 0%, transparent 45%),
+                radial-gradient(ellipse at 75% 25%, rgba(249,115,22,0.14) 0%, transparent 40%),
+                radial-gradient(ellipse at 50% 100%, rgba(220,38,38,0.12) 0%, transparent 35%),
+                radial-gradient(ellipse at 15% 30%, rgba(234,88,12,0.08) 0%, transparent 35%),
+                radial-gradient(ellipse at 85% 70%, rgba(239,68,68,0.1) 0%, transparent 35%),
+                /* Fissuras na rocha (linhas finas brilhantes) */
+                linear-gradient(45deg, transparent 48%, rgba(249,115,22,0.04) 49%, rgba(253,186,116,0.02) 50%, transparent 51%),
+                linear-gradient(135deg, transparent 52%, rgba(220,38,38,0.03) 53%, transparent 54%),
+                linear-gradient(80deg, transparent 30%, rgba(249,115,22,0.02) 31%, transparent 32%),
+                /* Campo de brasas */
+                radial-gradient(circle 2px at 8% 25%, rgba(255,100,30,0.6) 0%, transparent 100%),
+                radial-gradient(circle 1.5px at 15% 60%, rgba(255,80,20,0.5) 0%, transparent 100%),
+                radial-gradient(circle 1px at 22% 40%, rgba(255,120,40,0.55) 0%, transparent 100%),
+                radial-gradient(circle 2px at 30% 80%, rgba(255,90,25,0.45) 0%, transparent 100%),
+                radial-gradient(circle 1.5px at 38% 15%, rgba(255,110,35,0.5) 0%, transparent 100%),
+                radial-gradient(circle 1px at 45% 55%, rgba(255,70,15,0.6) 0%, transparent 100%),
+                radial-gradient(circle 2px at 52% 75%, rgba(255,130,50,0.4) 0%, transparent 100%),
+                radial-gradient(circle 1.5px at 60% 30%, rgba(255,85,20,0.55) 0%, transparent 100%),
+                radial-gradient(circle 1px at 68% 65%, rgba(255,100,30,0.5) 0%, transparent 100%),
+                radial-gradient(circle 2px at 75% 45%, rgba(255,75,18,0.45) 0%, transparent 100%),
+                radial-gradient(circle 1.5px at 82% 85%, rgba(255,115,38,0.5) 0%, transparent 100%),
+                radial-gradient(circle 1px at 90% 20%, rgba(255,90,25,0.55) 0%, transparent 100%),
+                radial-gradient(circle 2px at 95% 55%, rgba(255,105,32,0.4) 0%, transparent 100%),
+                /* Fumo e cinza no topo */
+                linear-gradient(to bottom, rgba(20,5,0,0.4) 0%, rgba(15,3,0,0.2) 10%, transparent 25%);
             background-attachment: fixed;
+        }
+        body[data-theme="lava"] #al-theme-overlay {
+            opacity: 1;
+            background:
+                radial-gradient(ellipse at 30% 80%, rgba(220,38,38,0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 30%, rgba(249,115,22,0.05) 0%, transparent 45%);
+            animation: lavaPulse 5s ease-in-out infinite alternate;
         }
         body[data-theme="lava"] div[style*="background-color: #f8f9fa"],
         body[data-theme="lava"] div[style*="border: 1px solid #ddd"] {
-            background: linear-gradient(135deg, rgba(30,5,0,0.9) 0%, rgba(50,10,0,0.8) 100%) !important;
-            border: 1px solid rgba(220,38,38,0.4) !important;
+            background: linear-gradient(135deg, rgba(25,4,0,0.92) 0%, rgba(40,8,0,0.85) 50%, rgba(30,5,0,0.9) 100%) !important;
+            border: 1px solid rgba(220,38,38,0.35) !important;
             border-bottom: 3px solid rgba(249,115,22,0.5) !important;
             border-radius: 8px !important;
             color: #ff6b35 !important;
-            box-shadow: 0 8px 25px rgba(220,38,38,0.15), inset 0 -2px 10px rgba(249,115,22,0.05) !important;
+            box-shadow:
+                0 10px 30px rgba(220,38,38,0.15),
+                0 0 1px rgba(249,115,22,0.3),
+                inset 0 -2px 15px rgba(249,115,22,0.04),
+                inset 0 1px 0 rgba(255,100,30,0.06) !important;
         }
-        body[data-theme="lava"] h1 { color: #ef4444; text-shadow: 0 0 20px rgba(239,68,68,0.4), 0 0 40px rgba(249,115,22,0.2); text-transform: uppercase; }
-        body[data-theme="lava"] h2, body[data-theme="lava"] h3 { color: #f97316 !important; text-shadow: 0 0 10px rgba(249,115,22,0.3); text-transform: uppercase; letter-spacing: 1px; }
+        body[data-theme="lava"] h1 {
+            background: linear-gradient(135deg, #ef4444, #f97316, #fbbf24, #f97316, #ef4444);
+            background-size: 200% 100%;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: fireGradient 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px rgba(239,68,68,0.4)) drop-shadow(0 0 40px rgba(249,115,22,0.2));
+            text-transform: uppercase;
+        }
+        body[data-theme="lava"] h2, body[data-theme="lava"] h3 {
+            color: #f97316 !important;
+            text-shadow: 0 0 12px rgba(249,115,22,0.35), 0 0 25px rgba(220,38,38,0.15);
+            text-transform: uppercase; letter-spacing: 1.5px;
+        }
         body[data-theme="lava"] button {
             font-family: 'Russo One', sans-serif !important;
             border-radius: 6px !important;
             text-transform: uppercase !important;
         }
-        body[data-theme="lava"] hr { border: none !important; height: 2px !important; background: linear-gradient(90deg, transparent, #ef4444, #f97316, transparent) !important; }
+        body[data-theme="lava"] hr { border: none !important; height: 2px !important; background: linear-gradient(90deg, transparent, #ef4444, #f97316, #fbbf24, #f97316, #ef4444, transparent) !important; }
 
-        /* ══════════════════════════════════════════ */
-        /* 12. ❄️ ÁRTICO (Gelo cristalino, aurora)     */
-        /*     Noite polar, cristais de gelo, aurora    */
-        /*     boreal, frio cortante, silêncio glacial  */
-        /* ══════════════════════════════════════════ */
+        /* ══════════════════════════════════════════════════ */
+        /* 12. ❄️ ÁRTICO (MEGA ENHANCED)                     */
+        /*     Noite polar com aurora boreal animada,         */
+        /*     cristais de gelo cintilantes, campo de neve,   */
+        /*     estrelas árticas, frio cortante, majestade     */
+        /* ══════════════════════════════════════════════════ */
         body[data-theme="arctic"] {
             font-family: 'Raleway', sans-serif;
             font-weight: 300;
-            background-color: #0a1628;
+            background-color: #040e1c;
             color: #c7d2fe;
             background-image:
-                radial-gradient(ellipse at 50% 0%, rgba(96,165,250,0.08) 0%, transparent 50%),
-                radial-gradient(ellipse at 20% 60%, rgba(147,197,253,0.05) 0%, transparent 40%),
-                radial-gradient(ellipse at 80% 80%, rgba(165,180,252,0.06) 0%, transparent 40%),
-                linear-gradient(180deg, rgba(96,165,250,0.03) 0%, transparent 30%);
+                /* Aurora boreal - faixas de cor */
+                radial-gradient(ellipse 80% 15% at 30% 15%, rgba(52,211,153,0.12) 0%, transparent 100%),
+                radial-gradient(ellipse 60% 10% at 55% 12%, rgba(96,165,250,0.1) 0%, transparent 100%),
+                radial-gradient(ellipse 70% 12% at 75% 18%, rgba(167,139,250,0.08) 0%, transparent 100%),
+                radial-gradient(ellipse 50% 8% at 20% 20%, rgba(52,211,153,0.06) 0%, transparent 100%),
+                radial-gradient(ellipse 65% 10% at 85% 10%, rgba(56,189,248,0.07) 0%, transparent 100%),
+                /* Campo estelar polar */
+                radial-gradient(circle 1px at 5% 8%, rgba(255,255,255,0.9) 0%, transparent 100%),
+                radial-gradient(circle 0.5px at 12% 22%, rgba(255,255,255,0.7) 0%, transparent 100%),
+                radial-gradient(circle 1px at 18% 45%, rgba(200,220,255,0.8) 0%, transparent 100%),
+                radial-gradient(circle 0.5px at 25% 15%, rgba(255,255,255,0.6) 0%, transparent 100%),
+                radial-gradient(circle 1px at 32% 58%, rgba(255,255,255,0.7) 0%, transparent 100%),
+                radial-gradient(circle 0.5px at 38% 32%, rgba(200,210,255,0.8) 0%, transparent 100%),
+                radial-gradient(circle 1px at 45% 12%, rgba(255,255,255,0.6) 0%, transparent 100%),
+                radial-gradient(circle 0.5px at 52% 72%, rgba(255,255,255,0.7) 0%, transparent 100%),
+                radial-gradient(circle 1px at 58% 42%, rgba(220,230,255,0.5) 0%, transparent 100%),
+                radial-gradient(circle 0.5px at 65% 8%, rgba(255,255,255,0.8) 0%, transparent 100%),
+                radial-gradient(circle 1px at 72% 55%, rgba(255,255,255,0.6) 0%, transparent 100%),
+                radial-gradient(circle 0.5px at 78% 28%, rgba(200,215,255,0.7) 0%, transparent 100%),
+                radial-gradient(circle 1px at 85% 48%, rgba(255,255,255,0.5) 0%, transparent 100%),
+                radial-gradient(circle 0.5px at 92% 18%, rgba(255,255,255,0.8) 0%, transparent 100%),
+                radial-gradient(circle 1px at 98% 65%, rgba(220,225,255,0.6) 0%, transparent 100%),
+                /* Cristais de gelo - pontos brilhantes maiores */
+                radial-gradient(circle 3px at 15% 35%, rgba(147,197,253,0.2) 0%, transparent 100%),
+                radial-gradient(circle 2px at 45% 25%, rgba(165,180,252,0.18) 0%, transparent 100%),
+                radial-gradient(circle 3px at 75% 60%, rgba(147,197,253,0.15) 0%, transparent 100%),
+                radial-gradient(circle 2px at 35% 75%, rgba(200,220,255,0.2) 0%, transparent 100%),
+                radial-gradient(circle 3px at 85% 40%, rgba(147,197,253,0.16) 0%, transparent 100%),
+                /* Campo de neve no horizonte */
+                linear-gradient(to top, rgba(15,25,50,0.4) 0%, rgba(10,20,40,0.2) 8%, transparent 20%),
+                /* Gelo no topo */
+                linear-gradient(to bottom, rgba(96,165,250,0.04) 0%, transparent 15%);
             background-attachment: fixed;
+        }
+        body[data-theme="arctic"] #al-theme-overlay {
+            opacity: 1;
+            background: linear-gradient(90deg,
+                transparent 10%,
+                rgba(52,211,153,0.04) 25%,
+                rgba(96,165,250,0.05) 40%,
+                rgba(167,139,250,0.04) 55%,
+                rgba(52,211,153,0.03) 70%,
+                transparent 90%
+            );
+            background-size: 200% 100%;
+            animation: auroraWave 15s ease-in-out infinite;
         }
         body[data-theme="arctic"] div[style*="background-color: #f8f9fa"],
         body[data-theme="arctic"] div[style*="border: 1px solid #ddd"] {
-            background: linear-gradient(135deg, rgba(15,23,42,0.8) 0%, rgba(30,41,59,0.6) 100%) !important;
-            border: 1px solid rgba(147,197,253,0.2) !important;
-            border-top: 2px solid rgba(147,197,253,0.35) !important;
+            background: linear-gradient(135deg, rgba(12,20,40,0.8) 0%, rgba(20,30,55,0.6) 50%, rgba(15,25,45,0.7) 100%) !important;
+            border: 1px solid rgba(147,197,253,0.18) !important;
+            border-top: 2px solid rgba(147,197,253,0.3) !important;
             border-radius: 4px !important;
             color: #c7d2fe !important;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(147,197,253,0.08) !important;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(147,197,253,0.1), 0 0 20px rgba(96,165,250,0.03) !important;
+            backdrop-filter: blur(10px) !important;
         }
-        body[data-theme="arctic"] h1 { color: #93c5fd; font-weight: 200; letter-spacing: 4px; text-transform: uppercase; }
-        body[data-theme="arctic"] h2, body[data-theme="arctic"] h3 { color: #93c5fd !important; font-weight: 300; letter-spacing: 1px; }
+        body[data-theme="arctic"] h1 {
+            color: #93c5fd; font-weight: 200; letter-spacing: 5px; text-transform: uppercase;
+            text-shadow: 0 0 20px rgba(147,197,253,0.2);
+        }
+        body[data-theme="arctic"] h2, body[data-theme="arctic"] h3 {
+            color: #93c5fd !important; font-weight: 300; letter-spacing: 1.5px;
+            text-shadow: 0 0 10px rgba(147,197,253,0.15);
+        }
         body[data-theme="arctic"] button {
             font-family: 'Raleway', sans-serif !important;
             border-radius: 4px !important;
             font-weight: 600 !important;
             letter-spacing: 0.5px;
         }
-        body[data-theme="arctic"] hr { border: none !important; height: 1px !important; background: linear-gradient(90deg, transparent, rgba(147,197,253,0.25), transparent) !important; }
+        body[data-theme="arctic"] hr { border: none !important; height: 1px !important; background: linear-gradient(90deg, transparent, rgba(147,197,253,0.2), rgba(165,180,252,0.15), transparent) !important; }
 
-        /* ══════════════════════════════════════════ */
-        /* 13. 🎨 POP ART (Banda desenhada, Memphis)   */
-        /*     Cores primárias a explodir, contornos   */
-        /*     grossos, halftone dots, impacto visual   */
-        /* ══════════════════════════════════════════ */
-        body[data-theme="popart"] {
-            font-family: 'Bangers', cursive;
-            letter-spacing: 1.5px;
-            background-color: #fff200;
-            color: #000000;
+        /* ══════════════════════════════════════════════════ */
+        /* 13. 🔮 CRISTAL MÍSTICO (NOVO - substitui Pop Art)  */
+        /*     Interior de uma geode de ametista gigante,     */
+        /*     prismas de luz a refratar arco-íris, gemas     */
+        /*     brilhantes por todo o lado, magia cristalina   */
+        /* ══════════════════════════════════════════════════ */
+        body[data-theme="crystal"] {
+            font-family: 'Raleway', sans-serif;
+            font-weight: 300;
+            background-color: #08001a;
+            color: #d8c0ff;
             background-image:
-                radial-gradient(circle, rgba(0,0,0,0.06) 1px, transparent 1px);
-            background-size: 12px 12px;
+                /* Aura de ametista - brilho roxo profundo */
+                radial-gradient(ellipse at 20% 30%, rgba(147,51,234,0.18) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 70%, rgba(168,85,247,0.14) 0%, transparent 45%),
+                radial-gradient(ellipse at 50% 50%, rgba(126,34,206,0.08) 0%, transparent 55%),
+                /* Safira - brilho azul */
+                radial-gradient(ellipse at 75% 20%, rgba(59,130,246,0.12) 0%, transparent 40%),
+                radial-gradient(ellipse at 15% 75%, rgba(96,165,250,0.08) 0%, transparent 35%),
+                /* Esmeralda - brilho verde */
+                radial-gradient(ellipse at 85% 50%, rgba(16,185,129,0.08) 0%, transparent 35%),
+                radial-gradient(ellipse at 10% 45%, rgba(52,211,153,0.06) 0%, transparent 30%),
+                /* Rubi - brilho vermelho-rosa */
+                radial-gradient(ellipse at 40% 80%, rgba(244,63,94,0.07) 0%, transparent 35%),
+                radial-gradient(ellipse at 60% 10%, rgba(236,72,153,0.06) 0%, transparent 30%),
+                /* Refração prismática - arco-íris sutil */
+                linear-gradient(45deg, transparent 20%, rgba(239,68,68,0.02) 22%, rgba(249,115,22,0.02) 24%, rgba(234,179,8,0.02) 26%, rgba(34,197,94,0.02) 28%, rgba(59,130,246,0.02) 30%, rgba(147,51,234,0.02) 32%, transparent 34%),
+                linear-gradient(225deg, transparent 60%, rgba(147,51,234,0.02) 62%, rgba(59,130,246,0.02) 64%, rgba(34,197,94,0.02) 66%, rgba(234,179,8,0.02) 68%, rgba(249,115,22,0.02) 70%, rgba(239,68,68,0.02) 72%, transparent 74%),
+                /* Facetas cristalinas - ângulos geométricos */
+                linear-gradient(60deg, transparent 45%, rgba(200,180,255,0.015) 48%, transparent 51%),
+                linear-gradient(120deg, transparent 35%, rgba(180,200,255,0.012) 38%, transparent 41%),
+                linear-gradient(30deg, transparent 55%, rgba(220,180,255,0.01) 58%, transparent 61%),
+                /* Pontos de brilho de gemas */
+                radial-gradient(circle 2px at 12% 18%, rgba(200,180,255,0.7) 0%, transparent 100%),
+                radial-gradient(circle 1.5px at 25% 52%, rgba(147,197,253,0.6) 0%, transparent 100%),
+                radial-gradient(circle 2px at 35% 30%, rgba(192,132,252,0.65) 0%, transparent 100%),
+                radial-gradient(circle 1px at 42% 72%, rgba(52,211,153,0.5) 0%, transparent 100%),
+                radial-gradient(circle 1.5px at 55% 15%, rgba(244,114,182,0.55) 0%, transparent 100%),
+                radial-gradient(circle 2px at 62% 85%, rgba(96,165,250,0.5) 0%, transparent 100%),
+                radial-gradient(circle 1px at 70% 42%, rgba(253,186,116,0.45) 0%, transparent 100%),
+                radial-gradient(circle 1.5px at 78% 65%, rgba(192,132,252,0.6) 0%, transparent 100%),
+                radial-gradient(circle 2px at 88% 28%, rgba(167,139,250,0.55) 0%, transparent 100%),
+                radial-gradient(circle 1px at 93% 78%, rgba(147,197,253,0.5) 0%, transparent 100%),
+                radial-gradient(circle 1.5px at 18% 88%, rgba(244,63,94,0.4) 0%, transparent 100%),
+                radial-gradient(circle 1px at 48% 48%, rgba(255,255,255,0.5) 0%, transparent 100%),
+                radial-gradient(circle 2px at 30% 68%, rgba(168,85,247,0.5) 0%, transparent 100%),
+                radial-gradient(circle 1px at 82% 12%, rgba(52,211,153,0.45) 0%, transparent 100%),
+                radial-gradient(circle 1.5px at 58% 58%, rgba(200,180,255,0.4) 0%, transparent 100%);
             background-attachment: fixed;
         }
-        body[data-theme="popart"] div[style*="background-color: #f8f9fa"],
-        body[data-theme="popart"] div[style*="border: 1px solid #ddd"] {
-            background-color: #ffffff !important;
-            border: 4px solid #000000 !important;
-            border-radius: 0px !important;
-            color: #000000 !important;
-            box-shadow: 6px 6px 0px #000000 !important;
+        body[data-theme="crystal"] #al-theme-overlay {
+            opacity: 1;
+            background:
+                radial-gradient(ellipse at 30% 40%, rgba(147,51,234,0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 60%, rgba(59,130,246,0.03) 0%, transparent 50%),
+                linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.01) 50%, transparent 70%);
+            animation: crystalShimmer 8s ease-in-out infinite alternate;
         }
-        body[data-theme="popart"] h1 { color: #ff0000; text-shadow: 3px 3px 0px #000000; font-size: 34px; text-transform: uppercase; }
-        body[data-theme="popart"] h2 { color: #0000ff !important; text-shadow: 2px 2px 0px rgba(0,0,0,0.15); text-transform: uppercase; }
-        body[data-theme="popart"] h3 { color: #ff0000 !important; text-transform: uppercase; }
-        body[data-theme="popart"] button {
-            font-family: 'Bangers', cursive !important;
-            border-radius: 0px !important;
-            border-width: 3px !important;
-            border-color: #000000 !important;
-            letter-spacing: 1.5px;
-            box-shadow: 3px 3px 0px #000000 !important;
-            text-transform: uppercase;
+        body[data-theme="crystal"] div[style*="background-color: #f8f9fa"],
+        body[data-theme="crystal"] div[style*="border: 1px solid #ddd"] {
+            background: linear-gradient(135deg, rgba(30,10,60,0.6) 0%, rgba(20,8,50,0.45) 50%, rgba(25,12,55,0.5) 100%) !important;
+            border: 1px solid rgba(168,85,247,0.25) !important;
+            border-left: 3px solid transparent !important;
+            border-image: linear-gradient(to bottom, rgba(239,68,68,0.4), rgba(234,179,8,0.4), rgba(34,197,94,0.4), rgba(59,130,246,0.4), rgba(147,51,234,0.4)) 1 !important;
+            border-radius: 12px !important;
+            color: #d8c0ff !important;
+            box-shadow: 0 10px 35px rgba(0,0,0,0.5), 0 0 20px rgba(147,51,234,0.06), inset 0 1px 0 rgba(255,255,255,0.05) !important;
+            backdrop-filter: blur(16px) saturate(1.4) !important;
         }
-        body[data-theme="popart"] hr { border: none !important; height: 4px !important; background-color: #000000 !important; }
+        body[data-theme="crystal"] h1 {
+            background: linear-gradient(135deg, #c084fc, #60a5fa, #34d399, #fbbf24, #f472b6, #c084fc);
+            background-size: 300% 100%;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: prismShift 8s ease infinite;
+            font-weight: 200; letter-spacing: 3px;
+            filter: drop-shadow(0 0 15px rgba(168,85,247,0.3));
+        }
+        body[data-theme="crystal"] h2 { color: #c084fc !important; font-weight: 400; letter-spacing: 1px; text-shadow: 0 0 12px rgba(192,132,252,0.2); }
+        body[data-theme="crystal"] h3 { color: #a78bfa !important; font-weight: 400; text-shadow: 0 0 10px rgba(167,139,250,0.2); }
+        body[data-theme="crystal"] button {
+            font-family: 'Raleway', sans-serif !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            letter-spacing: 0.5px;
+        }
+        body[data-theme="crystal"] hr {
+            border: none !important; height: 1px !important;
+            background: linear-gradient(90deg, transparent, rgba(239,68,68,0.15), rgba(234,179,8,0.15), rgba(34,197,94,0.15), rgba(59,130,246,0.15), rgba(147,51,234,0.15), transparent) !important;
+        }
+
+        /* ══════════════════════════════════════════════════ */
+        /* 14. ⚡ SYNTHWAVE (NOVO - tema retro 80s neon)      */
+        /*     Retro-futurismo com sunset gradient, grid neon,*/
+        /*     chrome, hot pink e cyan, noite eléctrica       */
+        /* ══════════════════════════════════════════════════ */
+        body[data-theme="synthwave"] {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 400;
+            background-color: #0a0020;
+            color: #e0d0ff;
+            background-image:
+                /* Sunset no horizonte */
+                linear-gradient(to top,
+                    rgba(255,50,100,0.0) 0%,
+                    rgba(255,50,100,0.06) 30%,
+                    rgba(255,100,50,0.08) 40%,
+                    rgba(255,150,50,0.06) 45%,
+                    rgba(200,50,200,0.04) 55%,
+                    rgba(100,0,150,0.03) 65%,
+                    transparent 75%
+                ),
+                /* Grid de perspectiva no chão */
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 59px,
+                    rgba(255,45,149,0.04) 59px,
+                    rgba(255,45,149,0.04) 60px
+                ),
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 39px,
+                    rgba(0,240,255,0.03) 39px,
+                    rgba(0,240,255,0.03) 40px
+                ),
+                /* Brilho neon difuso */
+                radial-gradient(ellipse at 20% 60%, rgba(255,45,149,0.12) 0%, transparent 45%),
+                radial-gradient(ellipse at 80% 40%, rgba(0,240,255,0.1) 0%, transparent 45%),
+                radial-gradient(ellipse at 50% 80%, rgba(168,85,247,0.08) 0%, transparent 40%),
+                radial-gradient(ellipse at 35% 20%, rgba(255,45,149,0.05) 0%, transparent 30%),
+                radial-gradient(ellipse at 65% 75%, rgba(0,240,255,0.06) 0%, transparent 35%),
+                /* Scan lines retro */
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 3px,
+                    rgba(255,255,255,0.008) 3px,
+                    rgba(255,255,255,0.008) 4px
+                ),
+                /* Estrelas neon */
+                radial-gradient(circle 1.5px at 10% 10%, rgba(255,45,149,0.5) 0%, transparent 100%),
+                radial-gradient(circle 1px at 20% 30%, rgba(0,240,255,0.4) 0%, transparent 100%),
+                radial-gradient(circle 1.5px at 35% 8%, rgba(255,255,255,0.5) 0%, transparent 100%),
+                radial-gradient(circle 1px at 45% 25%, rgba(255,45,149,0.4) 0%, transparent 100%),
+                radial-gradient(circle 1.5px at 60% 12%, rgba(0,240,255,0.5) 0%, transparent 100%),
+                radial-gradient(circle 1px at 75% 5%, rgba(168,85,247,0.4) 0%, transparent 100%),
+                radial-gradient(circle 1.5px at 85% 18%, rgba(255,255,255,0.45) 0%, transparent 100%),
+                radial-gradient(circle 1px at 92% 35%, rgba(255,45,149,0.35) 0%, transparent 100%),
+                radial-gradient(circle 1px at 50% 45%, rgba(0,240,255,0.3) 0%, transparent 100%);
+            background-attachment: fixed;
+        }
+        body[data-theme="synthwave"] #al-theme-overlay {
+            opacity: 1;
+            background: linear-gradient(90deg,
+                transparent,
+                rgba(255,45,149,0.02) 20%,
+                rgba(0,240,255,0.02) 40%,
+                rgba(168,85,247,0.02) 60%,
+                rgba(255,45,149,0.02) 80%,
+                transparent
+            );
+            background-size: 200% 100%;
+            animation: neonSweep 6s ease-in-out infinite;
+        }
+        body[data-theme="synthwave"] div[style*="background-color: #f8f9fa"],
+        body[data-theme="synthwave"] div[style*="border: 1px solid #ddd"] {
+            background: linear-gradient(135deg, rgba(20,0,50,0.8) 0%, rgba(15,0,40,0.65) 100%) !important;
+            border: 1px solid rgba(255,45,149,0.25) !important;
+            border-bottom: 2px solid rgba(0,240,255,0.3) !important;
+            border-radius: 4px !important;
+            color: #e0d0ff !important;
+            box-shadow:
+                0 8px 30px rgba(0,0,0,0.5),
+                0 0 15px rgba(255,45,149,0.06),
+                0 0 15px rgba(0,240,255,0.04),
+                inset 0 1px 0 rgba(255,255,255,0.04) !important;
+            backdrop-filter: blur(10px) !important;
+        }
+        body[data-theme="synthwave"] h1 {
+            background: linear-gradient(135deg, #ff2d95, #00f0ff, #ff2d95);
+            background-size: 200% 100%;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: neonGradient 4s ease infinite;
+            text-transform: uppercase; letter-spacing: 3px;
+            filter: drop-shadow(0 0 15px rgba(255,45,149,0.4)) drop-shadow(0 0 30px rgba(0,240,255,0.2));
+        }
+        body[data-theme="synthwave"] h2 {
+            color: #ff2d95 !important;
+            text-shadow: 0 0 10px rgba(255,45,149,0.35), 0 0 20px rgba(255,45,149,0.15);
+            text-transform: uppercase; letter-spacing: 2px; font-size: 16px;
+        }
+        body[data-theme="synthwave"] h3 {
+            color: #00f0ff !important;
+            text-shadow: 0 0 10px rgba(0,240,255,0.3), 0 0 20px rgba(0,240,255,0.12);
+            text-transform: uppercase; letter-spacing: 1.5px;
+        }
+        body[data-theme="synthwave"] button {
+            font-family: 'Orbitron', sans-serif !important;
+            border-radius: 2px !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px;
+            font-size: 12px !important;
+            font-weight: 500 !important;
+        }
+        body[data-theme="synthwave"] hr {
+            border: none !important; height: 2px !important;
+            background: linear-gradient(90deg, transparent, #ff2d95, #00f0ff, #a855f7, transparent) !important;
+        }
+
+        /* ══════════════════════════════════════════ */
+        /* ANIMAÇÕES PARA TEMAS VIVOS                 */
+        /* ══════════════════════════════════════════ */
+        @keyframes fireflyDrift {
+            0% { transform: translateY(0) translateX(0); opacity: 0.3; }
+            25% { opacity: 0.7; }
+            50% { transform: translateY(-15px) translateX(8px); opacity: 0.5; }
+            75% { opacity: 0.8; }
+            100% { transform: translateY(-5px) translateX(-5px); opacity: 0.4; }
+        }
+
+        @keyframes cosmosBreath {
+            0% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 0.8; }
+            100% { opacity: 0.6; transform: scale(1.05); }
+        }
+
+        @keyframes underwaterDrift {
+            0% { transform: translateY(0) translateX(0); opacity: 0.4; }
+            50% { transform: translateY(8px) translateX(-5px); opacity: 0.6; }
+            100% { transform: translateY(-3px) translateX(3px); opacity: 0.5; }
+        }
+
+        @keyframes torchFlicker {
+            0% { opacity: 0.5; }
+            10% { opacity: 0.6; }
+            20% { opacity: 0.45; }
+            30% { opacity: 0.7; }
+            40% { opacity: 0.5; }
+            50% { opacity: 0.65; }
+            60% { opacity: 0.55; }
+            70% { opacity: 0.7; }
+            80% { opacity: 0.5; }
+            90% { opacity: 0.6; }
+            100% { opacity: 0.55; }
+        }
+
+        @keyframes lavaPulse {
+            0% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.02); }
+            100% { opacity: 0.5; transform: scale(1); }
+        }
+
+        @keyframes auroraWave {
+            0% { background-position: 0% 0%; opacity: 0.6; }
+            50% { opacity: 0.9; }
+            100% { background-position: 200% 0%; opacity: 0.6; }
+        }
+
+        @keyframes crystalShimmer {
+            0% { opacity: 0.3; transform: rotate(0deg) scale(1); }
+            50% { opacity: 0.6; }
+            100% { opacity: 0.4; transform: rotate(0.5deg) scale(1.01); }
+        }
+
+        @keyframes neonSweep {
+            0% { background-position: -100% 0%; }
+            100% { background-position: 200% 0%; }
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes goldShimmer {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes fireGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes prismShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes neonGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
 
         /* ══════════════════════════════════════════ */
         /* AJUSTES ESCUROS PARA DROPDOWN + RELÓGIO    */
@@ -412,15 +987,17 @@
         body[data-theme="outono"] .theme-select-dropdown, body[data-theme="cyber"] .theme-select-dropdown,
         body[data-theme="emerald"] .theme-select-dropdown, body[data-theme="glass"] .theme-select-dropdown,
         body[data-theme="ocean"] .theme-select-dropdown, body[data-theme="royalgold"] .theme-select-dropdown,
-        body[data-theme="lava"] .theme-select-dropdown, body[data-theme="arctic"] .theme-select-dropdown {
-            background-color: rgba(10,10,10,0.85) !important;
+        body[data-theme="lava"] .theme-select-dropdown, body[data-theme="arctic"] .theme-select-dropdown,
+        body[data-theme="crystal"] .theme-select-dropdown, body[data-theme="synthwave"] .theme-select-dropdown {
+            background-color: rgba(10,10,10,0.9) !important;
             border-color: rgba(255,255,255,0.2) !important;
             color: #fff !important;
         }
         body[data-theme="outono"] .clock-btn, body[data-theme="cyber"] .clock-btn,
         body[data-theme="emerald"] .clock-btn, body[data-theme="glass"] .clock-btn,
         body[data-theme="ocean"] .clock-btn, body[data-theme="royalgold"] .clock-btn,
-        body[data-theme="lava"] .clock-btn, body[data-theme="arctic"] .clock-btn {
+        body[data-theme="lava"] .clock-btn, body[data-theme="arctic"] .clock-btn,
+        body[data-theme="crystal"] .clock-btn, body[data-theme="synthwave"] .clock-btn {
             background-color: rgba(10,10,10,0.85) !important;
             border-color: rgba(255,255,255,0.2) !important;
         }
@@ -492,7 +1069,6 @@ function renderCurrentView() {
     else if (currentView === "snapshots") showSnapshotsPlan();
 }
 
-// Relógio funciona como toggle: se já estás nos snapshots, volta ao menu inicial
 window.toggleSnapshots = function() {
     if (currentView === "snapshots") {
         currentView = "cleaning";
@@ -637,7 +1213,8 @@ function renderNavigation() {
                 <option value="sakura" ${currentTheme==='sakura'?'selected':''}>🌸 Sakura</option>
                 <option value="lava" ${currentTheme==='lava'?'selected':''}>🔥 Vulcão</option>
                 <option value="arctic" ${currentTheme==='arctic'?'selected':''}>❄️ Ártico</option>
-                <option value="popart" ${currentTheme==='popart'?'selected':''}>🎨 Pop Art</option>
+                <option value="crystal" ${currentTheme==='crystal'?'selected':''}>🔮 Cristal</option>
+                <option value="synthwave" ${currentTheme==='synthwave'?'selected':''}>⚡ Synthwave</option>
             </select>
             <button onclick="window.toggleSnapshots()" class="clock-btn ${isSnapshots?'active':''}" style="
                 font-size: 16px; background-color: ${isSnapshots?'#e2e6ea':'rgba(255,255,255,0.9)'};
