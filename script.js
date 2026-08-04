@@ -18,7 +18,7 @@
 
         body {
             margin: 0;
-            padding: 20px 16px 20px 16px; /* Padding ajustado para topo normal */
+            padding: 20px 16px 20px 16px;
             min-height: 100vh;
             transition: background-color 0.4s ease, color 0.3s ease;
             position: relative;
@@ -931,9 +931,9 @@ function renderNavigation() {
     const isOccupancy = currentView === "occupancy";
     const isSnapshots = currentView === "snapshots";
 
-    // Posição absoluta em relação ao elemento #result: fica no topo do conteúdo e sobe com a página
+    // Linha de controlos superior alinhada à direita, no topo absoluto do conteúdo
     const topRightControls = `
-        <div style="position: absolute; top: 0; right: 0; display: flex; align-items: center; gap: 8px; z-index: 10;">
+        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-bottom: 16px;">
             <select class="theme-select-dropdown" onchange="window.setTheme(this.value)" title="Mudar Estilo" style="
                 padding: 4px 8px; font-size: 13px; border-radius: 6px;
                 border: 1px solid rgba(0,0,0,0.2); background-color: rgba(255,255,255,0.9); color: #333;
