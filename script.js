@@ -315,23 +315,19 @@ function renderCurrentView() {
     else if (currentView === "snapshots") showSnapshotsPlan();
 }
 
-// Fetch com Anti-Cache seguro (Sem erros de CORS)
+// Fetch com Anti-Cache seguro (Sem erros de CORS no Cloudflare)
 async function fetchWithTimeout(resource, options = {}, timeout = 10000) {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
 
+    // O truque do timestamp no URL é suficiente para evitar a cache no telemóvel
     const separator = resource.includes("?") ? "&" : "?";
     const noCacheUrl = `${resource}${separator}_t=${Date.now()}`;
 
+    // Removemos os cabeçalhos manuais (Cache-Control/Pragma) para evitar bloqueios CORS
     const noCacheOptions = {
         ...options,
         cache: 'no-store',
-        headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0',
-            ...(options.headers || {})
-        },
         signal: controller.signal
     };
 
