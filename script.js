@@ -37,7 +37,7 @@
         }
 
         /* ══════════════════════════════════════════ */
-        /* 1. ⬜ BRANCO CLÁSSICO (INTOCADO)           */
+        /* 1. ⬜ BRANCO CLÁSSICO                      */
         /* ══════════════════════════════════════════ */
         body[data-theme="white"], body:not([data-theme]) {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -48,7 +48,7 @@
         body:not([data-theme]) #al-theme-overlay { opacity: 0; }
 
         /* ══════════════════════════════════════════ */
-        /* 2. 🍂 OUTONO LUXURY (INTOCADO)             */
+        /* 2. 🍂 OUTONO LUXURY                        */
         /* ══════════════════════════════════════════ */
         body[data-theme="outono"] {
             font-family: 'Outfit', sans-serif;
@@ -71,7 +71,7 @@
         body[data-theme="outono"] #al-theme-overlay { opacity: 0; }
 
         /* ══════════════════════════════════════════ */
-        /* 3. 🖥️ RETRO TERMINAL (INTOCADO)            */
+        /* 3. 🖥️ RETRO TERMINAL                       */
         /* ══════════════════════════════════════════ */
         body[data-theme="cyber"] {
             font-family: 'VT323', monospace;
@@ -100,7 +100,7 @@
         body[data-theme="cyber"] #al-theme-overlay { opacity: 0; }
 
         /* ══════════════════════════════════════════ */
-        /* 4. 📓 CADERNO (INTOCADO)                   */
+        /* 4. 📓 CADERNO                              */
         /* ══════════════════════════════════════════ */
         body[data-theme="cappuccino"] {
             font-family: 'Caveat', cursive;
@@ -126,7 +126,7 @@
         body[data-theme="cappuccino"] #al-theme-overlay { opacity: 0; }
 
         /* ══════════════════════════════════════════════════ */
-        /* 5. 🌿 FLORESTA ENCANTADA (MEGA ENHANCED)          */
+        /* 5. 🌿 FLORESTA ENCANTADA                          */
         /* ══════════════════════════════════════════════════ */
         body[data-theme="emerald"] {
             font-family: 'Nunito', sans-serif;
@@ -201,7 +201,7 @@
         body[data-theme="emerald"] hr { border: none !important; height: 1px !important; background: linear-gradient(90deg, transparent, rgba(52,211,153,0.25), rgba(74,222,128,0.15), transparent) !important; }
 
         /* ══════════════════════════════════════════════════ */
-        /* 6. 🌌 COSMOS (MEGA ENHANCED)                      */
+        /* 6. 🌌 COSMOS                                      */
         /* ══════════════════════════════════════════════════ */
         body[data-theme="glass"] {
             font-family: 'Space Grotesk', sans-serif;
@@ -268,7 +268,7 @@
         body[data-theme="glass"] hr { border: none !important; height: 1px !important; background: linear-gradient(90deg, transparent, rgba(139,92,246,0.2), rgba(236,72,153,0.15), transparent) !important; }
 
         /* ══════════════════════════════════════════════════ */
-        /* 7. 🌊 ABISMO MARINHO (MEGA ENHANCED)              */
+        /* 7. 🌊 ABISMO MARINHO                              */
         /* ══════════════════════════════════════════════════ */
         body[data-theme="ocean"] {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -332,7 +332,7 @@
         body[data-theme="ocean"] hr { border: none !important; height: 1px !important; background: linear-gradient(90deg, transparent, rgba(34,211,238,0.2), rgba(56,189,248,0.15), transparent) !important; }
 
         /* ══════════════════════════════════════════════════ */
-        /* 8. 👑 MANUSCRITO MEDIEVAL (MEGA ENHANCED)          */
+        /* 8. 👑 MANUSCRITO MEDIEVAL                         */
         /* ══════════════════════════════════════════════════ */
         body[data-theme="royalgold"] {
             font-family: 'Cinzel', serif;
@@ -408,7 +408,7 @@
         }
 
         /* ══════════════════════════════════════════ */
-        /* 9. 🎪 CARNAVAL (INTOCADO)                  */
+        /* 9. 🎪 CARNAVAL                             */
         /* ══════════════════════════════════════════ */
         body[data-theme="carnival"] {
             font-family: 'Fredoka', sans-serif;
@@ -446,7 +446,7 @@
         body[data-theme="carnival"] #al-theme-overlay { opacity: 0; }
 
         /* ══════════════════════════════════════════ */
-        /* 10. 🌸 SAKURA (INTOCADO)                   */
+        /* 10. 🌸 SAKURA                              */
         /* ══════════════════════════════════════════ */
         body[data-theme="sakura"] {
             font-family: 'Quicksand', sans-serif;
@@ -482,7 +482,7 @@
         body[data-theme="sakura"] #al-theme-overlay { opacity: 0; }
 
         /* ══════════════════════════════════════════════════ */
-        /* 11. 🔥 VULCÃO (MEGA ENHANCED)                     */
+        /* 11. 🔥 VULCÃO                                     */
         /* ══════════════════════════════════════════════════ */
         body[data-theme="lava"] {
             font-family: 'Russo One', sans-serif;
@@ -557,7 +557,7 @@
         body[data-theme="lava"] hr { border: none !important; height: 2px !important; background: linear-gradient(90deg, transparent, #ef4444, #f97316, #fbbf24, #f97316, #ef4444, transparent) !important; }
 
         /* ══════════════════════════════════════════════════ */
-        /* 12. ❄️ ÁRTICO (MEGA ENHANCED)                     */
+        /* 12. ❄️ ÁRTICO                                     */
         /* ══════════════════════════════════════════════════ */
         body[data-theme="arctic"] {
             font-family: 'Raleway', sans-serif;
@@ -634,7 +634,7 @@
         body[data-theme="arctic"] hr { border: none !important; height: 1px !important; background: linear-gradient(90deg, transparent, rgba(147,197,253,0.2), rgba(165,180,252,0.15), transparent) !important; }
 
         /* ══════════════════════════════════════════════════ */
-        /* 13. 🔮 CRISTAL MÍSTICO (NOVO - substitui Pop Art)  */
+        /* 13. 🔮 CRISTAL MÍSTICO                            */
         /* ══════════════════════════════════════════════════ */
         body[data-theme="crystal"] {
             font-family: 'Raleway', sans-serif;
@@ -714,7 +714,7 @@
         }
 
         /* ══════════════════════════════════════════════════ */
-        /* 14. ⚡ SYNTHWAVE (NOVO - tema retro 80s neon)      */
+        /* 14. ⚡ SYNTHWAVE                                  */
         /* ══════════════════════════════════════════════════ */
         body[data-theme="synthwave"] {
             font-family: 'Orbitron', sans-serif;
@@ -829,92 +829,19 @@
         /* ══════════════════════════════════════════ */
         /* ANIMAÇÕES PARA TEMAS VIVOS                 */
         /* ══════════════════════════════════════════ */
-        @keyframes fireflyDrift {
-            0% { transform: translateY(0) translateX(0); opacity: 0.3; }
-            25% { opacity: 0.7; }
-            50% { transform: translateY(-15px) translateX(8px); opacity: 0.5; }
-            75% { opacity: 0.8; }
-            100% { transform: translateY(-5px) translateX(-5px); opacity: 0.4; }
-        }
-
-        @keyframes cosmosBreath {
-            0% { opacity: 0.5; transform: scale(1); }
-            50% { opacity: 0.8; }
-            100% { opacity: 0.6; transform: scale(1.05); }
-        }
-
-        @keyframes underwaterDrift {
-            0% { transform: translateY(0) translateX(0); opacity: 0.4; }
-            50% { transform: translateY(8px) translateX(-5px); opacity: 0.6; }
-            100% { transform: translateY(-3px) translateX(3px); opacity: 0.5; }
-        }
-
-        @keyframes torchFlicker {
-            0% { opacity: 0.5; }
-            10% { opacity: 0.6; }
-            20% { opacity: 0.45; }
-            30% { opacity: 0.7; }
-            40% { opacity: 0.5; }
-            50% { opacity: 0.65; }
-            60% { opacity: 0.55; }
-            70% { opacity: 0.7; }
-            80% { opacity: 0.5; }
-            90% { opacity: 0.6; }
-            100% { opacity: 0.55; }
-        }
-
-        @keyframes lavaPulse {
-            0% { opacity: 0.4; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(1.02); }
-            100% { opacity: 0.5; transform: scale(1); }
-        }
-
-        @keyframes auroraWave {
-            0% { background-position: 0% 0%; opacity: 0.6; }
-            50% { opacity: 0.9; }
-            100% { background-position: 200% 0%; opacity: 0.6; }
-        }
-
-        @keyframes crystalShimmer {
-            0% { opacity: 0.3; transform: rotate(0deg) scale(1); }
-            50% { opacity: 0.6; }
-            100% { opacity: 0.4; transform: rotate(0.5deg) scale(1.01); }
-        }
-
-        @keyframes neonSweep {
-            0% { background-position: -100% 0%; }
-            100% { background-position: 200% 0%; }
-        }
-
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        @keyframes goldShimmer {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        @keyframes fireGradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        @keyframes prismShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        @keyframes neonGradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
+        @keyframes fireflyDrift { 0% { transform: translateY(0) translateX(0); opacity: 0.3; } 25% { opacity: 0.7; } 50% { transform: translateY(-15px) translateX(8px); opacity: 0.5; } 75% { opacity: 0.8; } 100% { transform: translateY(-5px) translateX(-5px); opacity: 0.4; } }
+        @keyframes cosmosBreath { 0% { opacity: 0.5; transform: scale(1); } 50% { opacity: 0.8; } 100% { opacity: 0.6; transform: scale(1.05); } }
+        @keyframes underwaterDrift { 0% { transform: translateY(0) translateX(0); opacity: 0.4; } 50% { transform: translateY(8px) translateX(-5px); opacity: 0.6; } 100% { transform: translateY(-3px) translateX(3px); opacity: 0.5; } }
+        @keyframes torchFlicker { 0% { opacity: 0.5; } 10% { opacity: 0.6; } 20% { opacity: 0.45; } 30% { opacity: 0.7; } 40% { opacity: 0.5; } 50% { opacity: 0.65; } 60% { opacity: 0.55; } 70% { opacity: 0.7; } 80% { opacity: 0.5; } 90% { opacity: 0.6; } 100% { opacity: 0.55; } }
+        @keyframes lavaPulse { 0% { opacity: 0.4; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.02); } 100% { opacity: 0.5; transform: scale(1); } }
+        @keyframes auroraWave { 0% { background-position: 0% 0%; opacity: 0.6; } 50% { opacity: 0.9; } 100% { background-position: 200% 0%; opacity: 0.6; } }
+        @keyframes crystalShimmer { 0% { opacity: 0.3; transform: rotate(0deg) scale(1); } 50% { opacity: 0.6; } 100% { opacity: 0.4; transform: rotate(0.5deg) scale(1.01); } }
+        @keyframes neonSweep { 0% { background-position: -100% 0%; } 100% { background-position: 200% 0%; } }
+        @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes goldShimmer { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes fireGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes prismShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes neonGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
         /* ══════════════════════════════════════════ */
         /* AJUSTES ESCUROS PARA DROPDOWN + RELÓGIO    */
@@ -988,60 +915,78 @@ let showOccupancyStats = false;
 let showPastStatsMode = false;
 let selectedSnapshotDate = null;
 
-// TEMA INICIAL PADRÃO (OUTONO)
-let currentTheme = localStorage.getItem("al_theme") || "outono";
+// TEMA INICIAL PADRÃO DE VOLTA AO BRANCO/ORIGINAL
+let currentTheme = localStorage.getItem("al_theme") || "white";
 document.body.setAttribute("data-theme", currentTheme);
-
-// NOVA FUNÇÃO: Injetar os botões do relógio e do tema fora da "caixa" principal
-// para garantir que ficam SEMPRE fixos, mesmo ao fazer scroll da página.
-window.createOrUpdateFixedControls = function() {
-    let controls = document.getElementById("al-fixed-controls");
-    if (!controls) {
-        controls = document.createElement("div");
-        controls.id = "al-fixed-controls";
-        // Position fixed injetado diretamente no body com z-index muito alto
-        controls.style.cssText = "position: fixed; top: 16px; right: 16px; display: flex; align-items: center; gap: 8px; z-index: 999999;";
-        document.body.appendChild(controls);
-    }
-
-    const isSnapshots = currentView === "snapshots";
-    controls.innerHTML = `
-        <select class="theme-select-dropdown" onchange="window.setTheme(this.value)" title="Mudar Estilo" style="
-            padding: 4px 8px; font-size: 13px; border-radius: 6px;
-            border: 1px solid rgba(0,0,0,0.2); background-color: rgba(255,255,255,0.9); color: #333;
-            cursor: pointer; outline: none; box-shadow: 0 2px 6px rgba(0,0,0,0.15); backdrop-filter: blur(5px);
-        ">
-            <option value="white" ${currentTheme==='white'?'selected':''}>⬜ Original</option>
-            <option value="outono" ${currentTheme==='outono'?'selected':''}>🍂 Outono</option>
-            <option value="cyber" ${currentTheme==='cyber'?'selected':''}>🖥️ Terminal</option>
-            <option value="cappuccino" ${currentTheme==='cappuccino'?'selected':''}>📓 Caderno</option>
-            <option value="emerald" ${currentTheme==='emerald'?'selected':''}>🌿 Floresta</option>
-            <option value="glass" ${currentTheme==='glass'?'selected':''}>🌌 Cosmos</option>
-            <option value="ocean" ${currentTheme==='ocean'?'selected':''}>🌊 Abismo</option>
-            <option value="royalgold" ${currentTheme==='royalgold'?'selected':''}>👑 Medieval</option>
-            <option value="carnival" ${currentTheme==='carnival'?'selected':''}>🎪 Carnaval</option>
-            <option value="sakura" ${currentTheme==='sakura'?'selected':''}>🌸 Sakura</option>
-            <option value="lava" ${currentTheme==='lava'?'selected':''}>🔥 Vulcão</option>
-            <option value="arctic" ${currentTheme==='arctic'?'selected':''}>❄️ Ártico</option>
-            <option value="crystal" ${currentTheme==='crystal'?'selected':''}>🔮 Cristal</option>
-            <option value="synthwave" ${currentTheme==='synthwave'?'selected':''}>⚡ Synthwave</option>
-        </select>
-        <button onclick="window.toggleSnapshots()" class="clock-btn ${isSnapshots?'active':''}" style="
-            font-size: 16px; background-color: ${isSnapshots?'#e2e6ea':'rgba(255,255,255,0.9)'};
-            border: 1px solid rgba(0,0,0,0.2); width: 34px; height: 34px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15); padding: 0; backdrop-filter: blur(5px);
-        " title="${isSnapshots?'Voltar ao Início':'Ver Previsões'}">🕒</button>
-    `;
-};
-window.createOrUpdateFixedControls();
 
 window.setTheme = function(themeKey) {
     currentTheme = themeKey;
     try { localStorage.setItem("al_theme", themeKey); } catch(e){}
     document.body.setAttribute("data-theme", currentTheme);
-    window.createOrUpdateFixedControls();
     renderCurrentView();
 };
+
+function renderNavigation() {
+    const isCleaning = currentView === "cleaning";
+    const isOccupancy = currentView === "occupancy";
+    const isSnapshots = currentView === "snapshots";
+
+    // MUDANÇA CRUCIAL: Modificado de "position: absolute" (que tinhas no teu código original e que o fazia desaparecer)
+    // para "position: fixed". Agora sim, vai ficar eternamente colado no canto!
+    const topRightControls = `
+        <div style="position: fixed; top: 16px; right: 16px; display: flex; align-items: center; gap: 8px; z-index: 999999;">
+            <select class="theme-select-dropdown" onchange="window.setTheme(this.value)" title="Mudar Estilo" style="
+                padding: 4px 8px; font-size: 13px; border-radius: 6px;
+                border: 1px solid rgba(0,0,0,0.2); background-color: rgba(255,255,255,0.9); color: #333;
+                cursor: pointer; outline: none; box-shadow: 0 2px 6px rgba(0,0,0,0.15); backdrop-filter: blur(5px);
+            ">
+                <option value="white" ${currentTheme==='white'?'selected':''}>⬜ Original</option>
+                <option value="outono" ${currentTheme==='outono'?'selected':''}>🍂 Outono</option>
+                <option value="cyber" ${currentTheme==='cyber'?'selected':''}>🖥️ Terminal</option>
+                <option value="cappuccino" ${currentTheme==='cappuccino'?'selected':''}>📓 Caderno</option>
+                <option value="emerald" ${currentTheme==='emerald'?'selected':''}>🌿 Floresta</option>
+                <option value="glass" ${currentTheme==='glass'?'selected':''}>🌌 Cosmos</option>
+                <option value="ocean" ${currentTheme==='ocean'?'selected':''}>🌊 Abismo</option>
+                <option value="royalgold" ${currentTheme==='royalgold'?'selected':''}>👑 Medieval</option>
+                <option value="carnival" ${currentTheme==='carnival'?'selected':''}>🎪 Carnaval</option>
+                <option value="sakura" ${currentTheme==='sakura'?'selected':''}>🌸 Sakura</option>
+                <option value="lava" ${currentTheme==='lava'?'selected':''}>🔥 Vulcão</option>
+                <option value="arctic" ${currentTheme==='arctic'?'selected':''}>❄️ Ártico</option>
+                <option value="crystal" ${currentTheme==='crystal'?'selected':''}>🔮 Cristal</option>
+                <option value="synthwave" ${currentTheme==='synthwave'?'selected':''}>⚡ Synthwave</option>
+            </select>
+            <button onclick="window.toggleSnapshots()" class="clock-btn ${isSnapshots?'active':''}" style="
+                font-size: 16px; background-color: ${isSnapshots?'#e2e6ea':'rgba(255,255,255,0.9)'};
+                border: 1px solid rgba(0,0,0,0.2); width: 34px; height: 34px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.15); padding: 0; backdrop-filter: blur(5px);
+            " title="${isSnapshots?'Voltar ao Início':'Ver Previsões'}">🕒</button>
+        </div>
+    `;
+
+    let html = topRightControls;
+
+    if (currentTheme === "outono") {
+        html += `
+            <div style="margin-bottom: 22px;">
+                <h1 style="font-size: 26px; font-weight: 800; background: linear-gradient(135deg, #fff8f0 30%, #f59e0b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0;">🍂 Traços de Outono</h1>
+                <div style="font-size: 13px; color: #a3998e; font-weight: 500;">Gestão de Alojamento Local</div>
+            </div>
+            <div style="margin-bottom: 24px;">
+                <div style="display: inline-flex; background: rgba(255,255,255,0.04); padding: 5px; border-radius: 16px; border: 1px solid rgba(245,158,11,0.2); gap: 4px;">
+                    <button onclick="window.switchMainView('cleaning')" class="segment-btn ${isCleaning?'active-cleaning':''}">🧹 Limpezas</button>
+                    <button onclick="window.switchMainView('occupancy')" class="segment-btn ${isOccupancy?'active-occupancy':''}">📊 Disponibilidade</button>
+                </div>
+            </div>`;
+    } else {
+        html += `
+            <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <button onclick="window.switchMainView('cleaning')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #007bff; background-color: ${isCleaning?'#007bff':'#ffffff'}; color: ${isCleaning?'#ffffff':'#007bff'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">🧹 Plano de Limpezas</button>
+                <button onclick="window.switchMainView('occupancy')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #28a745; background-color: ${isOccupancy?'#28a745':'#ffffff'}; color: ${isOccupancy?'#ffffff':'#28a745'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">📊 Disponibilidade da Casa</button>
+            </div>`;
+    }
+
+    return html;
+}
 
 function renderCurrentView() {
     if (currentView === "cleaning") showCleaningPlan();
@@ -1056,7 +1001,6 @@ window.toggleSnapshots = function() {
         currentView = "snapshots";
         selectedSnapshotDate = null;
     }
-    window.createOrUpdateFixedControls();
     renderCurrentView();
 };
 
@@ -1097,7 +1041,6 @@ async function saveToCloudHistory(newEntries) {
 }
 
 async function loadCalendars() {
-    // TEXTO INICIAL ATUALIZADO 
     result.innerHTML = "<p style='font-size: 18px; font-weight: bold;'>⏳ Está quase...</p>";
     try {
         const historyPromise = fetchCloudHistory();
@@ -1171,31 +1114,6 @@ function updateCloudHistory() {
         }
         if (hasChanges) { saveToCloudHistory(m); cloudHistory=m; }
     } catch(err) { console.error("Erro histórico:",err); }
-}
-
-// Removidos os controlos da renderNavigation para evitar serem reescritos e perderem a fixação
-function renderNavigation() {
-    const isCleaning=currentView==="cleaning", isOccupancy=currentView==="occupancy", isSnapshots=currentView==="snapshots";
-
-    if (currentTheme==="outono") {
-        return `
-            <div style="margin-bottom: 22px;">
-                <h1 style="font-size: 26px; font-weight: 800; background: linear-gradient(135deg, #fff8f0 30%, #f59e0b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0;">🍂 Traços de Outono</h1>
-                <div style="font-size: 13px; color: #a3998e; font-weight: 500;">Gestão de Alojamento Local</div>
-            </div>
-            <div style="margin-bottom: 24px;">
-                <div style="display: inline-flex; background: rgba(255,255,255,0.04); padding: 5px; border-radius: 16px; border: 1px solid rgba(245,158,11,0.2); gap: 4px;">
-                    <button onclick="window.switchMainView('cleaning')" class="segment-btn ${isCleaning?'active-cleaning':''}">🧹 Limpezas</button>
-                    <button onclick="window.switchMainView('occupancy')" class="segment-btn ${isOccupancy?'active-occupancy':''}">📊 Disponibilidade</button>
-                </div>
-            </div>`;
-    }
-
-    return `
-        <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-            <button onclick="window.switchMainView('cleaning')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #007bff; background-color: ${isCleaning?'#007bff':'#ffffff'}; color: ${isCleaning?'#ffffff':'#007bff'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">🧹 Plano de Limpezas</button>
-            <button onclick="window.switchMainView('occupancy')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #28a745; background-color: ${isOccupancy?'#28a745':'#ffffff'}; color: ${isOccupancy?'#ffffff':'#28a745'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">📊 Disponibilidade da Casa</button>
-        </div>`;
 }
 
 function showSnapshotsPlan() {
@@ -1300,13 +1218,15 @@ function calculateHouseStats(houseKey) {
 }
 
 function showOccupancyPlan() {
-    const houseRooms=getHouseRooms(selectedHouse), totalRooms=houseRooms.length;
-    const houseLabels={achada:"Achada (6 Quartos)",impasse:"Impasse (3 Quartos)",vizinho:"Vizinho (3 Quartos)"};
-    let html=renderNavigation();
-    html+=`<div style="margin-bottom: 25px; display: flex; gap: 8px; flex-wrap: wrap;">
-        <button onclick="window.selectHouse('achada')" style="padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px; border: 2px solid #17a2b8; background-color: ${selectedHouse==='achada'?'#17a2b8':'#ffffff'}; color: ${selectedHouse==='achada'?'#ffffff':'#17a2b8'}; font-weight: bold;">🏡 Achada</button>
-        <button onclick="window.selectHouse('impasse')" style="padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px; border: 2px solid #17a2b8; background-color: ${selectedHouse==='impasse'?'#17a2b8':'#ffffff'}; color: ${selectedHouse==='impasse'?'#ffffff':'#17a2b8'}; font-weight: bold;">🏡 Impasse</button>
-        <button onclick="window.selectHouse('vizinho')" style="padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px; border: 2px solid #17a2b8; background-color: ${selectedHouse==='vizinho'?'#17a2b8':'#ffffff'}; color: ${selectedHouse==='vizinho'?'#ffffff':'#17a2b8'}; font-weight: bold;">🏡 Vizinho</button>
+    const houseRooms = getHouseRooms(selectedHouse), totalRooms = houseRooms.length;
+    const houseLabels = { achada: "Achada (6 Quartos)", impasse: "Impasse (3 Quartos)", vizinho: "Vizinho (3 Quartos)" };
+    let html = renderNavigation();
+    
+    // MUDANÇA CRUCIAL AQUI: flex-wrap: nowrap e flex: 1 para forçar todos os botões a ficarem na mesma linha
+    html += `<div style="margin-bottom: 25px; display: flex; gap: 6px; flex-wrap: nowrap; justify-content: space-between;">
+        <button onclick="window.selectHouse('achada')" style="flex: 1; padding: 10px 2px; font-size: 13px; cursor: pointer; border-radius: 6px; border: 2px solid #17a2b8; background-color: ${selectedHouse==='achada'?'#17a2b8':'#ffffff'}; color: ${selectedHouse==='achada'?'#ffffff':'#17a2b8'}; font-weight: bold; text-align: center; white-space: nowrap;">🏡 Achada</button>
+        <button onclick="window.selectHouse('impasse')" style="flex: 1; padding: 10px 2px; font-size: 13px; cursor: pointer; border-radius: 6px; border: 2px solid #17a2b8; background-color: ${selectedHouse==='impasse'?'#17a2b8':'#ffffff'}; color: ${selectedHouse==='impasse'?'#ffffff':'#17a2b8'}; font-weight: bold; text-align: center; white-space: nowrap;">🏡 Impasse</button>
+        <button onclick="window.selectHouse('vizinho')" style="flex: 1; padding: 10px 2px; font-size: 13px; cursor: pointer; border-radius: 6px; border: 2px solid #17a2b8; background-color: ${selectedHouse==='vizinho'?'#17a2b8':'#ffffff'}; color: ${selectedHouse==='vizinho'?'#ffffff':'#17a2b8'}; font-weight: bold; text-align: center; white-space: nowrap;">🏡 Vizinho</button>
     </div>
     <h1>📊 Ocupação - ${houseLabels[selectedHouse]}</h1>
     <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
