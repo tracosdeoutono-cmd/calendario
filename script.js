@@ -11,6 +11,7 @@
         body {
             margin: 0;
             padding: 20px 16px;
+            padding-top: 45px; /* Espaço extra no topo para não chocar com o relógio */
             min-height: 100vh;
             transition: all 0.3s ease;
         }
@@ -169,6 +170,21 @@
             color: #eab308 !important;
         }
 
+        /* AJUSTES ESCUROS PARA O MENU SUSPENSO E RELÓGIO */
+        body[data-theme="outono"] .theme-select-dropdown,
+        body[data-theme="cyber"] .theme-select-dropdown,
+        body[data-theme="glass"] .theme-select-dropdown,
+        body[data-theme="royalgold"] .theme-select-dropdown {
+            background-color: rgba(15, 15, 15, 0.8) !important;
+            color: #fff !important;
+            border-color: rgba(255,255,255,0.2) !important;
+        }
+        body[data-theme="outono"] .clock-btn, body[data-theme="cyber"] .clock-btn, 
+        body[data-theme="glass"] .clock-btn, body[data-theme="royalgold"] .clock-btn {
+            background-color: rgba(15, 15, 15, 0.8) !important;
+            border-color: rgba(255,255,255,0.2) !important;
+        }
+
         /* COMPONENTES EXCLUSIVOS DO TEMA OUTONO */
         .pulse-dot {
             width: 8px;
@@ -238,29 +254,15 @@
             box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
         }
         .clock-btn {
-            width: 48px; height: 48px; border-radius: 50%;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(245, 158, 11, 0.2);
-            color: #fff; font-size: 22px; cursor: pointer;
+            border-radius: 50%;
+            cursor: pointer;
             display: flex; align-items: center; justify-content: center;
             transition: all 0.3s ease;
         }
-        .clock-btn.active {
-            background: linear-gradient(135deg, #ea580c, #c2410c);
-            box-shadow: 0 0 20px rgba(234, 88, 12, 0.5);
-        }
-
-        .theme-select-dropdown {
-            padding: 9px 14px;
-            font-size: 14px;
-            font-weight: bold;
-            border-radius: 8px;
-            border: 2px solid #ccc;
-            background-color: #ffffff;
-            color: #333;
-            cursor: pointer;
-            outline: none;
-            transition: all 0.2s ease;
+        body[data-theme="outono"] .clock-btn.active {
+            background: linear-gradient(135deg, #ea580c, #c2410c) !important;
+            box-shadow: 0 0 15px rgba(234, 88, 12, 0.5) !important;
+            border-color: transparent !important;
         }
     `;
     document.head.appendChild(style);
@@ -644,27 +646,43 @@ function renderNavigation() {
     const isOccupancy = currentView === "occupancy";
     const isSnapshots = currentView === "snapshots";
 
-    const themeDropdown = `
-        <select class="theme-select-dropdown" onchange="window.setTheme(this.value)" title="Mudar Estilo Completo da Página">
-            <option value="white" ${currentTheme === 'white' ? 'selected' : ''}>⬜ Branco Clássico (Original)</option>
-            <option value="outono" ${currentTheme === 'outono' ? 'selected' : ''}>🍂 Outono Luxury (Traços de Outono)</option>
-            <option value="cyber" ${currentTheme === 'cyber' ? 'selected' : ''}>🌆 Cyber Neon 2099</option>
-            <option value="cappuccino" ${currentTheme === 'cappuccino' ? 'selected' : ''}>☕ Warm Cappuccino</option>
-            <option value="emerald" ${currentTheme === 'emerald' ? 'selected' : ''}>🌿 Nature Emerald</option>
-            <option value="glass" ${currentTheme === 'glass' ? 'selected' : ''}>🌙 Dark Glassmorphism</option>
-            <option value="ocean" ${currentTheme === 'ocean' ? 'selected' : ''}>🌊 Ocean Breeze</option>
-            <option value="royalgold" ${currentTheme === 'royalgold' ? 'selected' : ''}>👑 Royal Gold</option>
-        </select>
+    // MENU SUSPENSO FIXO NO CANTO SUPERIOR DIREITO
+    const topRightControls = `
+        <div style="position: fixed; top: 12px; right: 12px; display: flex; align-items: center; gap: 8px; z-index: 9999;">
+            <select class="theme-select-dropdown" onchange="window.setTheme(this.value)" title="Mudar Estilo da Página" style="
+                padding: 4px 6px; font-size: 11px; font-weight: bold; border-radius: 6px;
+                border: 1px solid rgba(0,0,0,0.2); background-color: rgba(255,255,255,0.9); color: #333;
+                cursor: pointer; outline: none; box-shadow: 0 2px 6px rgba(0,0,0,0.15); backdrop-filter: blur(5px);
+            ">
+                <option value="white" ${currentTheme === 'white' ? 'selected' : ''}>⬜ Original</option>
+                <option value="outono" ${currentTheme === 'outono' ? 'selected' : ''}>🍂 Outono</option>
+                <option value="cyber" ${currentTheme === 'cyber' ? 'selected' : ''}>🌆 Cyber</option>
+                <option value="cappuccino" ${currentTheme === 'cappuccino' ? 'selected' : ''}>☕ Cafe</option>
+                <option value="emerald" ${currentTheme === 'emerald' ? 'selected' : ''}>🌿 Nature</option>
+                <option value="glass" ${currentTheme === 'glass' ? 'selected' : ''}>🌙 Glass</option>
+                <option value="ocean" ${currentTheme === 'ocean' ? 'selected' : ''}>🌊 Ocean</option>
+                <option value="royalgold" ${currentTheme === 'royalgold' ? 'selected' : ''}>👑 Gold</option>
+            </select>
+            
+            <button onclick="window.switchMainView('snapshots')" class="clock-btn ${isSnapshots ? 'active' : ''}" style="
+                font-size: 16px; background-color: ${isSnapshots ? '#e2e6ea' : 'rgba(255,255,255,0.9)'};
+                border: 1px solid rgba(0,0,0,0.2); width: 32px; height: 32px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.15); padding: 0; backdrop-filter: blur(5px);
+            " title="Ver Previsões">
+                🕒
+            </button>
+        </div>
     `;
 
     if (currentTheme === "outono") {
         return `
+            ${topRightControls}
             <div style="margin-bottom: 22px;">
                 <h1 style="font-size: 26px; font-weight: 800; background: linear-gradient(135deg, #fff8f0 30%, #f59e0b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0;">🍂 Traços de Outono</h1>
                 <div style="font-size: 13px; color: #a3998e; font-weight: 500;">Gestão de Alojamento Local</div>
             </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 10px; flex-wrap: wrap;">
+            <div style="margin-bottom: 24px;">
                 <div style="display: inline-flex; background: rgba(255,255,255,0.04); padding: 5px; border-radius: 16px; border: 1px solid rgba(245,158,11,0.2); gap: 4px;">
                     <button onclick="window.switchMainView('cleaning')" class="segment-btn ${isCleaning ? 'active-cleaning' : ''}">
                         🧹 Limpezas
@@ -673,50 +691,30 @@ function renderNavigation() {
                         📊 Disponibilidade
                     </button>
                 </div>
-                
-                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                    ${themeDropdown}
-                    <button onclick="window.switchMainView('snapshots')" class="clock-btn ${isSnapshots ? 'active' : ''}" title="Ver Previsões Guardadas (Snapshots)">
-                        🕒
-                    </button>
-                </div>
             </div>
         `;
     }
 
     // Design Original Clássico nos botões para o tema Branco e restantes
     return `
-        <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <button onclick="window.switchMainView('cleaning')" style="
-                    padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px;
-                    border: 2px solid #007bff; background-color: ${isCleaning ? '#007bff' : '#ffffff'};
-                    color: ${isCleaning ? '#ffffff' : '#007bff'}; font-weight: bold;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                ">
-                    🧹 Plano de Limpezas
-                </button>
-                <button onclick="window.switchMainView('occupancy')" style="
-                    padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px;
-                    border: 2px solid #28a745; background-color: ${isOccupancy ? '#28a745' : '#ffffff'};
-                    color: ${isOccupancy ? '#ffffff' : '#28a745'}; font-weight: bold;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                ">
-                    📊 Disponibilidade da Casa
-                </button>
-            </div>
-            
-            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                ${themeDropdown}
-                <button onclick="window.switchMainView('snapshots')" style="
-                    font-size: 26px; background-color: ${isSnapshots ? '#e2e6ea' : 'white'};
-                    border: 1px solid #ccc; border-radius: 50%; cursor: pointer; width: 50px; height: 50px;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center;
-                    transition: 0.2s;
-                " title="Ver Previsões Guardadas (Snapshots)">
-                    🕒
-                </button>
-            </div>
+        ${topRightControls}
+        <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+            <button onclick="window.switchMainView('cleaning')" style="
+                padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px;
+                border: 2px solid #007bff; background-color: ${isCleaning ? '#007bff' : '#ffffff'};
+                color: ${isCleaning ? '#ffffff' : '#007bff'}; font-weight: bold;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            ">
+                🧹 Plano de Limpezas
+            </button>
+            <button onclick="window.switchMainView('occupancy')" style="
+                padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px;
+                border: 2px solid #28a745; background-color: ${isOccupancy ? '#28a745' : '#ffffff'};
+                color: ${isOccupancy ? '#ffffff' : '#28a745'}; font-weight: bold;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            ">
+                📊 Disponibilidade da Casa
+            </button>
         </div>
     `;
 }
