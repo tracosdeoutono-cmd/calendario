@@ -29,20 +29,34 @@ let showOccupancyStats = false; // estado para mostrar as estatísticas
 let showPastStatsMode = false; // estado para mostrar estatísticas de meses passados
 let selectedSnapshotDate = null; // estado para ver o snapshot de um dia específico
 
-// Função auxiliar para evitar que os "fetches" fiquem presos para sempre (Timeout de 10 segundos)
+// Função auxiliar com Timeout + PROTEÇÃO ANTI-CACHE TOTAL (cache: 'no-store' e Timestamp)
 async function fetchWithTimeout(resource, options = {}, timeout = 10000) {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
+
+    // Adiciona timestamp ao URL para forçar o navegador a não usar cache anterior
+    const separator = resource.includes("?") ? "&" : "?";
+    const noCacheUrl = `${resource}${separator}_t=${Date.now()}`;
+
+    const noCacheOptions = {
+        ...options,
+        cache: 'no-store', // Impede o navegador de guardar/usar cache
+        headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+            ...(options.headers || {})
+        },
+        signal: controller.signal
+    };
+
     try {
-        const response = await fetch(resource, {
-            ...options,
-            signal: controller.signal  
-        });
+        const response = await fetch(noCacheUrl, noCacheOptions);
         clearTimeout(id);
         return response;
     } catch (error) {
         clearTimeout(id);
-        throw error; // Propaga o erro (timeout ou falha de rede)
+        throw error;
     }
 }
 
@@ -358,7 +372,7 @@ function updateCloudHistory() {
     }
 }
 
-// Cabeçalho de Navegação Principal (Botões Fixos no Topo)
+// Cabeçalho de Navegação Principal
 function renderNavigation() {
     const isCleaning = currentView === "cleaning";
     const isOccupancy = currentView === "occupancy";
