@@ -1195,7 +1195,7 @@ function renderNavigation() {
     const isCleaning=currentView==="cleaning", isOccupancy=currentView==="occupancy", isSnapshots=currentView==="snapshots";
 
     const topRightControls = `
-        <div style="position: absolute; top: 12px; right: 12px; display: flex; align-items: center; gap: 8px; z-index: 9999;">
+        <div style="position: fixed; top: 16px; right: 16px; display: flex; align-items: center; gap: 8px; z-index: 9999;">
             <select class="theme-select-dropdown" onchange="window.setTheme(this.value)" title="Mudar Estilo" style="
                 padding: 4px 8px; font-size: 13px; border-radius: 6px;
                 border: 1px solid rgba(0,0,0,0.2); background-color: rgba(255,255,255,0.9); color: #333;
