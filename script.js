@@ -86,18 +86,18 @@
             justify-content: center;
             transition: all 0.3s ease;
             font-size: 16px;
-            width: 34px;
-            height: 34px;
+            width: 36px;
+            height: 36px;
             padding: 0;
             border: 1px solid rgba(0,0,0,0.2);
             background-color: rgba(255,255,255,0.9);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.18);
             backdrop-filter: blur(5px);
             flex-shrink: 0;
         }
         .clock-btn:hover {
             transform: scale(1.08);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
         }
         .clock-btn:active {
             transform: scale(0.95);
@@ -653,9 +653,10 @@ function renderNavigation() {
 
     const themeEmoji = getThemeEmoji(currentTheme);
 
-    // Botões circulares (tema + relógio)
-    const circleButtons = `
-        <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
+    // MENU FLUTUANTE NO CANTO SUPERIOR DIREITO
+    const floatingMenu = `
+        <div style="position: fixed; top: 16px; right: 16px; display: flex; flex-direction: column; gap: 12px; align-items: center; z-index: 1000;">
+            <img src="icone2.jpeg" alt="Ícone" style="height: 42px; width: 42px; object-fit: cover; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
             <div class="theme-popup-wrapper">
                 <button onclick="window.toggleThemePopup(event)" class="clock-btn" title="Mudar Estilo">${themeEmoji}</button>
                 ${buildThemePopupHTML()}
@@ -664,19 +665,15 @@ function renderNavigation() {
         </div>
     `;
 
-    let html = '';
+    let html = floatingMenu;
 
     if (currentTheme === "outono") {
         html += `
-            <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px;">
+            <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px; padding-right: 60px;">
                 <div style="min-width: 0;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <h1 style="font-size: 26px; font-weight: 800; background: linear-gradient(135deg, #fff8f0 30%, #f59e0b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0;">🍂 Casas do Martim</h1>
-                        <img src="icone2.jpeg" alt="Ícone" style="height: 35px; width: 35px; object-fit: cover; border-radius: 8px;">
-                    </div>
+                    <h1 style="font-size: 26px; font-weight: 800; background: linear-gradient(135deg, #fff8f0 30%, #f59e0b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0;">🍂 Traços de Outono</h1>
                     <div style="font-size: 13px; color: #a3998e; font-weight: 500;">Gestão de Alojamento Local</div>
                 </div>
-                ${circleButtons}
             </div>
             <div style="margin-bottom: 24px;">
                 <div style="display: inline-flex; background: rgba(255,255,255,0.04); padding: 5px; border-radius: 16px; border: 1px solid rgba(245,158,11,0.2); gap: 4px;">
@@ -686,12 +683,8 @@ function renderNavigation() {
             </div>`;
     } else {
         html += `
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 12px;">
-                <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;">
-                    <h1 style="margin: 0;">Casas do Martim</h1>
-                    <img src="icone2.jpeg" alt="Ícone" style="height: 35px; width: 35px; object-fit: cover; border-radius: 8px;">
-                </div>
-                ${circleButtons}
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-right: 60px;">
+                <h1 style="margin: 0; flex: 1; min-width: 0;">Traços de Outono</h1>
             </div>
             <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
                 <button onclick="window.switchMainView('cleaning')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #007bff; background-color: ${isCleaning?'#007bff':'#ffffff'}; color: ${isCleaning?'#ffffff':'#007bff'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">🧹 Plano de Limpezas</button>
