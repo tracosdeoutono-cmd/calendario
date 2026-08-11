@@ -271,69 +271,96 @@
         /* ══════════════════════════════════════════════════ */
         body[data-theme="aquarela"] {
             font-family: 'Quicksand', sans-serif;
-            font-weight: 400;
-            background-color: #faf6f0;
-            color: #3a3530;
+            font-weight: 500;
+            background-color: #fcf9f2;
+            color: #4a4036;
             background-image:
-                radial-gradient(ellipse 350px 250px at 10% 15%, rgba(100, 170, 220, 0.18) 0%, transparent 100%),
-                radial-gradient(ellipse 300px 200px at 80% 10%, rgba(255, 175, 110, 0.15) 0%, transparent 100%),
-                radial-gradient(ellipse 280px 220px at 85% 80%, rgba(175, 130, 200, 0.12) 0%, transparent 100%),
-                radial-gradient(ellipse 260px 180px at 15% 85%, rgba(120, 200, 150, 0.13) 0%, transparent 100%),
-                radial-gradient(ellipse 200px 160px at 50% 45%, rgba(255, 200, 140, 0.08) 0%, transparent 100%),
-                radial-gradient(ellipse 150px 100px at 35% 30%, rgba(100, 180, 230, 0.07) 0%, transparent 100%),
-                radial-gradient(ellipse 120px 90px at 65% 60%, rgba(230, 140, 170, 0.08) 0%, transparent 100%),
-                radial-gradient(circle 1px at 20% 25%, rgba(0,0,0,0.02) 0%, transparent 100%),
-                radial-gradient(circle 1px at 60% 40%, rgba(0,0,0,0.015) 0%, transparent 100%),
-                radial-gradient(circle 1px at 80% 70%, rgba(0,0,0,0.02) 0%, transparent 100%),
-                radial-gradient(circle 1px at 40% 80%, rgba(0,0,0,0.015) 0%, transparent 100%);
+                radial-gradient(circle at 15% 50%, rgba(255, 143, 171, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 85% 30%, rgba(132, 220, 198, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 50% 80%, rgba(165, 148, 249, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 70% 90%, rgba(251, 196, 171, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 20% 10%, rgba(144, 213, 255, 0.15) 0%, transparent 40%);
             background-attachment: fixed;
+            position: relative;
         }
+        body[data-theme="aquarela"]::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            opacity: 0.4;
+            background-image: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)" opacity="0.15"/%3E%3C/svg%3E');
+            z-index: 0;
+        }
+        body[data-theme="aquarela"] #result { position: relative; z-index: 2; }
         body[data-theme="aquarela"] div[style*="background-color: #f8f9fa"],
         body[data-theme="aquarela"] div[style*="border: 1px solid #ddd"] {
-            background: rgba(255,255,255,0.5) !important;
-            border: none !important;
-            border-left: 4px solid transparent !important;
-            border-image: linear-gradient(to bottom, rgba(100,170,220,0.6), rgba(175,130,200,0.4), rgba(255,175,110,0.3)) 1 !important;
-            border-radius: 16px !important;
-            color: #3a3530 !important;
-            box-shadow:
-                6px 6px 20px rgba(100,170,220,0.08),
-                -3px -3px 15px rgba(255,175,110,0.05),
-                inset 0 0 30px rgba(255,255,255,0.3) !important;
+            background: rgba(255, 255, 255, 0.65) !important;
+            backdrop-filter: blur(4px);
+            border: 2px solid transparent !important;
+            border-image: linear-gradient(45deg, rgba(255,143,171,0.4), rgba(132,220,198,0.4), rgba(165,148,249,0.4)) 1 !important;
+            border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px !important;
+            color: #4a4036 !important;
+            box-shadow: 
+                8px 8px 25px rgba(165,148,249,0.08),
+                -8px -8px 25px rgba(255,143,171,0.06) !important;
+            padding: 20px !important;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        body[data-theme="aquarela"] div[style*="background-color: #f8f9fa"]:hover,
+        body[data-theme="aquarela"] div[style*="border: 1px solid #ddd"]:hover {
+            transform: translateY(-2px) scale(1.01);
+            box-shadow: 
+                12px 12px 30px rgba(165,148,249,0.12),
+                -12px -12px 30px rgba(255,143,171,0.1) !important;
         }
         body[data-theme="aquarela"] h1 {
-            color: #5a8aad;
-            font-weight: 300;
+            background: linear-gradient(to right, #ff758f, #a594f9, #84dcc6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
             letter-spacing: 1px;
-            text-shadow: 2px 2px 8px rgba(100,170,220,0.2);
         }
         body[data-theme="aquarela"] h2 {
-            color: #8b6aae !important;
-            font-weight: 600;
-            text-shadow: 1px 1px 6px rgba(175,130,200,0.15);
+            color: #8c78f0 !important;
+            font-weight: 700;
+            position: relative;
+            display: inline-block;
+        }
+        body[data-theme="aquarela"] h2::after {
+            content: "";
+            position: absolute;
+            bottom: -2px; left: 0; width: 100%; height: 8px;
+            background: rgba(132, 220, 198, 0.3);
+            border-radius: 10px;
+            z-index: -1;
+            transform: rotate(-1deg);
         }
         body[data-theme="aquarela"] h3 {
-            color: #c0825a !important;
-            font-weight: 600;
-            text-shadow: 1px 1px 6px rgba(255,175,110,0.15);
+            color: #f28482 !important;
+            font-weight: 700;
         }
         body[data-theme="aquarela"] button {
             font-family: 'Quicksand', sans-serif !important;
-            border-radius: 50px !important;
-            font-weight: 600 !important;
+            border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px !important;
+            font-weight: 700 !important;
+            border: none !important;
+            background: linear-gradient(135deg, rgba(255,143,171,0.2), rgba(165,148,249,0.2)) !important;
+            color: #554a75 !important;
+            box-shadow: 2px 3px 10px rgba(0,0,0,0.05) !important;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        body[data-theme="aquarela"] button:hover {
+            background: linear-gradient(135deg, rgba(255,143,171,0.4), rgba(165,148,249,0.4)) !important;
+            transform: translateY(-1px);
         }
         body[data-theme="aquarela"] hr {
             border: none !important;
-            height: 3px !important;
-            background: linear-gradient(90deg,
-                transparent 5%,
-                rgba(100,170,220,0.3) 20%,
-                rgba(175,130,200,0.25) 40%,
-                rgba(255,175,110,0.2) 60%,
-                rgba(120,200,150,0.25) 80%,
-                transparent 95%
-            ) !important;
-            border-radius: 3px !important;
+            height: 4px !important;
+            background: linear-gradient(90deg, transparent, rgba(255,143,171,0.5), rgba(165,148,249,0.5), rgba(132,220,198,0.5), transparent) !important;
+            border-radius: 10px !important;
+            opacity: 0.7;
         }
         body[data-theme="aquarela"] #al-theme-overlay { opacity: 0; }
 
@@ -425,80 +452,98 @@
         /* ══════════════════════════════════════════════════ */
         body[data-theme="quadro"] {
             font-family: 'Patrick Hand', cursive;
-            font-size: 18px;
-            background-color: #1a2e1a;
-            color: #e2ddd0;
+            font-size: 19px;
+            background-color: #2c3531;
+            color: #f4f4f0;
             background-image:
-                linear-gradient(to bottom, #3e2b1a 0px, #5a3f24 4px, #3e2b1a 6px, transparent 7px),
-                radial-gradient(ellipse 400px 300px at 25% 35%, rgba(255,255,255,0.018) 0%, transparent 100%),
-                radial-gradient(ellipse 350px 250px at 70% 60%, rgba(255,255,255,0.015) 0%, transparent 100%),
-                radial-gradient(ellipse 200px 150px at 55% 20%, rgba(255,255,255,0.01) 0%, transparent 100%),
-                radial-gradient(circle 2px at 8% 25%, rgba(255,255,255,0.06) 0%, transparent 100%),
-                radial-gradient(circle 3px at 15% 60%, rgba(255,255,255,0.04) 0%, transparent 100%),
-                radial-gradient(circle 2px at 25% 45%, rgba(255,255,255,0.05) 0%, transparent 100%),
-                radial-gradient(circle 1.5px at 35% 80%, rgba(255,255,255,0.06) 0%, transparent 100%),
-                radial-gradient(circle 2px at 45% 20%, rgba(255,255,255,0.04) 0%, transparent 100%),
-                radial-gradient(circle 3px at 55% 70%, rgba(255,255,255,0.03) 0%, transparent 100%),
-                radial-gradient(circle 2px at 65% 35%, rgba(255,255,255,0.05) 0%, transparent 100%),
-                radial-gradient(circle 1.5px at 75% 55%, rgba(255,255,255,0.04) 0%, transparent 100%),
-                radial-gradient(circle 2px at 85% 15%, rgba(255,255,255,0.06) 0%, transparent 100%),
-                radial-gradient(circle 3px at 92% 75%, rgba(255,255,255,0.03) 0%, transparent 100%),
-                radial-gradient(circle 1px at 50% 90%, rgba(255,255,255,0.05) 0%, transparent 100%);
+                radial-gradient(circle at 30% 40%, rgba(255,255,255,0.05) 0%, transparent 40%),
+                radial-gradient(circle at 70% 60%, rgba(255,255,255,0.04) 0%, transparent 50%),
+                radial-gradient(circle at 10% 80%, rgba(255,255,255,0.03) 0%, transparent 35%),
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 100% 100%, 20px 20px, 20px 20px;
             background-attachment: fixed;
+            text-shadow: 0px 0px 2px rgba(255, 255, 255, 0.4), 0px 0px 1px rgba(255,255,255,0.2);
+            position: relative;
         }
+        body[data-theme="quadro"]::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            opacity: 0.15;
+            background-image: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noise"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noise)"/%3E%3C/svg%3E');
+            z-index: 0;
+        }
+        body[data-theme="quadro"] #result { position: relative; z-index: 2; }
         body[data-theme="quadro"] div[style*="background-color: #f8f9fa"],
         body[data-theme="quadro"] div[style*="border: 1px solid #ddd"] {
-            background: transparent !important;
-            border: 2px dashed rgba(255,255,255,0.35) !important;
+            background: rgba(255, 255, 255, 0.03) !important;
+            border: 2px solid rgba(255, 255, 255, 0.4) !important;
             border-radius: 4px !important;
-            color: #e2ddd0 !important;
-            box-shadow: none !important;
-            position: relative;
+            color: #f4f4f0 !important;
+            box-shadow: inset 0 0 10px rgba(255,255,255,0.05), 0 0 5px rgba(255,255,255,0.1) !important;
+            padding: 15px !important;
         }
         body[data-theme="quadro"] h1 {
             color: #ffffff;
-            font-size: 34px;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.3), 0 0 8px rgba(255,255,255,0.08);
-            text-decoration: underline;
-            text-underline-offset: 6px;
-            text-decoration-style: solid;
-            text-decoration-color: rgba(255,255,255,0.4);
+            font-size: 38px;
+            text-shadow: 0px 0px 4px rgba(255,255,255,0.8), 2px 2px 4px rgba(0,0,0,0.5);
+            border-bottom: 2px solid rgba(255,255,255,0.6);
+            display: inline-block;
+            padding-bottom: 5px;
+            transform: rotate(-1deg);
         }
         body[data-theme="quadro"] h2 {
-            color: #ffe066 !important;
-            font-weight: 400;
-            text-shadow: 0 0 6px rgba(255,224,102,0.15);
+            color: #fdfd96 !important;
+            text-shadow: 0px 0px 3px rgba(253, 253, 150, 0.6);
+            transform: rotate(0.5deg);
         }
         body[data-theme="quadro"] h3 {
-            color: #7ecfff !important;
-            font-weight: 400;
-            text-shadow: 0 0 6px rgba(126,207,255,0.15);
+            color: #aec6cf !important;
+            text-shadow: 0px 0px 3px rgba(174, 198, 207, 0.6);
         }
         body[data-theme="quadro"] button {
             font-family: 'Patrick Hand', cursive !important;
-            font-size: 16px !important;
-            border-radius: 4px !important;
-            border: 2px dashed rgba(255,255,255,0.4) !important;
-            background: transparent !important;
-            color: #e2ddd0 !important;
+            font-size: 17px !important;
+            font-weight: bold;
+            border-radius: 6px !important;
+            border: 2px solid rgba(255,255,255,0.6) !important;
+            background: rgba(255,255,255,0.05) !important;
+            color: #f4f4f0 !important;
+            text-shadow: 0 0 2px rgba(255,255,255,0.5);
+            transition: all 0.2s ease;
+            box-shadow: 2px 2px 0px rgba(255,255,255,0.2) !important;
+            cursor: pointer;
         }
         body[data-theme="quadro"] button:hover {
-            background: rgba(255,255,255,0.08) !important;
+            background: rgba(255,255,255,0.15) !important;
+            transform: translate(-1px, -1px);
+            box-shadow: 3px 3px 0px rgba(255,255,255,0.3) !important;
+        }
+        body[data-theme="quadro"] button:active {
+            transform: translate(2px, 2px);
+            box-shadow: 0px 0px 0px rgba(255,255,255,0.2) !important;
         }
         body[data-theme="quadro"] hr {
             border: none !important;
-            height: 0px !important;
-            border-bottom: 2px dashed rgba(255,255,255,0.2) !important;
+            height: 2px !important;
+            background: rgba(255,255,255,0.3) !important;
+            box-shadow: 0 0 2px rgba(255,255,255,0.4);
+            margin: 20px auto;
+            width: 90%;
+            border-radius: 50%;
         }
         body[data-theme="quadro"] #al-theme-overlay { opacity: 0; }
         body[data-theme="quadro"]::after {
-            content: "▬▬";
+            content: "Desenhadinho a giz...";
             position: fixed;
             bottom: 12px;
             right: 16px;
-            font-size: 22px;
-            color: rgba(255,255,255,0.12);
-            letter-spacing: -2px;
+            font-size: 16px;
+            color: rgba(255,255,255,0.4);
+            text-shadow: 0 0 2px rgba(255,255,255,0.3);
+            transform: rotate(-5deg);
             pointer-events: none;
             z-index: 0;
         }
