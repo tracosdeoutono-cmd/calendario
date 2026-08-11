@@ -272,95 +272,94 @@
         body[data-theme="aquarela"] {
             font-family: 'Quicksand', sans-serif;
             font-weight: 500;
-            background-color: #fcf9f2;
-            color: #4a4036;
+            background-color: #f7f3e8; /* Watercolor paper base */
+            color: #3b302a;
             background-image:
-                radial-gradient(circle at 15% 50%, rgba(255, 143, 171, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 85% 30%, rgba(132, 220, 198, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 50% 80%, rgba(165, 148, 249, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 70% 90%, rgba(251, 196, 171, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 20% 10%, rgba(144, 213, 255, 0.15) 0%, transparent 40%);
+                radial-gradient(circle at 10% 20%, rgba(255, 99, 132, 0.4) 0%, transparent 40%),
+                radial-gradient(circle at 90% 10%, rgba(54, 162, 235, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 50% 80%, rgba(153, 102, 255, 0.4) 0%, transparent 60%),
+                radial-gradient(circle at 80% 80%, rgba(255, 159, 64, 0.4) 0%, transparent 45%),
+                radial-gradient(circle at 20% 90%, rgba(75, 192, 192, 0.4) 0%, transparent 55%),
+                radial-gradient(circle at 50% 50%, rgba(255, 205, 86, 0.2) 0%, transparent 70%),
+                url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="n"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23n)" opacity="0.4"/%3E%3C/svg%3E');
+            background-blend-mode: multiply, multiply, multiply, multiply, multiply, multiply, overlay;
             background-attachment: fixed;
             position: relative;
-        }
-        body[data-theme="aquarela"]::before {
-            content: "";
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none;
-            opacity: 0.4;
-            background-image: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)" opacity="0.15"/%3E%3C/svg%3E');
-            z-index: 0;
         }
         body[data-theme="aquarela"] #result { position: relative; z-index: 2; }
         body[data-theme="aquarela"] div[style*="background-color: #f8f9fa"],
         body[data-theme="aquarela"] div[style*="border: 1px solid #ddd"] {
-            background: rgba(255, 255, 255, 0.65) !important;
-            backdrop-filter: blur(4px);
-            border: 2px solid transparent !important;
-            border-image: linear-gradient(45deg, rgba(255,143,171,0.4), rgba(132,220,198,0.4), rgba(165,148,249,0.4)) 1 !important;
+            background: rgba(255, 255, 255, 0.4) !important;
+            backdrop-filter: blur(8px);
+            border: 2px solid rgba(255,255,255,0.6) !important;
             border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px !important;
-            color: #4a4036 !important;
+            color: #3b302a !important;
             box-shadow: 
-                8px 8px 25px rgba(165,148,249,0.08),
-                -8px -8px 25px rgba(255,143,171,0.06) !important;
-            padding: 20px !important;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+                10px 10px 30px rgba(153, 102, 255, 0.15),
+                -10px -10px 30px rgba(255, 99, 132, 0.15),
+                inset 0 0 20px rgba(255,255,255,0.5) !important;
+            padding: 25px !important;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        body[data-theme="aquarela"] div[style*="background-color: #f8f9fa"]::before,
+        body[data-theme="aquarela"] div[style*="border: 1px solid #ddd"]::before {
+            content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.6) 0%, transparent 100%);
+            z-index: -1; pointer-events: none;
         }
         body[data-theme="aquarela"] div[style*="background-color: #f8f9fa"]:hover,
         body[data-theme="aquarela"] div[style*="border: 1px solid #ddd"]:hover {
-            transform: translateY(-2px) scale(1.01);
+            transform: translateY(-3px) scale(1.02);
             box-shadow: 
-                12px 12px 30px rgba(165,148,249,0.12),
-                -12px -12px 30px rgba(255,143,171,0.1) !important;
+                15px 15px 40px rgba(153, 102, 255, 0.25),
+                -15px -15px 40px rgba(54, 162, 235, 0.2) !important;
         }
         body[data-theme="aquarela"] h1 {
-            background: linear-gradient(to right, #ff758f, #a594f9, #84dcc6);
+            background: linear-gradient(to right, #ff3366, #9933ff, #00cc99);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            font-weight: 700;
+            font-weight: 800;
+            font-size: 36px;
             letter-spacing: 1px;
+            filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.1));
         }
         body[data-theme="aquarela"] h2 {
-            color: #8c78f0 !important;
-            font-weight: 700;
-            position: relative;
-            display: inline-block;
-        }
-        body[data-theme="aquarela"] h2::after {
-            content: "";
-            position: absolute;
-            bottom: -2px; left: 0; width: 100%; height: 8px;
-            background: rgba(132, 220, 198, 0.3);
-            border-radius: 10px;
-            z-index: -1;
-            transform: rotate(-1deg);
+            color: #7952b3 !important;
+            font-weight: 800;
+            font-size: 22px;
         }
         body[data-theme="aquarela"] h3 {
-            color: #f28482 !important;
-            font-weight: 700;
+            color: #d6336c !important;
+            font-weight: 800;
         }
         body[data-theme="aquarela"] button {
             font-family: 'Quicksand', sans-serif !important;
             border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px !important;
-            font-weight: 700 !important;
-            border: none !important;
-            background: linear-gradient(135deg, rgba(255,143,171,0.2), rgba(165,148,249,0.2)) !important;
-            color: #554a75 !important;
-            box-shadow: 2px 3px 10px rgba(0,0,0,0.05) !important;
-            transition: all 0.2s ease;
+            font-weight: 800 !important;
+            font-size: 16px !important;
+            border: 2px solid white !important;
+            background: linear-gradient(135deg, rgba(255,99,132,0.4), rgba(153,102,255,0.4)) !important;
+            color: white !important;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            box-shadow: 4px 6px 15px rgba(153,102,255,0.3) !important;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             cursor: pointer;
+            padding: 10px 20px !important;
         }
         body[data-theme="aquarela"] button:hover {
-            background: linear-gradient(135deg, rgba(255,143,171,0.4), rgba(165,148,249,0.4)) !important;
-            transform: translateY(-1px);
+            background: linear-gradient(135deg, rgba(255,99,132,0.6), rgba(153,102,255,0.6)) !important;
+            transform: translateY(-2px) rotate(-1deg);
+            box-shadow: 6px 8px 20px rgba(153,102,255,0.4) !important;
         }
         body[data-theme="aquarela"] hr {
             border: none !important;
-            height: 4px !important;
-            background: linear-gradient(90deg, transparent, rgba(255,143,171,0.5), rgba(165,148,249,0.5), rgba(132,220,198,0.5), transparent) !important;
+            height: 6px !important;
+            background: linear-gradient(90deg, transparent, rgba(255,99,132,0.7), rgba(153,102,255,0.7), rgba(54,162,235,0.7), transparent) !important;
             border-radius: 10px !important;
-            opacity: 0.7;
+            opacity: 0.8;
+            filter: blur(1px);
         }
         body[data-theme="aquarela"] #al-theme-overlay { opacity: 0; }
 
@@ -453,97 +452,86 @@
         body[data-theme="quadro"] {
             font-family: 'Patrick Hand', cursive;
             font-size: 19px;
-            background-color: #2c3531;
-            color: #f4f4f0;
-            background-image:
-                radial-gradient(circle at 30% 40%, rgba(255,255,255,0.05) 0%, transparent 40%),
-                radial-gradient(circle at 70% 60%, rgba(255,255,255,0.04) 0%, transparent 50%),
-                radial-gradient(circle at 10% 80%, rgba(255,255,255,0.03) 0%, transparent 35%),
-                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-            background-size: 100% 100%, 100% 100%, 100% 100%, 20px 20px, 20px 20px;
+            background-color: #353b38; /* Soft slate/chalkboard color */
+            color: #f0f0f0; /* Soft white chalk */
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(255,255,255,0.03) 0%, transparent 60%),
+                radial-gradient(circle at 20% 80%, rgba(255,255,255,0.02) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255,255,255,0.02) 0%, transparent 50%),
+                url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="n"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23n)" opacity="0.08"/%3E%3C/svg%3E');
+            background-blend-mode: normal, normal, normal, overlay;
             background-attachment: fixed;
-            text-shadow: 0px 0px 2px rgba(255, 255, 255, 0.4), 0px 0px 1px rgba(255,255,255,0.2);
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.2); 
             position: relative;
-        }
-        body[data-theme="quadro"]::before {
-            content: "";
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none;
-            opacity: 0.15;
-            background-image: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noise"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noise)"/%3E%3C/svg%3E');
-            z-index: 0;
         }
         body[data-theme="quadro"] #result { position: relative; z-index: 2; }
         body[data-theme="quadro"] div[style*="background-color: #f8f9fa"],
         body[data-theme="quadro"] div[style*="border: 1px solid #ddd"] {
-            background: rgba(255, 255, 255, 0.03) !important;
-            border: 2px solid rgba(255, 255, 255, 0.4) !important;
-            border-radius: 4px !important;
-            color: #f4f4f0 !important;
-            box-shadow: inset 0 0 10px rgba(255,255,255,0.05), 0 0 5px rgba(255,255,255,0.1) !important;
+            background: rgba(255, 255, 255, 0.02) !important;
+            border: 1px dashed rgba(255, 255, 255, 0.3) !important;
+            border-radius: 8px !important;
+            color: #f0f0f0 !important;
+            box-shadow: none !important;
             padding: 15px !important;
         }
         body[data-theme="quadro"] h1 {
             color: #ffffff;
-            font-size: 38px;
-            text-shadow: 0px 0px 4px rgba(255,255,255,0.8), 2px 2px 4px rgba(0,0,0,0.5);
-            border-bottom: 2px solid rgba(255,255,255,0.6);
+            font-size: 36px;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.3);
+            border-bottom: 2px solid rgba(255,255,255,0.8);
             display: inline-block;
             padding-bottom: 5px;
+            margin-bottom: 15px;
             transform: rotate(-1deg);
         }
         body[data-theme="quadro"] h2 {
-            color: #fdfd96 !important;
-            text-shadow: 0px 0px 3px rgba(253, 253, 150, 0.6);
-            transform: rotate(0.5deg);
+            color: #fffb99 !important; /* Soft yellow chalk */
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.3);
+            font-size: 24px;
         }
         body[data-theme="quadro"] h3 {
-            color: #aec6cf !important;
-            text-shadow: 0px 0px 3px rgba(174, 198, 207, 0.6);
+            color: #b3e6ff !important; /* Soft blue chalk */
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.3);
+            font-size: 20px;
         }
         body[data-theme="quadro"] button {
             font-family: 'Patrick Hand', cursive !important;
-            font-size: 17px !important;
-            font-weight: bold;
-            border-radius: 6px !important;
-            border: 2px solid rgba(255,255,255,0.6) !important;
+            font-size: 18px !important;
+            font-weight: normal;
+            border-radius: 4px !important;
+            border: 1px solid rgba(255,255,255,0.6) !important;
             background: rgba(255,255,255,0.05) !important;
-            color: #f4f4f0 !important;
-            text-shadow: 0 0 2px rgba(255,255,255,0.5);
+            color: #ffffff !important;
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.2);
             transition: all 0.2s ease;
-            box-shadow: 2px 2px 0px rgba(255,255,255,0.2) !important;
+            box-shadow: 2px 2px 0px rgba(255,255,255,0.15) !important;
             cursor: pointer;
+            padding: 8px 16px !important;
         }
         body[data-theme="quadro"] button:hover {
-            background: rgba(255,255,255,0.15) !important;
+            background: rgba(255,255,255,0.1) !important;
             transform: translate(-1px, -1px);
-            box-shadow: 3px 3px 0px rgba(255,255,255,0.3) !important;
+            box-shadow: 3px 3px 0px rgba(255,255,255,0.2) !important;
         }
         body[data-theme="quadro"] button:active {
             transform: translate(2px, 2px);
-            box-shadow: 0px 0px 0px rgba(255,255,255,0.2) !important;
+            box-shadow: 0px 0px 0px rgba(255,255,255,0.1) !important;
         }
         body[data-theme="quadro"] hr {
             border: none !important;
-            height: 2px !important;
+            height: 1px !important;
             background: rgba(255,255,255,0.3) !important;
-            box-shadow: 0 0 2px rgba(255,255,255,0.4);
             margin: 20px auto;
-            width: 90%;
-            border-radius: 50%;
+            width: 80%;
         }
         body[data-theme="quadro"] #al-theme-overlay { opacity: 0; }
         body[data-theme="quadro"]::after {
-            content: "Desenhadinho a giz...";
+            content: "Apagar no fim da aula...";
             position: fixed;
             bottom: 12px;
             right: 16px;
             font-size: 16px;
-            color: rgba(255,255,255,0.4);
-            text-shadow: 0 0 2px rgba(255,255,255,0.3);
-            transform: rotate(-5deg);
+            color: rgba(255,255,255,0.3);
             pointer-events: none;
             z-index: 0;
         }
