@@ -670,7 +670,10 @@ function renderNavigation() {
         html += `
             <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px;">
                 <div style="min-width: 0;">
-                    <h1 style="font-size: 26px; font-weight: 800; background: linear-gradient(135deg, #fff8f0 30%, #f59e0b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0;">🍂 Traços de Outono</h1>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <h1 style="font-size: 26px; font-weight: 800; background: linear-gradient(135deg, #fff8f0 30%, #f59e0b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0;">🍂 Casas do Martim</h1>
+                        <img src="icone2.jpeg" alt="Ícone" style="height: 35px; width: 35px; object-fit: cover; border-radius: 8px;">
+                    </div>
                     <div style="font-size: 13px; color: #a3998e; font-weight: 500;">Gestão de Alojamento Local</div>
                 </div>
                 ${circleButtons}
@@ -684,7 +687,10 @@ function renderNavigation() {
     } else {
         html += `
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 12px;">
-                <h1 style="margin: 0; flex: 1; min-width: 0;">Traços de Outono</h1>
+                <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;">
+                    <h1 style="margin: 0;">Casas do Martim</h1>
+                    <img src="icone2.jpeg" alt="Ícone" style="height: 35px; width: 35px; object-fit: cover; border-radius: 8px;">
+                </div>
                 ${circleButtons}
             </div>
             <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
