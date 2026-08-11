@@ -758,7 +758,7 @@ async function loadCalendars() {
         });
         const [_, results] = await Promise.all([historyPromise, Promise.all(calendarPromises)]);
         globalReservations = results.flat();
-        updateCloudHistory();
+        syncCleaningPlan();
         renderCurrentView();
     } catch (err) { result.innerHTML = `<p style="color: red; font-weight: bold;">Erro geral: ${err.message}</p>`; }
 }
@@ -773,6 +773,10 @@ function sameDay(a, b) { return a.getFullYear()===b.getFullYear() && a.getMonth(
 function addDays(date, days) { const d = new Date(date); d.setDate(d.getDate()+days); return d; }
 function isSunday(date) { return date.getDay()===0; }
 function getDaysBetween(a, b) { return Math.round((b.getTime()-a.getTime())/(1000*60*60*24)); }
+
+function formatDateKey(date) {
+    return date.getFullYear() + "-" + (date.getMonth() + 1).toString().padStart(2, '0') + "-" + date.getDate().toString().padStart(2, '0');
+}
 
 function getCleaningInfo(reservation, allReservations) {
     const checkout = reservation.checkOut;
@@ -790,38 +794,118 @@ function getCleaningInfo(reservation, allReservations) {
             if (score>=bestScore) { bestScore=score; bestDay=new Date(d); }
         }
     }
-    return { date: bestDay, sunday: isForcedSunday, urgent: nextR ? sameDay(bestDay,nextR.checkIn) : false };
+    const hasCheckout = sameDay(bestDay, checkout);
+    const hasCheckin = nextR ? sameDay(bestDay, nextR.checkIn) : false;
+    return { date: bestDay, sunday: isForcedSunday, urgent: nextR ? sameDay(bestDay,nextR.checkIn) : false, hasCheckout, hasCheckin };
 }
 
-function updateCloudHistory() {
+function syncCleaningPlan() {
     try {
-        let hasChanges=false; const today=new Date(); today.setHours(0,0,0,0);
-        let m = typeof cloudHistory==='object'&&cloudHistory!==null ? JSON.parse(JSON.stringify(cloudHistory)) : {};
+        let today = new Date();
+        today.setHours(0,0,0,0);
+        const todayStr = formatDateKey(today);
+        let hasChanges = false;
+
+        if (!cloudHistory["_plan"] || typeof cloudHistory["_plan"] !== 'object') {
+            cloudHistory["_plan"] = {};
+            hasChanges = true;
+        }
+        const plan = cloudHistory["_plan"];
+
+        // 1. Calcula as limpezas ativas
+        const activeCleanings = {};
         globalReservations.forEach(res => {
-            const info=getCleaningInfo(res,globalReservations);
-            if (info.date<=today) {
-                const dk=info.date.getFullYear()+"-"+(info.date.getMonth()+1).toString().padStart(2,'0')+"-"+info.date.getDate().toString().padStart(2,'0');
-                if (!m[dk]||typeof m[dk]!=='object') { m[dk]={dateIso:info.date.toISOString(),rooms:[]}; hasChanges=true; }
-                if (!Array.isArray(m[dk].rooms)) m[dk].rooms=[];
-                if (!m[dk].rooms.some(r=>r.room===res.room)) { m[dk].rooms.push({room:res.room,sunday:info.sunday,urgent:info.urgent}); hasChanges=true; }
+            const info = getCleaningInfo(res, globalReservations);
+            const checkoutStr = formatDateKey(res.checkOut);
+            const cleaningStr = formatDateKey(info.date);
+            const key = `${res.room}|${checkoutStr}`;
+
+            activeCleanings[key] = {
+                room: res.room,
+                checkoutKey: checkoutStr,
+                cleaningKey: cleaningStr,
+                cleaningIso: info.date.toISOString(),
+                sunday: info.sunday,
+                urgent: info.urgent,
+                hasCheckout: info.hasCheckout,
+                hasCheckin: info.hasCheckin
+            };
+        });
+
+        // 2. Faz o merge com o plano persistido na cloud
+        Object.keys(activeCleanings).forEach(key => {
+            const active = activeCleanings[key];
+            const existing = plan[key];
+
+            if (!existing) {
+                plan[key] = active;
+                hasChanges = true;
+            } else {
+                // Se a limpeza já passou ou é hoje, travamos e não mexemos
+                const cleanDate = new Date(existing.cleaningIso);
+                cleanDate.setHours(0,0,0,0);
+                if (cleanDate >= today) {
+                    // Atualiza caso haja alterações (ex: nova reserva adiante mudou o dia ideal do futuro)
+                    if (existing.cleaningKey !== active.cleaningKey ||
+                        existing.sunday !== active.sunday ||
+                        existing.urgent !== active.urgent ||
+                        existing.hasCheckout !== active.hasCheckout ||
+                        existing.hasCheckin !== active.hasCheckin) {
+                        
+                        plan[key] = active;
+                        hasChanges = true;
+                    }
+                }
             }
         });
-        if (!m["_snapshots"]||typeof m["_snapshots"]!=='object') m["_snapshots"]={};
-        const tk=today.getFullYear()+"-"+(today.getMonth()+1).toString().padStart(2,'0')+"-"+today.getDate().toString().padStart(2,'0');
-        if (!m["_snapshots"][tk]) {
-            let sp={}; const lim=addDays(today,6);
+
+        // 3. Remove cancelamentos do plano futuro
+        Object.keys(plan).forEach(key => {
+            const existing = plan[key];
+            const cleanDate = new Date(existing.cleaningIso);
+            cleanDate.setHours(0,0,0,0);
+
+            const checkoutParts = existing.checkoutKey.split("-");
+            const checkoutDate = new Date(Number(checkoutParts[0]), Number(checkoutParts[1])-1, Number(checkoutParts[2]));
+            checkoutDate.setHours(0,0,0,0);
+
+            // Só limpamos cancelamentos futuros. Limpezas passadas NUNCA desaparecem do histórico por causa de feeds
+            if (cleanDate >= today && checkoutDate >= today) {
+                if (!activeCleanings[key]) {
+                    delete plan[key];
+                    hasChanges = true;
+                }
+            }
+        });
+
+        // 4. Sistema de snapshots das previsões futuras de 6 dias
+        if (!cloudHistory["_snapshots"] || typeof cloudHistory["_snapshots"] !== 'object') {
+            cloudHistory["_snapshots"] = {};
+            hasChanges = true;
+        }
+        if (!cloudHistory["_snapshots"][todayStr]) {
+            let sp = {};
+            const lim = addDays(today, 6);
             globalReservations.forEach(res => {
-                const info=getCleaningInfo(res,globalReservations);
-                if (info.date>=today&&info.date<=lim) {
-                    const sdk=info.date.getFullYear()+"-"+(info.date.getMonth()+1).toString().padStart(2,'0')+"-"+info.date.getDate().toString().padStart(2,'0');
-                    if (!sp[sdk]) sp[sdk]={dateIso:info.date.toISOString(),rooms:[]};
-                    if (!sp[sdk].rooms.some(r=>r.room===res.room)) sp[sdk].rooms.push({room:res.room,sunday:info.sunday,urgent:info.urgent});
+                const info = getCleaningInfo(res, globalReservations);
+                if (info.date >= today && info.date <= lim) {
+                    const sdk = formatDateKey(info.date);
+                    if (!sp[sdk]) sp[sdk] = { dateIso: info.date.toISOString(), rooms: [] };
+                    if (!sp[sdk].rooms.some(r => r.room === res.room)) {
+                        sp[sdk].rooms.push({ room: res.room, sunday: info.sunday, urgent: info.urgent });
+                    }
                 }
             });
-            m["_snapshots"][tk]=sp; hasChanges=true;
+            cloudHistory["_snapshots"][todayStr] = sp;
+            hasChanges = true;
         }
-        if (hasChanges) { saveToCloudHistory(m); cloudHistory=m; }
-    } catch(err) { console.error("Erro histórico:",err); }
+
+        if (hasChanges) {
+            saveToCloudHistory(cloudHistory);
+        }
+    } catch(err) {
+        console.error("Erro na sincronização:", err);
+    }
 }
 
 function showSnapshotsPlan() {
@@ -851,18 +935,95 @@ function showSnapshotsPlan() {
 
 function showCleaningPlan() {
     const today=new Date(); today.setHours(0,0,0,0); let grouped={};
+    const plan = cloudHistory["_plan"] || {};
+    const planKeys = Object.keys(plan);
+
     if (showHistoryMode) {
-        Object.keys(cloudHistory).forEach(dk => { if (cloudHistory[dk]&&cloudHistory[dk].dateIso) { const id=new Date(cloudHistory[dk].dateIso); if (id<today) grouped[dk]={date:id,rooms:cloudHistory[dk].rooms||[]}; } });
-    } else {
-        globalReservations.forEach(res => {
-            const info=getCleaningInfo(res,globalReservations);
-            if (info.date>=today) {
-                const dk=info.date.getFullYear()+"-"+(info.date.getMonth()+1).toString().padStart(2,'0')+"-"+info.date.getDate().toString().padStart(2,'0');
-                if (!grouped[dk]) grouped[dk]={date:info.date,rooms:[]};
-                if (!grouped[dk].rooms.some(r=>r.room===res.room)) grouped[dk].rooms.push({room:res.room,sunday:info.sunday,urgent:info.urgent});
+        // 1. Carrega dados do histórico legado
+        Object.keys(cloudHistory).forEach(dk => {
+            if (dk !== "_snapshots" && dk !== "_plan" && cloudHistory[dk] && cloudHistory[dk].dateIso) {
+                const id = new Date(cloudHistory[dk].dateIso);
+                if (id < today) {
+                    if (!grouped[dk]) grouped[dk] = { date: id, rooms: [] };
+                    (cloudHistory[dk].rooms || []).forEach(r => {
+                        if (!grouped[dk].rooms.some(existing => existing.room === r.room)) {
+                            grouped[dk].rooms.push({
+                                room: r.room,
+                                sunday: r.sunday,
+                                urgent: r.urgent
+                            });
+                        }
+                    });
+                }
             }
         });
+
+        // 2. Carrega e sobrescreve/adiciona com os dados exatos de _plan (passados)
+        planKeys.forEach(key => {
+            const entry = plan[key];
+            const d = new Date(entry.cleaningIso);
+            d.setHours(0,0,0,0);
+            if (d < today) {
+                const dk = entry.cleaningKey;
+                if (!grouped[dk]) grouped[dk] = { date: d, rooms: [] };
+
+                const existingRoomIdx = grouped[dk].rooms.findIndex(r => r.room === entry.room);
+                const roomObj = {
+                    room: entry.room,
+                    sunday: entry.sunday,
+                    urgent: entry.urgent,
+                    hasCheckout: entry.hasCheckout,
+                    hasCheckin: entry.hasCheckin
+                };
+
+                if (existingRoomIdx >= 0) {
+                    grouped[dk].rooms[existingRoomIdx] = roomObj;
+                } else {
+                    grouped[dk].rooms.push(roomObj);
+                }
+            }
+        });
+    } else {
+        // Mostra o plano futuro. Usa _plan se povoado, senão faz fallback para cálculo dinâmico inicial.
+        if (planKeys.length > 0) {
+            planKeys.forEach(key => {
+                const entry = plan[key];
+                const d = new Date(entry.cleaningIso);
+                d.setHours(0,0,0,0);
+                if (d >= today) {
+                    const dk = entry.cleaningKey;
+                    if (!grouped[dk]) grouped[dk] = { date: d, rooms: [] };
+                    if (!grouped[dk].rooms.some(r => r.room === entry.room)) {
+                        grouped[dk].rooms.push({
+                            room: entry.room,
+                            sunday: entry.sunday,
+                            urgent: entry.urgent,
+                            hasCheckout: entry.hasCheckout,
+                            hasCheckin: entry.hasCheckin
+                        });
+                    }
+                }
+            });
+        } else {
+            globalReservations.forEach(res => {
+                const info=getCleaningInfo(res,globalReservations);
+                if (info.date>=today) {
+                    const dk=formatDateKey(info.date);
+                    if (!grouped[dk]) grouped[dk]={date:info.date,rooms:[]};
+                    if (!grouped[dk].rooms.some(r=>r.room===res.room)) {
+                        grouped[dk].rooms.push({
+                            room:res.room,
+                            sunday:info.sunday,
+                            urgent:info.urgent,
+                            hasCheckout:info.hasCheckout,
+                            hasCheckin:info.hasCheckin
+                        });
+                    }
+                }
+            });
+        }
     }
+
     let sortedKeys=Object.keys(grouped).sort(); if (showHistoryMode) sortedKeys.reverse();
     let html=renderNavigation();
     html+=`<div style="margin-bottom: 25px;"><button onclick="window.toggleHistoryView()" style="padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px; border: 1px solid #6c757d; background-color: #6c757d; color: white; font-weight: bold;">${showHistoryMode?"📅 Ver Próximas Limpezas":"📜 Ver Dias Anteriores"}</button></div>`;
@@ -877,8 +1038,15 @@ function showCleaningPlan() {
         let dEs=day.date.toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long",year:"numeric"}); dEs=dEs.charAt(0).toUpperCase()+dEs.slice(1); let cEs=[`🧹 Limpiezas - ${dEs}:`];
         let rh="";
         day.rooms.sort((a,b)=>a.room.localeCompare(b.room)).forEach(clean => {
-            const hCo=globalReservations.some(r=>r.room===clean.room&&sameDay(r.checkOut,day.date));
-            const hCi=clean.urgent||globalReservations.some(r=>r.room===clean.room&&sameDay(r.checkIn,day.date));
+            // Usa os dados salvos em _plan (se houver) para evitar que sumam com feeds ICS truncados
+            let hCo = clean.hasCheckout;
+            let hCi = clean.hasCheckin;
+
+            if (hCo === undefined || hCi === undefined) {
+                hCo = globalReservations.some(r=>r.room===clean.room&&sameDay(r.checkOut,day.date));
+                hCi = clean.urgent||globalReservations.some(r=>r.room===clean.room&&sameDay(r.checkIn,day.date));
+            }
+
             let tPt="",tEs="",tH="";
             if (hCo&&hCi){tPt=" (sai e entra)";tEs=" (sale y entra)";tH=" <b>(sai e entra)</b>";}
             else if(hCo){tPt=" (sai hoje)";tEs=" (sale hoy)";tH=" <b>(sai hoje)</b>";}
