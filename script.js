@@ -656,7 +656,7 @@ function renderNavigation() {
     // MENU NO CANTO DIREITO (Agora scrolla com a página)
     const floatingMenu = `
         <div style="position: absolute; top: 0px; right: 0px; display: flex; flex-direction: column; gap: 12px; align-items: center; z-index: 100;">
-            <a href="https://www.airbnb.com/users/profile/1535595442935534214?previous_page_name=PdpHomeMarketplace" target="_blank" style="display: block; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
+            <a href="" target="_blank" style="display: block; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
                 <img src="icone2.jpeg" alt="Airbnb" title="Ver no Airbnb" style="height: 42px; width: 42px; object-fit: cover; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
             </a>
             <div class="theme-popup-wrapper">
