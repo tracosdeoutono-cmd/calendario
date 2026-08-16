@@ -608,10 +608,10 @@ let showOccupancyStats = false;
 let showPastStatsMode = false;
 let selectedSnapshotDate = null;
 
-// Flag para garantir que só gravamos na cloud se os dados forem carregados com sucesso
+// Proteção para nunca gravar na cloud se o histórico não carregou
 let historyLoadedOk = false;
 
-// TEMA INICIAL – migra temas removidos para "white"
+// TEMA INICIAL
 let currentTheme = localStorage.getItem("al_theme") || "white";
 if (!VALID_THEME_KEYS.includes(currentTheme)) currentTheme = "white";
 document.body.setAttribute("data-theme", currentTheme);
@@ -656,7 +656,6 @@ function renderNavigation() {
 
     const themeEmoji = getThemeEmoji(currentTheme);
 
-    // MENU NO CANTO DIREITO (Agora scrolla com a página)
     const floatingMenu = `
         <div style="position: absolute; top: 0px; right: 0px; display: flex; flex-direction: column; gap: 12px; align-items: center; z-index: 100;">
             <a href="" target="_blank" style="display: block; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
@@ -796,19 +795,28 @@ function parseDate(d) {
     return new Date(Number(d.substring(0,4)), Number(d.substring(4,6))-1, Number(d.substring(6,8)));
 }
 
-// Filtra bloqueios de calendário do Airbnb (Not available / Blocked) para não criar reservas falsas
+// Filtra datas bloqueadas e eventos inválidos do iCal
 function parseICS(text, roomName) {
     const r = [];
     if (!text || !text.includes("BEGIN:VEVENT")) return r;
     for (const event of text.split("BEGIN:VEVENT")) {
-        const summary = event.match(/SUMMARY:(.*)/i);
-        if (summary && /not available|unavailable|blocked|indispon/i.test(summary[1].trim())) {
-            continue;
+        const summaryMatch = event.match(/SUMMARY:(.*)/i);
+        if (summaryMatch) {
+            const summary = summaryMatch[1].trim();
+            // Ignora qualquer tipo de bloqueio ou evento interno
+            if (/not available|unavailable|blocked|indispon|bloque|fechado|closed|closure|manuten|owner/i.test(summary)) {
+                continue;
+            }
         }
         const s = event.match(/DTSTART(?:;[^:]*)?:(\d{8})/);
         const e = event.match(/DTEND(?:;[^:]*)?:(\d{8})/);
         if (s && e) {
-            r.push({ room: roomName, checkIn: parseDate(s[1]), checkOut: parseDate(e[1]) });
+            const cIn = parseDate(s[1]);
+            const cOut = parseDate(e[1]);
+            // Reserva válida tem de ter pelo menos 1 noite (descarta eventos 0-noites ou corrompidos)
+            if (cOut > cIn) {
+                r.push({ room: roomName, checkIn: cIn, checkOut: cOut });
+            }
         }
     }
     return r;
@@ -823,31 +831,79 @@ function formatDateKey(date) {
     return date.getFullYear() + "-" + (date.getMonth() + 1).toString().padStart(2, '0') + "-" + date.getDate().toString().padStart(2, '0');
 }
 
+// Cálculo do melhor dia de limpeza com REGRA ABSOLUTA de Domingo
 function getCleaningInfo(reservation, allReservations) {
     const checkout = reservation.checkOut;
-    const nextR = allReservations.filter(r => r.room===reservation.room && r.checkIn>=checkout).sort((a,b) => a.checkIn-b.checkIn)[0];
-    const sameDayArr = nextR && sameDay(checkout, nextR.checkIn);
-    let bestDay = checkout, isForcedSunday = false;
 
-    if (isSunday(checkout) && sameDayArr) {
-        // Exceção: Entrada e saída no mesmo Domingo → Limpeza forçada no Domingo
-        bestDay = checkout;
-        isForcedSunday = true;
-    } else {
-        // Se o checkout é no Domingo, a limpeza começa no mínimo na Segunda-feira
-        let startDay = isSunday(checkout) ? addDays(checkout, 1) : checkout;
-        let endDay = startDay;
-        if (nextR) {
-            if (getDaysBetween(checkout, nextR.checkIn) <= 2) endDay = nextR.checkIn;
+    // Procura se há uma reserva real a ENTRAR no mesmo quarto no mesmo dia do checkout
+    const sameDayCheckin = allReservations.find(r => 
+        r.room === reservation.room && 
+        sameDay(r.checkIn, checkout) && 
+        r !== reservation
+    );
+
+    // Próxima reserva no mesmo quarto a partir do checkout
+    const nextR = allReservations
+        .filter(r => r.room === reservation.room && r.checkIn >= checkout && r !== reservation)
+        .sort((a, b) => a.checkIn - b.checkIn)[0];
+
+    let bestDay;
+    let isForcedSunday = false;
+
+    // REGRA DE DOMINGO:
+    // Se o checkout é no Domingo, SÓ limpa no Domingo se houver ENTRADA no mesmo Domingo nesse mesmo quarto
+    if (isSunday(checkout)) {
+        if (sameDayCheckin) {
+            bestDay = new Date(checkout);
+            isForcedSunday = true;
+        } else {
+            // NÃO há entrada no Domingo -> A limpeza começa obrigatoriamente na Segunda-feira!
+            let startDay = addDays(checkout, 1);
+            let endDay = startDay;
+            if (nextR && getDaysBetween(checkout, nextR.checkIn) <= 2) {
+                endDay = nextR.checkIn;
+            }
+
+            let bestScore = -1;
+            bestDay = new Date(startDay);
+
+            for (let d = new Date(startDay); d <= endDay; d = addDays(d, 1)) {
+                if (isSunday(d)) continue; // NUNCA Domingo
+                let score = 0;
+                allReservations.forEach(r => {
+                    if (sameDay(r.checkOut, d)) {
+                        score += 1;
+                        if (reservation.room.toLowerCase().includes("achada") && r.room.toLowerCase().includes("achada")) {
+                            score += 10;
+                        }
+                    }
+                });
+                if (score >= bestScore) {
+                    bestScore = score;
+                    bestDay = new Date(d);
+                }
+            }
         }
+    } else {
+        // Checkout de Segunda a Sábado
+        let startDay = new Date(checkout);
+        let endDay = new Date(checkout);
+        if (nextR && getDaysBetween(checkout, nextR.checkIn) <= 2) {
+            endDay = nextR.checkIn;
+        }
+
         let bestScore = -1;
+        bestDay = new Date(startDay);
+
         for (let d = new Date(startDay); d <= endDay; d = addDays(d, 1)) {
-            if (isSunday(d)) continue; // Nunca escolhe domingo
+            if (isSunday(d)) continue; // NUNCA Domingo
             let score = 0;
             allReservations.forEach(r => {
                 if (sameDay(r.checkOut, d)) {
                     score += 1;
-                    if (reservation.room.toLowerCase().includes("achada") && r.room.toLowerCase().includes("achada")) score += 10;
+                    if (reservation.room.toLowerCase().includes("achada") && r.room.toLowerCase().includes("achada")) {
+                        score += 10;
+                    }
                 }
             });
             if (score >= bestScore) {
@@ -857,14 +913,21 @@ function getCleaningInfo(reservation, allReservations) {
         }
     }
 
-    // Rede de segurança adicional: nunca permitir Domingo se não for forçado por saída+entrada
+    // BLOQUEIO TOTAL: se por qualquer razão acabar em Domingo sem ser forçado, passa para Segunda
     if (isSunday(bestDay) && !isForcedSunday) {
         bestDay = addDays(bestDay, 1);
     }
 
     const hasCheckout = sameDay(bestDay, checkout);
     const hasCheckin = nextR ? sameDay(bestDay, nextR.checkIn) : false;
-    return { date: bestDay, sunday: isForcedSunday, urgent: nextR ? sameDay(bestDay, nextR.checkIn) : false, hasCheckout, hasCheckin };
+
+    return {
+        date: bestDay,
+        sunday: isForcedSunday,
+        urgent: nextR ? sameDay(bestDay, nextR.checkIn) : false,
+        hasCheckout,
+        hasCheckin
+    };
 }
 
 function syncCleaningPlan() {
@@ -900,7 +963,7 @@ function syncCleaningPlan() {
             };
         });
 
-        // 2. Faz o merge com o plano persistido na cloud
+        // 2. Atualiza ou adiciona ao plano
         Object.keys(activeCleanings).forEach(key => {
             const active = activeCleanings[key];
             const existing = plan[key];
@@ -911,8 +974,9 @@ function syncCleaningPlan() {
             } else {
                 const cleanDate = new Date(existing.cleaningIso);
                 cleanDate.setHours(0,0,0,0);
-                if (cleanDate >= today) {
+                if (cleanDate >= today || (isSunday(cleanDate) && !existing.sunday)) {
                     if (existing.cleaningKey !== active.cleaningKey ||
+                        existing.cleaningIso !== active.cleaningIso ||
                         existing.sunday !== active.sunday ||
                         existing.urgent !== active.urgent ||
                         existing.hasCheckout !== active.hasCheckout ||
@@ -925,7 +989,7 @@ function syncCleaningPlan() {
             }
         });
 
-        // 3. Remove cancelamentos e limpezas fantasmas de hoje/futuro
+        // 3. Remove cancelamentos, fantasmas ou resíduos antigos de domingo não-forçado
         Object.keys(plan).forEach(key => {
             const existing = plan[key];
             const cleanDate = new Date(existing.cleaningIso);
@@ -935,11 +999,15 @@ function syncCleaningPlan() {
                 if (!activeCleanings[key]) {
                     delete plan[key];
                     hasChanges = true;
+                } else if (isSunday(cleanDate) && !existing.sunday) {
+                    // Purga qualquer domingo não autorizado que estivesse gravado
+                    delete plan[key];
+                    hasChanges = true;
                 }
             }
         });
 
-        // 4. Sistema de snapshots das previsões futuras de 6 dias
+        // 4. Snapshots futuros
         if (!cloudHistory["_snapshots"] || typeof cloudHistory["_snapshots"] !== 'object') {
             cloudHistory["_snapshots"] = {};
             hasChanges = true;
@@ -961,7 +1029,6 @@ function syncCleaningPlan() {
             hasChanges = true;
         }
 
-        // Só grava na cloud se o histórico tiver sido carregado com sucesso (evita apagar snapshots em caso de erro de rede)
         if (hasChanges && historyLoadedOk) {
             saveToCloudHistory(cloudHistory);
         }
@@ -1001,7 +1068,7 @@ function showCleaningPlan() {
     const planKeys = Object.keys(plan);
 
     if (showHistoryMode) {
-        // 1. Carrega dados do histórico legado
+        // 1. Histórico legado
         Object.keys(cloudHistory).forEach(dk => {
             if (dk !== "_snapshots" && dk !== "_plan" && cloudHistory[dk] && cloudHistory[dk].dateIso) {
                 const id = new Date(cloudHistory[dk].dateIso);
@@ -1020,7 +1087,7 @@ function showCleaningPlan() {
             }
         });
 
-        // 2. Carrega e sobrescreve/adiciona com os dados exatos de _plan (passados)
+        // 2. Histórico de _plan
         planKeys.forEach(key => {
             const entry = plan[key];
             const d = new Date(entry.cleaningIso);
@@ -1046,17 +1113,25 @@ function showCleaningPlan() {
             }
         });
     } else {
-        // Mostra o plano futuro. Usa _plan se povoado, senão faz fallback para cálculo dinâmico inicial.
+        // Plano futuro
         if (planKeys.length > 0) {
             planKeys.forEach(key => {
                 const entry = plan[key];
-                const d = new Date(entry.cleaningIso);
+                let d = new Date(entry.cleaningIso);
                 d.setHours(0,0,0,0);
+
                 if (d >= today) {
-                    const dk = entry.cleaningKey;
-                    if (!grouped[dk]) grouped[dk] = { date: d, rooms: [] };
-                    if (!grouped[dk].rooms.some(r => r.room === entry.room)) {
-                        grouped[dk].rooms.push({
+                    // Proteção visual: se não for domingo forçado, garante exibição na Segunda
+                    let finalDate = d;
+                    let finalKey = entry.cleaningKey;
+                    if (isSunday(d) && !entry.sunday) {
+                        finalDate = addDays(d, 1);
+                        finalKey = formatDateKey(finalDate);
+                    }
+
+                    if (!grouped[finalKey]) grouped[finalKey] = { date: finalDate, rooms: [] };
+                    if (!grouped[finalKey].rooms.some(r => r.room === entry.room)) {
+                        grouped[finalKey].rooms.push({
                             room: entry.room,
                             sunday: entry.sunday,
                             urgent: entry.urgent,
