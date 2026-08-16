@@ -838,14 +838,19 @@ function getCleaningInfo(reservation, allReservations) {
     const sameDayTurnaround = nextR && sameDay(checkout, nextR.checkIn);
     let bestDay = checkout;
     let isForcedSunday = false;
+    let fromSunday = false;
 
     // Regra: Domingo só é dia de limpeza se houver saída E entrada no mesmo dia
     if (isSunday(checkout) && sameDayTurnaround) {
         bestDay = checkout;
         isForcedSunday = true;
     } else {
-        // Se a saída foi ao domingo, o primeiro dia disponível para limpar é segunda-feira
-        let startDay = isSunday(checkout) ? addDays(checkout, 1) : checkout;
+        // Se a saída foi ao domingo, a limpeza passa para segunda-feira
+        let startDay = checkout;
+        if (isSunday(checkout)) {
+            startDay = addDays(checkout, 1);
+            fromSunday = true;
+        }
         let endDay = startDay;
 
         // Se houver uma entrada próxima (até 2 dias), pode agrupar até ao dia da entrada
@@ -880,6 +885,7 @@ function getCleaningInfo(reservation, allReservations) {
     return {
         date: bestDay,
         sunday: isForcedSunday,
+        fromSunday: fromSunday,
         urgent: nextR ? sameDay(bestDay, nextR.checkIn) : false,
         hasCheckout,
         hasCheckin
@@ -913,6 +919,7 @@ function syncCleaningPlan() {
                 cleaningKey: cleaningStr,
                 cleaningIso: info.date.toISOString(),
                 sunday: info.sunday,
+                fromSunday: info.fromSunday,
                 urgent: info.urgent,
                 hasCheckout: info.hasCheckout,
                 hasCheckin: info.hasCheckin
@@ -934,6 +941,7 @@ function syncCleaningPlan() {
                     if (existing.cleaningKey !== active.cleaningKey ||
                         existing.cleaningIso !== active.cleaningIso ||
                         existing.sunday !== active.sunday ||
+                        existing.fromSunday !== active.fromSunday ||
                         existing.urgent !== active.urgent ||
                         existing.hasCheckout !== active.hasCheckout ||
                         existing.hasCheckin !== active.hasCheckin) {
@@ -1032,6 +1040,7 @@ function showCleaningPlan() {
                             grouped[dk].rooms.push({
                                 room: r.room,
                                 sunday: r.sunday,
+                                fromSunday: r.fromSunday,
                                 urgent: r.urgent
                             });
                         }
@@ -1053,6 +1062,7 @@ function showCleaningPlan() {
                 const roomObj = {
                     room: entry.room,
                     sunday: entry.sunday,
+                    fromSunday: entry.fromSunday,
                     urgent: entry.urgent,
                     hasCheckout: entry.hasCheckout,
                     hasCheckin: entry.hasCheckin
@@ -1079,6 +1089,7 @@ function showCleaningPlan() {
                         grouped[dk].rooms.push({
                             room: entry.room,
                             sunday: entry.sunday,
+                            fromSunday: entry.fromSunday,
                             urgent: entry.urgent,
                             hasCheckout: entry.hasCheckout,
                             hasCheckin: entry.hasCheckin
@@ -1096,6 +1107,7 @@ function showCleaningPlan() {
                         grouped[dk].rooms.push({
                             room: res.room,
                             sunday: info.sunday,
+                            fromSunday: info.fromSunday,
                             urgent: info.urgent,
                             hasCheckout: info.hasCheckout,
                             hasCheckin: info.hasCheckin
@@ -1122,6 +1134,7 @@ function showCleaningPlan() {
         day.rooms.sort((a,b)=>a.room.localeCompare(b.room)).forEach(clean => {
             let hCo = clean.hasCheckout;
             let hCi = clean.hasCheckin;
+            let fromSun = clean.fromSunday || false;
 
             if (hCo === undefined || hCi === undefined) {
                 hCo = globalReservations.some(r=>r.room===clean.room&&sameDay(r.checkOut,day.date));
@@ -1129,10 +1142,32 @@ function showCleaningPlan() {
             }
 
             let tPt="",tEs="",tH="";
-            if (hCo&&hCi){tPt=" (sai e entra)";tEs=" (sale y entra)";tH=" <b>(sai e entra)</b>";}
-            else if(hCo){tPt=" (sai hoje)";tEs=" (sale hoy)";tH=" <b>(sai hoje)</b>";}
-            else if(hCi){tPt=" (entrada hoje)";tEs=" (entrada hoy)";tH=" <b>(entrada hoje)</b>";}
-            const em=hCi?"⚠️":"🧹"; cPt.push(`${em} ${clean.room}${tPt}`); cEs.push(`${em} ${clean.room}${tEs}`); rh+=`${em} ${clean.room}${tH}<br>`;
+            if (fromSun && hCi) {
+                tPt=" (saiu domingo, entra hoje)";
+                tEs=" (salió domingo, entra hoy)";
+                tH=" <b>(saiu domingo, entra hoje)</b>";
+            } else if (fromSun) {
+                tPt=" (saiu domingo)";
+                tEs=" (salió domingo)";
+                tH=" <b>(saiu domingo)</b>";
+            } else if (hCo && hCi) {
+                tPt=" (sai e entra)";
+                tEs=" (sale y entra)";
+                tH=" <b>(sai e entra)</b>";
+            } else if (hCo) {
+                tPt=" (sai hoje)";
+                tEs=" (sale hoy)";
+                tH=" <b>(sai hoje)</b>";
+            } else if (hCi) {
+                tPt=" (entrada hoje)";
+                tEs=" (entrada hoy)";
+                tH=" <b>(entrada hoje)</b>";
+            }
+
+            const em = (hCi || clean.urgent) ? "⚠️" : "🧹";
+            cPt.push(`${em} ${clean.room}${tPt}`);
+            cEs.push(`${em} ${clean.room}${tEs}`);
+            rh += `${em} ${clean.room}${tH}<br>`;
         });
         const ePt=encodeURIComponent(cPt.join("\n")), eEs=encodeURIComponent(cEs.join("\n"));
         html+=`<div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
