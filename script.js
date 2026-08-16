@@ -12,7 +12,7 @@
     const style = document.createElement("style");
     style.id = "al-app-allthemes";
     style.textContent = `
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;600;700;800&family=VT323&family=Caveat:wght@400;700&family=Fredoka:wght@400;600;700&family=Quicksand:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,600&family=Patrick+Hand&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Kalam:wght@300;400;700&family=Marck+Script&family=Patrick+Hand&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;600;700;800&family=VT323&family=Fredoka:wght@400;600;700&family=Quicksand:wght@300;400;600;700&display=swap');
 
         * { box-sizing: border-box; }
 
@@ -267,74 +267,158 @@
         body[data-theme="sakura"] #al-theme-overlay { opacity: 0; }
 
         /* ══════════════════════════════════════════════════ */
-        /* 7. AQUARELA                                       */
+        /* 7. AQUARELA (PINTURA ARTÍSTICA VIBRANTE)          */
         /* ══════════════════════════════════════════════════ */
         body[data-theme="aquarela"] {
-            font-family: 'Quicksand', sans-serif;
-            font-weight: 400;
-            background-color: #faf6f0;
-            color: #3a3530;
+            font-family: 'Kalam', cursive, sans-serif;
+            font-size: 17px;
+            background-color: #fcf8f2;
+            color: #242436;
             background-image:
-                radial-gradient(ellipse 350px 250px at 10% 15%, rgba(100, 170, 220, 0.18) 0%, transparent 100%),
-                radial-gradient(ellipse 300px 200px at 80% 10%, rgba(255, 175, 110, 0.15) 0%, transparent 100%),
-                radial-gradient(ellipse 280px 220px at 85% 80%, rgba(175, 130, 200, 0.12) 0%, transparent 100%),
-                radial-gradient(ellipse 260px 180px at 15% 85%, rgba(120, 200, 150, 0.13) 0%, transparent 100%),
-                radial-gradient(ellipse 200px 160px at 50% 45%, rgba(255, 200, 140, 0.08) 0%, transparent 100%),
-                radial-gradient(ellipse 150px 100px at 35% 30%, rgba(100, 180, 230, 0.07) 0%, transparent 100%),
-                radial-gradient(ellipse 120px 90px at 65% 60%, rgba(230, 140, 170, 0.08) 0%, transparent 100%),
-                radial-gradient(circle 1px at 20% 25%, rgba(0,0,0,0.02) 0%, transparent 100%),
-                radial-gradient(circle 1px at 60% 40%, rgba(0,0,0,0.015) 0%, transparent 100%),
-                radial-gradient(circle 1px at 80% 70%, rgba(0,0,0,0.02) 0%, transparent 100%),
-                radial-gradient(circle 1px at 40% 80%, rgba(0,0,0,0.015) 0%, transparent 100%);
+                /* Manchas de pigmento vivo (azul cobalto, carmim, açafrão, esmeralda, violeta) */
+                radial-gradient(ellipse 480px 320px at 8% 12%, rgba(2, 132, 199, 0.22) 0%, rgba(2, 132, 199, 0.08) 60%, transparent 100%),
+                radial-gradient(ellipse 420px 290px at 88% 10%, rgba(245, 158, 11, 0.22) 0%, rgba(245, 158, 11, 0.06) 60%, transparent 100%),
+                radial-gradient(ellipse 400px 300px at 92% 80%, rgba(225, 29, 72, 0.18) 0%, rgba(225, 29, 72, 0.05) 60%, transparent 100%),
+                radial-gradient(ellipse 380px 260px at 12% 88%, rgba(16, 185, 129, 0.20) 0%, rgba(16, 185, 129, 0.06) 60%, transparent 100%),
+                radial-gradient(ellipse 340px 240px at 50% 50%, rgba(124, 58, 237, 0.14) 0%, rgba(124, 58, 237, 0.04) 65%, transparent 100%),
+                /* Pingos e salpicos de tinta fresca */
+                radial-gradient(circle 3px at 18% 28%, rgba(2, 132, 199, 0.5) 0%, transparent 100%),
+                radial-gradient(circle 4.5px at 22% 32%, rgba(225, 29, 72, 0.45) 0%, transparent 100%),
+                radial-gradient(circle 2.5px at 78% 22%, rgba(245, 158, 11, 0.6) 0%, transparent 100%),
+                radial-gradient(circle 3.5px at 84% 65%, rgba(124, 58, 237, 0.45) 0%, transparent 100%),
+                radial-gradient(circle 4px at 28% 75%, rgba(16, 185, 129, 0.5) 0%, transparent 100%),
+                radial-gradient(circle 2px at 60% 85%, rgba(225, 29, 72, 0.4) 0%, transparent 100%),
+                radial-gradient(circle 3px at 45% 15%, rgba(2, 132, 199, 0.4) 0%, transparent 100%),
+                /* Textura sutil de papel de aguarela prensado a frio */
+                radial-gradient(circle 1px at 30% 40%, rgba(0,0,0,0.03) 0%, transparent 100%),
+                radial-gradient(circle 1px at 70% 60%, rgba(0,0,0,0.025) 0%, transparent 100%);
             background-attachment: fixed;
         }
+
         body[data-theme="aquarela"] div[style*="background-color: #f8f9fa"],
         body[data-theme="aquarela"] div[style*="border: 1px solid #ddd"] {
-            background: rgba(255,255,255,0.5) !important;
-            border: none !important;
-            border-left: 4px solid transparent !important;
-            border-image: linear-gradient(to bottom, rgba(100,170,220,0.6), rgba(175,130,200,0.4), rgba(255,175,110,0.3)) 1 !important;
-            border-radius: 16px !important;
-            color: #3a3530 !important;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.86) 0%, rgba(255, 252, 246, 0.80) 50%, rgba(246, 250, 255, 0.82) 100%) !important;
+            border: 2px solid transparent !important;
+            border-left: 6px solid #0284c7 !important;
+            border-radius: 20px 14px 22px 16px !important;
+            color: #242436 !important;
             box-shadow:
-                6px 6px 20px rgba(100,170,220,0.08),
-                -3px -3px 15px rgba(255,175,110,0.05),
-                inset 0 0 30px rgba(255,255,255,0.3) !important;
+                0 14px 35px -8px rgba(2, 132, 199, 0.15),
+                0 6px 20px -4px rgba(225, 29, 72, 0.10),
+                inset 0 0 35px rgba(255, 255, 255, 0.7) !important;
+            backdrop-filter: blur(12px);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
         }
+        body[data-theme="aquarela"] div[style*="background-color: #f8f9fa"]:hover,
+        body[data-theme="aquarela"] div[style*="border: 1px solid #ddd"]:hover {
+            transform: translateY(-2px);
+            box-shadow:
+                0 18px 40px -6px rgba(2, 132, 199, 0.20),
+                0 8px 24px -2px rgba(225, 29, 72, 0.14),
+                inset 0 0 35px rgba(255, 255, 255, 0.8) !important;
+        }
+
         body[data-theme="aquarela"] h1 {
-            color: #5a8aad;
-            font-weight: 300;
-            letter-spacing: 1px;
-            text-shadow: 2px 2px 8px rgba(100,170,220,0.2);
+            font-family: 'Caveat', cursive, sans-serif !important;
+            font-size: 40px !important;
+            font-weight: 700 !important;
+            background: linear-gradient(125deg, #0369a1 0%, #6d28d9 30%, #be123c 65%, #c2410c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.5px;
+            filter: drop-shadow(2px 2px 8px rgba(109, 40, 217, 0.18));
+            margin: 0;
+            line-height: 1.15;
         }
+
         body[data-theme="aquarela"] h2 {
-            color: #8b6aae !important;
-            font-weight: 600;
-            text-shadow: 1px 1px 6px rgba(175,130,200,0.15);
+            font-family: 'Caveat', cursive, sans-serif !important;
+            font-size: 28px !important;
+            font-weight: 700 !important;
+            color: #1e40af !important;
+            text-shadow: 1px 1px 4px rgba(30, 64, 175, 0.15);
+            margin-top: 18px !important;
         }
+
         body[data-theme="aquarela"] h3 {
-            color: #c0825a !important;
-            font-weight: 600;
-            text-shadow: 1px 1px 6px rgba(255,175,110,0.15);
+            font-family: 'Caveat', cursive, sans-serif !important;
+            font-size: 24px !important;
+            font-weight: 700 !important;
+            color: #be123c !important;
+            text-shadow: 1px 1px 4px rgba(190, 18, 60, 0.12);
         }
+
         body[data-theme="aquarela"] button {
-            font-family: 'Quicksand', sans-serif !important;
+            font-family: 'Kalam', cursive, sans-serif !important;
+            font-size: 15px !important;
+            font-weight: 700 !important;
             border-radius: 50px !important;
-            font-weight: 600 !important;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
         }
+        body[data-theme="aquarela"] button:hover {
+            transform: translateY(-2px) scale(1.03) !important;
+        }
+        body[data-theme="aquarela"] button:active {
+            transform: scale(0.97) !important;
+        }
+
+        body[data-theme="aquarela"] button[onclick*="copyFromData"][onclick*="ePt"] {
+            background: linear-gradient(135deg, #059669, #0284c7) !important;
+            border: none !important;
+            color: white !important;
+            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3) !important;
+        }
+        body[data-theme="aquarela"] button[onclick*="copyFromData"][onclick*="eEs"] {
+            background: linear-gradient(135deg, #e11d48, #d97706) !important;
+            border: none !important;
+            color: white !important;
+            box-shadow: 0 4px 15px rgba(225, 29, 72, 0.3) !important;
+        }
+        body[data-theme="aquarela"] button[onclick*="switchMainView('cleaning')"] {
+            background: linear-gradient(135deg, #2563eb, #7c3aed) !important;
+            border: none !important;
+            color: white !important;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3) !important;
+        }
+        body[data-theme="aquarela"] button[onclick*="switchMainView('occupancy')"] {
+            background: linear-gradient(135deg, #059669, #10b981) !important;
+            border: none !important;
+            color: white !important;
+            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3) !important;
+        }
+
         body[data-theme="aquarela"] hr {
             border: none !important;
-            height: 3px !important;
+            height: 4px !important;
             background: linear-gradient(90deg,
-                transparent 5%,
-                rgba(100,170,220,0.3) 20%,
-                rgba(175,130,200,0.25) 40%,
-                rgba(255,175,110,0.2) 60%,
-                rgba(120,200,150,0.25) 80%,
-                transparent 95%
+                transparent 0%,
+                rgba(2, 132, 199, 0.5) 15%,
+                rgba(124, 58, 237, 0.5) 38%,
+                rgba(225, 29, 72, 0.5) 65%,
+                rgba(245, 158, 11, 0.45) 85%,
+                transparent 100%
             ) !important;
-            border-radius: 3px !important;
+            border-radius: 50px !important;
+            margin: 20px 0 !important;
+            filter: blur(0.25px);
         }
+
+        body[data-theme="aquarela"] .theme-popup {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border: 2px solid rgba(124, 58, 237, 0.25) !important;
+            box-shadow: 0 15px 45px rgba(2, 132, 199, 0.2) !important;
+            backdrop-filter: blur(20px);
+        }
+        body[data-theme="aquarela"] .theme-popup-item {
+            font-family: 'Kalam', cursive, sans-serif !important;
+            font-size: 15px !important;
+            font-weight: 700;
+        }
+        body[data-theme="aquarela"] .theme-popup-item.active {
+            background: linear-gradient(135deg, rgba(2, 132, 199, 0.15), rgba(225, 29, 72, 0.12)) !important;
+            color: #1e40af !important;
+        }
+
         body[data-theme="aquarela"] #al-theme-overlay { opacity: 0; }
 
         /* ══════════════════════════════════════════════════ */
@@ -849,7 +933,6 @@ function getCleaningInfo(reservation, allReservations) {
     const sameDayTurnaround = nextR && sameDay(checkout, nextR.checkIn);
     let bestDay = checkout;
     let isForcedSunday = false;
-    let fromSunday = false;
 
     // Regra: Domingo só é dia de limpeza se houver saída E entrada no mesmo dia
     if (isSunday(checkout) && sameDayTurnaround) {
@@ -857,11 +940,7 @@ function getCleaningInfo(reservation, allReservations) {
         isForcedSunday = true;
     } else {
         // Se a saída foi ao domingo, a limpeza passa para segunda-feira
-        let startDay = checkout;
-        if (isSunday(checkout)) {
-            startDay = addDays(checkout, 1);
-            fromSunday = true;
-        }
+        let startDay = isSunday(checkout) ? addDays(checkout, 1) : checkout;
         let endDay = startDay;
 
         // Se houver uma entrada próxima (até 2 dias), pode agrupar até ao dia da entrada
@@ -896,7 +975,6 @@ function getCleaningInfo(reservation, allReservations) {
     return {
         date: bestDay,
         sunday: isForcedSunday,
-        fromSunday: fromSunday,
         urgent: nextR ? sameDay(bestDay, nextR.checkIn) : false,
         hasCheckout,
         hasCheckin
@@ -930,7 +1008,6 @@ function syncCleaningPlan() {
                 cleaningKey: cleaningStr,
                 cleaningIso: info.date.toISOString(),
                 sunday: info.sunday,
-                fromSunday: info.fromSunday,
                 urgent: info.urgent,
                 hasCheckout: info.hasCheckout,
                 hasCheckin: info.hasCheckin
@@ -951,7 +1028,6 @@ function syncCleaningPlan() {
                     if (existing.cleaningKey !== active.cleaningKey ||
                         existing.cleaningIso !== active.cleaningIso ||
                         existing.sunday !== active.sunday ||
-                        existing.fromSunday !== active.fromSunday ||
                         existing.urgent !== active.urgent ||
                         existing.hasCheckout !== active.hasCheckout ||
                         existing.hasCheckin !== active.hasCheckin) {
@@ -1062,7 +1138,6 @@ function showCleaningPlan() {
                             grouped[dk].rooms.push({
                                 room: r.room,
                                 sunday: !!r.sunday,
-                                fromSunday: !!r.fromSunday,
                                 urgent: !!r.urgent,
                                 hasCheckout: r.hasCheckout,
                                 hasCheckin: r.hasCheckin
@@ -1086,7 +1161,6 @@ function showCleaningPlan() {
                 const roomObj = {
                     room: entry.room,
                     sunday: !!entry.sunday,
-                    fromSunday: !!entry.fromSunday,
                     urgent: !!entry.urgent,
                     hasCheckout: entry.hasCheckout,
                     hasCheckin: entry.hasCheckin
@@ -1113,7 +1187,6 @@ function showCleaningPlan() {
                         grouped[dk].rooms.push({
                             room: entry.room,
                             sunday: !!entry.sunday,
-                            fromSunday: !!entry.fromSunday,
                             urgent: !!entry.urgent,
                             hasCheckout: entry.hasCheckout,
                             hasCheckin: entry.hasCheckin
@@ -1131,7 +1204,6 @@ function showCleaningPlan() {
                         grouped[dk].rooms.push({
                             room: res.room,
                             sunday: info.sunday,
-                            fromSunday: info.fromSunday,
                             urgent: info.urgent,
                             hasCheckout: info.hasCheckout,
                             hasCheckin: info.hasCheckin
@@ -1158,7 +1230,6 @@ function showCleaningPlan() {
         day.rooms.sort((a,b)=>a.room.localeCompare(b.room)).forEach(clean => {
             let hCo = clean.hasCheckout;
             let hCi = clean.hasCheckin;
-            let fromSun = clean.fromSunday || false;
 
             let tPt="",tEs="",tH="";
             if (showHistoryMode) {
@@ -1173,15 +1244,7 @@ function showCleaningPlan() {
                     hCi = clean.urgent||globalReservations.some(r=>r.room===clean.room&&sameDay(r.checkIn,day.date));
                 }
 
-                if (fromSun && hCi) {
-                    tPt=" (saiu domingo, entra hoje)";
-                    tEs=" (salió domingo, entra hoy)";
-                    tH=" <b>(saiu domingo, entra hoje)</b>";
-                } else if (fromSun) {
-                    tPt=" (saiu domingo)";
-                    tEs=" (salió domingo)";
-                    tH=" <b>(saiu domingo)</b>";
-                } else if (hCo && hCi) {
+                if (hCo && hCi) {
                     tPt=" (sai e entra)";
                     tEs=" (sale y entra)";
                     tH=" <b>(sai e entra)</b>";
