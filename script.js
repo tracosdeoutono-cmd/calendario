@@ -608,6 +608,13 @@ let showOccupancyStats = false;
 let showPastStatsMode = false;
 let selectedSnapshotDate = null;
 
+// ════════════════════════════════════════════════
+// FIX 1: Flag para proteger os dados na cloud
+// Se o histórico não carregar bem, NÃO gravamos
+// por cima — evita apagar previsões passadas.
+// ════════════════════════════════════════════════
+let historyLoadedOk = false;
+
 // TEMA INICIAL – migra temas removidos para "white"
 let currentTheme = localStorage.getItem("al_theme") || "white";
 if (!VALID_THEME_KEYS.includes(currentTheme)) currentTheme = "white";
@@ -739,9 +746,22 @@ window.togglePastStats = function() { showPastStatsMode = !showPastStatsMode; sh
 window.selectHouse = function(house) { selectedHouse = house; showOccupancyPlan(); };
 window.selectSnapshot = function(dateKey) { selectedSnapshotDate = dateKey; showSnapshotsPlan(); };
 
+// ════════════════════════════════════════════════════════
+// FIX 2: fetchCloudHistory agora marca se carregou bem
+// ════════════════════════════════════════════════════════
 async function fetchCloudHistory() {
-    try { const res = await fetchWithTimeout(`${WORKER_BASE_URL}?action=getHistory`, {}, 8000); let data = await res.json(); cloudHistory = typeof data === 'string' ? JSON.parse(data) : data; if (typeof cloudHistory !== 'object' || cloudHistory === null || Array.isArray(cloudHistory)) cloudHistory = {}; }
-    catch (e) { console.warn("Aviso: Histórico não carregou.", e); cloudHistory = {}; }
+    try {
+        const res = await fetchWithTimeout(`${WORKER_BASE_URL}?action=getHistory`, {}, 8000);
+        let data = await res.json();
+        cloudHistory = typeof data === 'string' ? JSON.parse(data) : data;
+        if (typeof cloudHistory !== 'object' || cloudHistory === null || Array.isArray(cloudHistory)) cloudHistory = {};
+        historyLoadedOk = true;
+    }
+    catch (e) {
+        console.warn("Aviso: Histórico não carregou.", e);
+        cloudHistory = {};
+        historyLoadedOk = false;
+    }
 }
 
 async function saveToCloudHistory(newEntries) {
@@ -765,11 +785,26 @@ async function loadCalendars() {
 }
 
 function parseDate(d) { return new Date(Number(d.substring(0,4)), Number(d.substring(4,6))-1, Number(d.substring(6,8))); }
+
+// ════════════════════════════════════════════════════════════════
+// FIX 3: parseICS agora filtra eventos "Not available" / bloqueados
+// O Airbnb (e outros) incluem datas bloqueadas no iCal com
+// SUMMARY: "Not available". Estas criavam limpezas fantasma.
+// ════════════════════════════════════════════════════════════════
 function parseICS(text, roomName) {
     const r = []; if (!text || !text.includes("BEGIN:VEVENT")) return r;
-    for (const event of text.split("BEGIN:VEVENT")) { const s = event.match(/DTSTART(?:;[^:]*)?:(\d{8})/); const e = event.match(/DTEND(?:;[^:]*)?:(\d{8})/); if (s && e) r.push({ room: roomName, checkIn: parseDate(s[1]), checkOut: parseDate(e[1]) }); }
+    for (const event of text.split("BEGIN:VEVENT")) {
+        // Ignora datas bloqueadas / indisponíveis (não são reservas reais)
+        const summary = event.match(/SUMMARY:(.*)/i);
+        if (summary && /not available|unavailable|blocked|indispon/i.test(summary[1].trim())) continue;
+
+        const s = event.match(/DTSTART(?:;[^:]*)?:(\d{8})/);
+        const e = event.match(/DTEND(?:;[^:]*)?:(\d{8})/);
+        if (s && e) r.push({ room: roomName, checkIn: parseDate(s[1]), checkOut: parseDate(e[1]) });
+    }
     return r;
 }
+
 function sameDay(a, b) { return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
 function addDays(date, days) { const d = new Date(date); d.setDate(d.getDate()+days); return d; }
 function isSunday(date) { return date.getDay()===0; }
@@ -779,27 +814,58 @@ function formatDateKey(date) {
     return date.getFullYear() + "-" + (date.getMonth() + 1).toString().padStart(2, '0') + "-" + date.getDate().toString().padStart(2, '0');
 }
 
+// ════════════════════════════════════════════════════════════════════
+// FIX 4: getCleaningInfo — reforço da regra de domingo
+// Adicionada rede de segurança: se por algum motivo o bestDay
+// acabar num domingo sem ser forçado, empurra para segunda-feira.
+// ════════════════════════════════════════════════════════════════════
 function getCleaningInfo(reservation, allReservations) {
     const checkout = reservation.checkOut;
     const nextR = allReservations.filter(r => r.room===reservation.room && r.checkIn>=checkout).sort((a,b) => a.checkIn-b.checkIn)[0];
     const sameDayArr = nextR && sameDay(checkout, nextR.checkIn);
     let bestDay = checkout, isForcedSunday = false;
-    if (isSunday(checkout) && sameDayArr) { bestDay=checkout; isForcedSunday=true; }
+
+    if (isSunday(checkout) && sameDayArr) {
+        // Domingo com saída E entrada no mesmo quarto → limpeza obrigatória
+        bestDay = checkout;
+        isForcedSunday = true;
+    }
     else {
-        let startDay = isSunday(checkout)?addDays(checkout,1):checkout, endDay = startDay;
-        if (nextR) { if (getDaysBetween(checkout,nextR.checkIn)<=2) endDay=nextR.checkIn; }
-        let bestScore=-1;
-        for (let d=new Date(startDay); d<=endDay; d=addDays(d,1)) {
-            if (isSunday(d)) continue; let score=0;
-            allReservations.forEach(r => { if (sameDay(r.checkOut,d)) { score+=1; if (reservation.room.toLowerCase().includes("achada")&&r.room.toLowerCase().includes("achada")) score+=10; } });
-            if (score>=bestScore) { bestScore=score; bestDay=new Date(d); }
+        let startDay = isSunday(checkout) ? addDays(checkout, 1) : checkout;
+        let endDay = startDay;
+        if (nextR) { if (getDaysBetween(checkout, nextR.checkIn) <= 2) endDay = nextR.checkIn; }
+        let bestScore = -1;
+        for (let d = new Date(startDay); d <= endDay; d = addDays(d, 1)) {
+            if (isSunday(d)) continue;
+            let score = 0;
+            allReservations.forEach(r => {
+                if (sameDay(r.checkOut, d)) {
+                    score += 1;
+                    if (reservation.room.toLowerCase().includes("achada") && r.room.toLowerCase().includes("achada")) score += 10;
+                }
+            });
+            if (score >= bestScore) { bestScore = score; bestDay = new Date(d); }
         }
     }
+
+    // ── Rede de segurança: nunca devolver domingo se não for forçado ──
+    if (isSunday(bestDay) && !isForcedSunday) {
+        bestDay = addDays(bestDay, 1); // empurra para segunda
+    }
+
     const hasCheckout = sameDay(bestDay, checkout);
     const hasCheckin = nextR ? sameDay(bestDay, nextR.checkIn) : false;
-    return { date: bestDay, sunday: isForcedSunday, urgent: nextR ? sameDay(bestDay,nextR.checkIn) : false, hasCheckout, hasCheckin };
+    return { date: bestDay, sunday: isForcedSunday, urgent: nextR ? sameDay(bestDay, nextR.checkIn) : false, hasCheckout, hasCheckin };
 }
 
+// ════════════════════════════════════════════════════════════════════
+// FIX 5: syncCleaningPlan
+//   - Passo 3 simplificado: agora limpa entradas de hoje/futuro
+//     que já não existem no calendário ICS, sem exigir que o
+//     checkout também seja >= hoje. Isto remove entradas fantasma.
+//   - Só grava na cloud se o histórico carregou com sucesso
+//     (evita apagar previsões passadas por erro de rede).
+// ════════════════════════════════════════════════════════════════════
 function syncCleaningPlan() {
     try {
         let today = new Date();
@@ -813,7 +879,7 @@ function syncCleaningPlan() {
         }
         const plan = cloudHistory["_plan"];
 
-        // 1. Calcula as limpezas ativas
+        // 1. Calcula as limpezas ativas a partir dos calendários ICS
         const activeCleanings = {};
         globalReservations.forEach(res => {
             const info = getCleaningInfo(res, globalReservations);
@@ -842,11 +908,11 @@ function syncCleaningPlan() {
                 plan[key] = active;
                 hasChanges = true;
             } else {
-                // Se a limpeza já passou ou é hoje, travamos e não mexemos
+                // Se a limpeza já passou, travamos e não mexemos (preservar histórico)
                 const cleanDate = new Date(existing.cleaningIso);
                 cleanDate.setHours(0,0,0,0);
                 if (cleanDate >= today) {
-                    // Atualiza caso haja alterações (ex: nova reserva adiante mudou o dia ideal do futuro)
+                    // Atualiza caso haja alterações
                     if (existing.cleaningKey !== active.cleaningKey ||
                         existing.sunday !== active.sunday ||
                         existing.urgent !== active.urgent ||
@@ -860,18 +926,15 @@ function syncCleaningPlan() {
             }
         });
 
-        // 3. Remove cancelamentos do plano futuro
+        // 3. Remove entradas de hoje/futuro que já não existem nos calendários
+        //    (reservas canceladas, bloqueios removidos, dados fantasma)
+        //    Entradas passadas ficam sempre — são o histórico.
         Object.keys(plan).forEach(key => {
             const existing = plan[key];
             const cleanDate = new Date(existing.cleaningIso);
             cleanDate.setHours(0,0,0,0);
 
-            const checkoutParts = existing.checkoutKey.split("-");
-            const checkoutDate = new Date(Number(checkoutParts[0]), Number(checkoutParts[1])-1, Number(checkoutParts[2]));
-            checkoutDate.setHours(0,0,0,0);
-
-            // Só limpamos cancelamentos futuros. Limpezas passadas NUNCA desaparecem do histórico por causa de feeds
-            if (cleanDate >= today && checkoutDate >= today) {
+            if (cleanDate >= today) {
                 if (!activeCleanings[key]) {
                     delete plan[key];
                     hasChanges = true;
@@ -901,7 +964,8 @@ function syncCleaningPlan() {
             hasChanges = true;
         }
 
-        if (hasChanges) {
+        // ── Só grava se o histórico carregou corretamente ──
+        if (hasChanges && historyLoadedOk) {
             saveToCloudHistory(cloudHistory);
         }
     } catch(err) {
