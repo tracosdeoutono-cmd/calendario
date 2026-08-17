@@ -921,6 +921,21 @@ function formatDateKey(date) {
     return date.getFullYear() + "-" + (date.getMonth() + 1).toString().padStart(2, '0') + "-" + date.getDate().toString().padStart(2, '0');
 }
 
+// Tarefas de lixo e reciclagem automáticas por dia da semana
+function getGarbageTasks(date) {
+    const dayOfWeek = date.getDay(); // 0 = Domingo, 1 = Segunda, 2 = Terça, 3 = Quarta, 4 = Quinta, 5 = Sexta, 6 = Sábado
+    const tasks = [];
+    if (dayOfWeek === 1) { // Segundas-feiras
+        tasks.push({ pt: "♻️ Colocar lixo reciclável (Impasse)", es: "♻️ Sacar basura reciclable (Impasse)" });
+        tasks.push({ pt: "🗑️ Colocar lixo (Impasse)", es: "🗑️ Sacar basura (Impasse)" });
+    } else if (dayOfWeek === 3) { // Quartas-feiras
+        tasks.push({ pt: "♻️ Colocar lixo reciclável (Achada)", es: "♻️ Sacar basura reciclable (Achada)" });
+    } else if (dayOfWeek === 4) { // Quintas-feiras
+        tasks.push({ pt: "🗑️ Colocar lixo (Impasse)", es: "🗑️ Sacar basura (Impasse)" });
+    }
+    return tasks;
+}
+
 // Algoritmo de determinação da data ideal de limpeza
 function getCleaningInfo(reservation, allReservations) {
     const checkout = reservation.checkOut;
@@ -1212,6 +1227,16 @@ function showCleaningPlan() {
                 }
             });
         }
+
+        // Garante que os próximos 7 dias com tarefas de lixo aparecem mesmo se não houver quartos para limpar
+        for (let i = 0; i <= 7; i++) {
+            const d = addDays(today, i);
+            const gTasks = getGarbageTasks(d);
+            if (gTasks.length > 0) {
+                const dk = formatDateKey(d);
+                if (!grouped[dk]) grouped[dk] = { date: d, rooms: [] };
+            }
+        }
     }
 
     let sortedKeys=Object.keys(grouped).sort(); if (showHistoryMode) sortedKeys.reverse();
@@ -1227,43 +1252,62 @@ function showCleaningPlan() {
         let dPt=title.replace("🔴 ",""); dPt=dPt.charAt(0).toUpperCase()+dPt.slice(1); let cPt=[`🧹 Limpezas - ${dPt}:`];
         let dEs=day.date.toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long",year:"numeric"}); dEs=dEs.charAt(0).toUpperCase()+dEs.slice(1); let cEs=[`🧹 Limpiezas - ${dEs}:`];
         let rh="";
-        day.rooms.sort((a,b)=>a.room.localeCompare(b.room)).forEach(clean => {
-            let hCo = clean.hasCheckout;
-            let hCi = clean.hasCheckin;
 
-            let tPt="",tEs="",tH="";
-            if (showHistoryMode) {
-                if (clean.urgent) {
-                    tPt=" (entrada no mesmo dia)";
-                    tEs=" (entrada en el mismo día)";
-                    tH=" <b>(entrada no mesmo dia)</b>";
-                }
-            } else {
-                if (hCo === undefined || hCi === undefined) {
-                    hCo = globalReservations.some(r=>r.room===clean.room&&sameDay(r.checkOut,day.date));
-                    hCi = clean.urgent||globalReservations.some(r=>r.room===clean.room&&sameDay(r.checkIn,day.date));
-                }
+        // 1. Tarefas de Lixo / Reciclagem do dia (Segundas, Quartas, Quintas)
+        if (!showHistoryMode) {
+            const gTasks = getGarbageTasks(day.date);
+            gTasks.forEach(gt => {
+                cPt.push(gt.pt);
+                cEs.push(gt.es);
+                rh += `<div style="margin-bottom: 4px; font-size: 15px;"><b>${gt.pt}</b></div>`;
+            });
+        }
 
-                if (hCo && hCi) {
-                    tPt=" (sai e entra)";
-                    tEs=" (sale y entra)";
-                    tH=" <b>(sai e entra)</b>";
-                } else if (hCo) {
-                    tPt=" (sai hoje)";
-                    tEs=" (sale hoy)";
-                    tH=" <b>(sai hoje)</b>";
-                } else if (hCi) {
-                    tPt=" (entrada hoje)";
-                    tEs=" (entrada hoy)";
-                    tH=" <b>(entrada hoje)</b>";
-                }
+        // 2. Quartos a limpar
+        if (day.rooms.length === 0) {
+            if (!showHistoryMode) {
+                rh += `<div style="color: #888; font-style: italic; font-size: 14px; margin-top: 4px;">Sem quartos para limpar neste dia.</div>`;
             }
+        } else {
+            day.rooms.sort((a,b)=>a.room.localeCompare(b.room)).forEach(clean => {
+                let hCo = clean.hasCheckout;
+                let hCi = clean.hasCheckin;
 
-            const em = (clean.urgent || (hCi && !showHistoryMode)) ? "⚠️" : "🧹";
-            cPt.push(`${em} ${clean.room}${tPt}`);
-            cEs.push(`${em} ${clean.room}${tEs}`);
-            rh += `${em} ${clean.room}${tH}<br>`;
-        });
+                let tPt="",tEs="",tH="";
+                if (showHistoryMode) {
+                    if (clean.urgent) {
+                        tPt=" (entrada no mesmo dia)";
+                        tEs=" (entrada en el mismo día)";
+                        tH=" <b>(entrada no mesmo dia)</b>";
+                    }
+                } else {
+                    if (hCo === undefined || hCi === undefined) {
+                        hCo = globalReservations.some(r=>r.room===clean.room&&sameDay(r.checkOut,day.date));
+                        hCi = clean.urgent||globalReservations.some(r=>r.room===clean.room&&sameDay(r.checkIn,day.date));
+                    }
+
+                    if (hCo && hCi) {
+                        tPt=" (sai e entra)";
+                        tEs=" (sale y entra)";
+                        tH=" <b>(sai e entra)</b>";
+                    } else if (hCo) {
+                        tPt=" (sai hoje)";
+                        tEs=" (sale hoy)";
+                        tH=" <b>(sai hoje)</b>";
+                    } else if (hCi) {
+                        tPt=" (entrada hoje)";
+                        tEs=" (entrada hoy)";
+                        tH=" <b>(entrada hoje)</b>";
+                    }
+                }
+
+                const em = (clean.urgent || (hCi && !showHistoryMode)) ? "⚠️" : "🧹";
+                cPt.push(`${em} ${clean.room}${tPt}`);
+                cEs.push(`${em} ${clean.room}${tEs}`);
+                rh += `${em} ${clean.room}${tH}<br>`;
+            });
+        }
+
         const ePt=encodeURIComponent(cPt.join("\n")), eEs=encodeURIComponent(cEs.join("\n"));
         html+=`<div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
             <h2 style="margin: 0;">${title}</h2>
@@ -1361,3 +1405,4 @@ function showOccupancyPlan() {
 }
 
 loadCalendars();
+,Description:Adição de tarefas de lixo e reciclagem nas datas adequadas com cópia em PT e ES,Overwrite:true,TargetFile:C:\Users\marti\.gemini\antigravity\brain\ee0e0f60-8a30-4131-803a-09dda52c5e37\scratch\al-app-clean.js,toolAction:Finalizing script with garbage tasks,toolSummary:Garbage schedule integration}
