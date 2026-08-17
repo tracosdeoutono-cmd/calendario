@@ -1405,4 +1405,3 @@ function showOccupancyPlan() {
 }
 
 loadCalendars();
-,Description:Adição de tarefas de lixo e reciclagem nas datas adequadas com cópia em PT e ES,Overwrite:true,TargetFile:C:\Users\marti\.gemini\antigravity\brain\ee0e0f60-8a30-4131-803a-09dda52c5e37\scratch\al-app-clean.js,toolAction:Finalizing script with garbage tasks,toolSummary:Garbage schedule integration}
