@@ -1,4 +1,4 @@
-// Injeta os temas visuais na pÃ¡gina (versÃ£o V2 â€“ 9 temas)
+// Injeta os temas visuais na página (versão V2 – 9 temas)
 (function injectAllThemes() {
     if (document.getElementById("al-app-allthemes")) return;
 
@@ -36,9 +36,9 @@
             transition: opacity 0.6s ease;
         }
 
-        /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+        /* ══════════════════════════════════════════ */
         /* THEME POPUP & CIRCLE BUTTONS               */
-        /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+        /* ══════════════════════════════════════════ */
         .theme-popup-wrapper {
             position: relative;
         }
@@ -103,9 +103,9 @@
             transform: scale(0.95);
         }
 
-        /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-        /* 1. BRANCO CLÃSSICO                          */
-        /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+        /* ══════════════════════════════════════════ */
+        /* 1. BRANCO CLÁSSICO                          */
+        /* ══════════════════════════════════════════ */
         body[data-theme="white"], body:not([data-theme]) {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: #ffffff;
@@ -114,9 +114,9 @@
         body[data-theme="white"] #al-theme-overlay,
         body:not([data-theme]) #al-theme-overlay { opacity: 0; }
 
-        /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+        /* ══════════════════════════════════════════ */
         /* 2. OUTONO LUXURY                            */
-        /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+        /* ══════════════════════════════════════════ */
         body[data-theme="outono"] {
             font-family: 'Outfit', sans-serif;
             background-color: #12100e;
@@ -137,9 +137,9 @@
         body[data-theme="outono"] h2, body[data-theme="outono"] h3 { color: #fff !important; }
         body[data-theme="outono"] #al-theme-overlay { opacity: 0; }
 
-        /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+        /* ══════════════════════════════════════════ */
         /* 3. RETRO TERMINAL                           */
-        /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+        /* ══════════════════════════════════════════ */
         body[data-theme="cyber"] {
             font-family: 'VT323', monospace;
             background-color: #000000;
@@ -166,9 +166,9 @@
         body[data-theme="cyber"] p, body[data-theme="cyber"] div, body[data-theme="cyber"] span { text-shadow: 0 0 4px rgba(0,255,65,0.15); }
         body[data-theme="cyber"] #al-theme-overlay { opacity: 0; }
 
-        /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+        /* ══════════════════════════════════════════ */
         /* 4. CADERNO                                  */
-        /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+        /* ══════════════════════════════════════════ */
         body[data-theme="cappuccino"] {
             font-family: 'Caveat', cursive;
             font-size: 18px;
@@ -192,9 +192,9 @@
         body[data-theme="cappuccino"] hr { border: none !important; border-bottom: 2px dashed #d4b896 !important; }
         body[data-theme="cappuccino"] #al-theme-overlay { opacity: 0; }
 
-        /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+        /* ══════════════════════════════════════════ */
         /* 5. CARNAVAL                                 */
-        /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+        /* ══════════════════════════════════════════ */
         body[data-theme="carnival"] {
             font-family: 'Fredoka', sans-serif;
             background-color: #fffdf0;
@@ -230,9 +230,9 @@
         body[data-theme="carnival"] hr { border: none !important; height: 4px !important; background: repeating-linear-gradient(90deg, #ff0050, #ff0050 10px, #0066ff 10px, #0066ff 20px, #ffcc00 20px, #ffcc00 30px) !important; border-radius: 2px !important; }
         body[data-theme="carnival"] #al-theme-overlay { opacity: 0; }
 
-        /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+        /* ══════════════════════════════════════════ */
         /* 6. SAKURA                                   */
-        /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+        /* ══════════════════════════════════════════ */
         body[data-theme="sakura"] {
             font-family: 'Quicksand', sans-serif;
             font-weight: 400;
@@ -266,16 +266,16 @@
         body[data-theme="sakura"] hr { border: none !important; height: 1px !important; background: linear-gradient(90deg, transparent, #f9a8d4, transparent) !important; }
         body[data-theme="sakura"] #al-theme-overlay { opacity: 0; }
 
-        /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-        /* 7. AQUARELA (PINTURA ARTÃSTICA VIBRANTE)          */
-        /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+        /* ══════════════════════════════════════════════════ */
+        /* 7. AQUARELA (PINTURA ARTÍSTICA VIBRANTE)          */
+        /* ══════════════════════════════════════════════════ */
         body[data-theme="aquarela"] {
             font-family: 'Kalam', cursive, sans-serif;
             font-size: 17px;
             background-color: #fcf8f2;
             color: #242436;
             background-image:
-                /* Manchas de pigmento vivo (azul cobalto, carmim, aÃ§afrÃ£o, esmeralda, violeta) */
+                /* Manchas de pigmento vivo (azul cobalto, carmim, açafrão, esmeralda, violeta) */
                 radial-gradient(ellipse 480px 320px at 8% 12%, rgba(2, 132, 199, 0.22) 0%, rgba(2, 132, 199, 0.08) 60%, transparent 100%),
                 radial-gradient(ellipse 420px 290px at 88% 10%, rgba(245, 158, 11, 0.22) 0%, rgba(245, 158, 11, 0.06) 60%, transparent 100%),
                 radial-gradient(ellipse 400px 300px at 92% 80%, rgba(225, 29, 72, 0.18) 0%, rgba(225, 29, 72, 0.05) 60%, transparent 100%),
@@ -421,9 +421,9 @@
 
         body[data-theme="aquarela"] #al-theme-overlay { opacity: 0; }
 
-        /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+        /* ══════════════════════════════════════════════════ */
         /* 8. JORNAL                                         */
-        /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+        /* ══════════════════════════════════════════════════ */
         body[data-theme="jornal"] {
             font-family: 'Playfair Display', serif;
             background-color: #f0ebe2;
@@ -490,7 +490,7 @@
         }
         body[data-theme="jornal"] #al-theme-overlay { opacity: 0; }
         body[data-theme="jornal"]::before {
-            content: "âœ¦ EDIÃ‡ÃƒO DIÃRIA âœ¦";
+            content: "✦ EDIÇÃO DIÁRIA ✦";
             display: block;
             text-align: center;
             font-family: 'Playfair Display', serif;
@@ -504,9 +504,9 @@
             margin: -10px 0 14px 0;
         }
 
-        /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+        /* ══════════════════════════════════════════════════ */
         /* 9. QUADRO NEGRO                                   */
-        /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+        /* ══════════════════════════════════════════════════ */
         body[data-theme="quadro"] {
             font-family: 'Patrick Hand', cursive;
             font-size: 18px;
@@ -576,7 +576,7 @@
         }
         body[data-theme="quadro"] #al-theme-overlay { opacity: 0; }
         body[data-theme="quadro"]::after {
-            content: "â–¬â–¬";
+            content: "▬▬";
             position: fixed;
             bottom: 12px;
             right: 16px;
@@ -587,18 +587,18 @@
             z-index: 0;
         }
 
-        /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-        /* ANIMAÃ‡Ã•ES                                   */
-        /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+        /* ══════════════════════════════════════════ */
+        /* ANIMAÇÕES                                   */
+        /* ══════════════════════════════════════════ */
         @keyframes pulse {
             0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(244,63,94,0.7); }
             70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(244,63,94,0); }
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(244,63,94,0); }
         }
 
-        /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-        /* AJUSTES ESCUROS PARA POPUP + BOTÃ•ES        */
-        /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+        /* ══════════════════════════════════════════ */
+        /* AJUSTES ESCUROS PARA POPUP + BOTÕES        */
+        /* ══════════════════════════════════════════ */
         body[data-theme="outono"] .theme-popup,
         body[data-theme="cyber"] .theme-popup,
         body[data-theme="quadro"] .theme-popup {
@@ -628,9 +628,9 @@
             border-color: rgba(255,255,255,0.2) !important;
         }
 
-        /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+        /* ══════════════════════════════════════════ */
         /* COMPONENTES EXCLUSIVOS DO TEMA OUTONO      */
-        /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+        /* ══════════════════════════════════════════ */
         .pulse-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; animation: pulse 1.6s infinite; }
         .pulse-red { background-color: #f43f5e; box-shadow: 0 0 0 0 rgba(244,63,94,0.7); }
         .pulse-green { background-color: #10b981; box-shadow: 0 0 0 0 rgba(16,185,129,0.7); }
@@ -665,21 +665,21 @@ const calendars = [
 ];
 
 const THEME_LIST = [
-    { key: 'white',      label: 'Original',     emoji: 'â¬œ' },
-    { key: 'outono',     label: 'Outono',        emoji: 'ðŸ‚' },
-    { key: 'cyber',      label: 'Terminal',      emoji: 'ðŸ–¥ï¸' },
-    { key: 'cappuccino', label: 'Caderno',       emoji: 'ðŸ““' },
-    { key: 'carnival',   label: 'Carnaval',      emoji: 'ðŸŽª' },
-    { key: 'sakura',     label: 'Sakura',        emoji: 'ðŸŒ¸' },
-    { key: 'aquarela',   label: 'Aquarela',      emoji: 'ðŸŽ¨' },
-    { key: 'jornal',     label: 'Jornal',        emoji: 'ðŸ“°' },
-    { key: 'quadro',     label: 'Quadro Negro',  emoji: 'ðŸ–ï¸' },
+    { key: 'white',      label: 'Original',     emoji: '⬜' },
+    { key: 'outono',     label: 'Outono',        emoji: '🍂' },
+    { key: 'cyber',      label: 'Terminal',      emoji: '🖥️' },
+    { key: 'cappuccino', label: 'Caderno',       emoji: '📓' },
+    { key: 'carnival',   label: 'Carnaval',      emoji: '🎪' },
+    { key: 'sakura',     label: 'Sakura',        emoji: '🌸' },
+    { key: 'aquarela',   label: 'Aquarela',      emoji: '🎨' },
+    { key: 'jornal',     label: 'Jornal',        emoji: '📰' },
+    { key: 'quadro',     label: 'Quadro Negro',  emoji: '🖍️' },
 ];
 const VALID_THEME_KEYS = THEME_LIST.map(t => t.key);
 
 function getThemeEmoji(key) {
     const t = THEME_LIST.find(x => x.key === key);
-    return t ? t.emoji : 'â¬œ';
+    return t ? t.emoji : '⬜';
 }
 
 const result = document.getElementById("result");
@@ -692,7 +692,7 @@ let showOccupancyStats = false;
 let showPastStatsMode = false;
 let selectedSnapshotDate = null;
 
-// ProteÃ§Ã£o para nunca gravar na cloud se o histÃ³rico nÃ£o carregou
+// Proteção para nunca gravar na cloud se o histórico não carregou
 let historyLoadedOk = false;
 
 // TEMA INICIAL
@@ -749,7 +749,7 @@ function renderNavigation() {
                 <button onclick="window.toggleThemePopup(event)" class="clock-btn" title="Mudar Estilo">${themeEmoji}</button>
                 ${buildThemePopupHTML()}
             </div>
-            <button onclick="window.toggleSnapshots()" class="clock-btn ${isSnapshots?'active':''}" title="${isSnapshots?'Voltar ao InÃ­cio':'Ver PrevisÃµes'}" style="${isSnapshots?'background-color:#e2e6ea;':''}">ðŸ•’</button>
+            <button onclick="window.toggleSnapshots()" class="clock-btn ${isSnapshots?'active':''}" title="${isSnapshots?'Voltar ao Início':'Ver Previsões'}" style="${isSnapshots?'background-color:#e2e6ea;':''}">🕒</button>
         </div>
     `;
 
@@ -759,24 +759,24 @@ function renderNavigation() {
         html += `
             <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px; padding-right: 60px;">
                 <div style="min-width: 0;">
-                    <h1 style="font-size: 26px; font-weight: 800; background: linear-gradient(135deg, #fff8f0 30%, #f59e0b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0;">ðŸ‚ TraÃ§os de Outono</h1>
-                    <div style="font-size: 13px; color: #a3998e; font-weight: 500;">GestÃ£o de Alojamento Local</div>
+                    <h1 style="font-size: 26px; font-weight: 800; background: linear-gradient(135deg, #fff8f0 30%, #f59e0b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0;">🍂 Traços de Outono</h1>
+                    <div style="font-size: 13px; color: #a3998e; font-weight: 500;">Gestão de Alojamento Local</div>
                 </div>
             </div>
             <div style="margin-bottom: 24px;">
                 <div style="display: inline-flex; background: rgba(255,255,255,0.04); padding: 5px; border-radius: 16px; border: 1px solid rgba(245,158,11,0.2); gap: 4px;">
-                    <button onclick="window.switchMainView('cleaning')" class="segment-btn ${isCleaning?'active-cleaning':''}">ðŸ§¹ Limpezas</button>
-                    <button onclick="window.switchMainView('occupancy')" class="segment-btn ${isOccupancy?'active-occupancy':''}">ðŸ“Š Disponibilidade</button>
+                    <button onclick="window.switchMainView('cleaning')" class="segment-btn ${isCleaning?'active-cleaning':''}">🧹 Limpezas</button>
+                    <button onclick="window.switchMainView('occupancy')" class="segment-btn ${isOccupancy?'active-occupancy':''}">📊 Disponibilidade</button>
                 </div>
             </div>`;
     } else {
         html += `
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-right: 60px;">
-                <h1 style="margin: 0; flex: 1; min-width: 0;">TraÃ§os de Outono</h1>
+                <h1 style="margin: 0; flex: 1; min-width: 0;">Traços de Outono</h1>
             </div>
             <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-                <button onclick="window.switchMainView('cleaning')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #007bff; background-color: ${isCleaning?'#007bff':'#ffffff'}; color: ${isCleaning?'#ffffff':'#007bff'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">ðŸ§¹ Plano de Limpezas</button>
-                <button onclick="window.switchMainView('occupancy')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #28a745; background-color: ${isOccupancy?'#28a745':'#ffffff'}; color: ${isOccupancy?'#ffffff':'#28a745'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">ðŸ“Š Disponibilidade da Casa</button>
+                <button onclick="window.switchMainView('cleaning')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #007bff; background-color: ${isCleaning?'#007bff':'#ffffff'}; color: ${isCleaning?'#ffffff':'#007bff'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">🧹 Plano de Limpezas</button>
+                <button onclick="window.switchMainView('occupancy')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #28a745; background-color: ${isOccupancy?'#28a745':'#ffffff'}; color: ${isOccupancy?'#ffffff':'#28a745'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">📊 Disponibilidade da Casa</button>
             </div>`;
     }
 
@@ -813,7 +813,7 @@ window.copyFromData = function(btnElement, encodedText) {
     const text = decodeURIComponent(encodedText);
     navigator.clipboard.writeText(text).then(() => {
         const originalText = btnElement.innerText;
-        btnElement.innerText = "Copiado! âœ…";
+        btnElement.innerText = "Copiado! ✅";
         setTimeout(() => { btnElement.innerText = originalText; }, 1500);
     }).catch(err => { console.error("Erro ao copiar:", err); });
 };
@@ -834,7 +834,7 @@ async function fetchCloudHistory() {
         historyLoadedOk = true;
     }
     catch (e) {
-        console.warn("Aviso: HistÃ³rico nÃ£o carregou.", e);
+        console.warn("Aviso: Histórico não carregou.", e);
         cloudHistory = {};
         historyLoadedOk = false;
     }
@@ -848,12 +848,12 @@ async function saveToCloudHistory(newEntries) {
             body: JSON.stringify(newEntries)
         }, 8000);
     } catch (e) {
-        console.error("Erro ao guardar histÃ³rico:", e);
+        console.error("Erro ao guardar histórico:", e);
     }
 }
 
 async function loadCalendars() {
-    result.innerHTML = "<p style='font-size: 18px; font-weight: bold; color: #007bff;'>â³ A ligar Ã  Cloud e a carregar calendÃ¡rios (aguarda)...</p>";
+    result.innerHTML = "<p style='font-size: 18px; font-weight: bold; color: #007bff;'>⏳ A ligar à Cloud e a carregar calendários (aguarda)...</p>";
 
     try {
         const historyPromise = fetchCloudHistory();
@@ -865,7 +865,7 @@ async function loadCalendars() {
                 const text = await response.text();
                 return parseICS(text, calendar.name);
             } catch (e) {
-                console.warn("Erro ou atraso extremo ao carregar " + calendar.name + ". A ignorar este calendÃ¡rio por agora.");
+                console.warn("Erro ou atraso extremo ao carregar " + calendar.name + ". A ignorar este calendário por agora.");
                 return [];
             }
         });
@@ -882,7 +882,7 @@ function parseDate(d) {
     return new Date(Number(d.substring(0,4)), Number(d.substring(4,6))-1, Number(d.substring(6,8)));
 }
 
-// Converte chaves "YYYY-MM-DD" em Date seguro sem desfasamento de fuso horÃ¡rio UTC
+// Converte chaves "YYYY-MM-DD" em Date seguro sem desfasamento de fuso horário UTC
 function parseDateKey(key) {
     if (!key || typeof key !== 'string') return new Date();
     const parts = key.split("-");
@@ -921,26 +921,26 @@ function formatDateKey(date) {
     return date.getFullYear() + "-" + (date.getMonth() + 1).toString().padStart(2, '0') + "-" + date.getDate().toString().padStart(2, '0');
 }
 
-// Tarefas de lixo e reciclagem automÃ¡ticas por dia da semana
+// Tarefas de lixo e reciclagem automáticas por dia da semana
 function getGarbageTasks(date) {
-    const dayOfWeek = date.getDay(); // 0 = Domingo, 1 = Segunda, 2 = TerÃ§a, 3 = Quarta, 4 = Quinta, 5 = Sexta, 6 = SÃ¡bado
+    const dayOfWeek = date.getDay(); // 0 = Domingo, 1 = Segunda, 2 = Terça, 3 = Quarta, 4 = Quinta, 5 = Sexta, 6 = Sábado
     const tasks = [];
     if (dayOfWeek === 1) { // Segundas-feiras
-        tasks.push({ pt: "â™»ï¸ Colocar lixo reciclÃ¡vel (Impasse)", es: "â™»ï¸ Sacar basura reciclable (Impasse)" });
-        tasks.push({ pt: "ðŸ—‘ï¸ Colocar lixo (Impasse)", es: "ðŸ—‘ï¸ Sacar basura (Impasse)" });
+        tasks.push({ pt: "♻️ Colocar lixo reciclável (Impasse)", es: "♻️ Sacar basura reciclable (Impasse)" });
+        tasks.push({ pt: "🗑️ Colocar lixo (Impasse)", es: "🗑️ Sacar basura (Impasse)" });
     } else if (dayOfWeek === 3) { // Quartas-feiras
-        tasks.push({ pt: "â™»ï¸ Colocar lixo reciclÃ¡vel (Achada)", es: "â™»ï¸ Sacar basura reciclable (Achada)" });
+        tasks.push({ pt: "♻️ Colocar lixo reciclável (Achada)", es: "♻️ Sacar basura reciclable (Achada)" });
     } else if (dayOfWeek === 4) { // Quintas-feiras
-        tasks.push({ pt: "ðŸ—‘ï¸ Colocar lixo (Impasse)", es: "ðŸ—‘ï¸ Sacar basura (Impasse)" });
+        tasks.push({ pt: "🗑️ Colocar lixo (Impasse)", es: "🗑️ Sacar basura (Impasse)" });
     }
     return tasks;
 }
 
-// Algoritmo de determinaÃ§Ã£o da data ideal de limpeza
+// Algoritmo de determinação da data ideal de limpeza
 function getCleaningInfo(reservation, allReservations) {
     const checkout = reservation.checkOut;
 
-    // PrÃ³xima reserva no mesmo quarto
+    // Próxima reserva no mesmo quarto
     const nextR = allReservations
         .filter(r => r.room === reservation.room && r.checkIn >= checkout && r !== reservation)
         .sort((a, b) => a.checkIn - b.checkIn)[0];
@@ -949,16 +949,16 @@ function getCleaningInfo(reservation, allReservations) {
     let bestDay = checkout;
     let isForcedSunday = false;
 
-    // Regra: Domingo sÃ³ Ã© dia de limpeza se houver saÃ­da E entrada no mesmo dia
+    // Regra: Domingo só é dia de limpeza se houver saída E entrada no mesmo dia
     if (isSunday(checkout) && sameDayTurnaround) {
         bestDay = checkout;
         isForcedSunday = true;
     } else {
-        // Se a saÃ­da foi ao domingo, a limpeza passa para segunda-feira
+        // Se a saída foi ao domingo, a limpeza passa para segunda-feira
         let startDay = isSunday(checkout) ? addDays(checkout, 1) : checkout;
         let endDay = startDay;
 
-        // Se houver uma entrada prÃ³xima (atÃ© 2 dias), pode agrupar atÃ© ao dia da entrada
+        // Se houver uma entrada próxima (até 2 dias), pode agrupar até ao dia da entrada
         if (nextR && getDaysBetween(checkout, nextR.checkIn) <= 2) {
             endDay = nextR.checkIn;
         }
@@ -967,7 +967,7 @@ function getCleaningInfo(reservation, allReservations) {
         bestDay = startDay;
 
         for (let d = new Date(startDay); d <= endDay; d = addDays(d, 1)) {
-            if (isSunday(d)) continue; // Domingos nunca sÃ£o escolhidos
+            if (isSunday(d)) continue; // Domingos nunca são escolhidos
             let score = 0;
             allReservations.forEach(r => {
                 if (sameDay(r.checkOut, d)) {
@@ -1067,7 +1067,7 @@ function syncCleaningPlan() {
             }
         });
 
-        // 4. Cria o snapshot diÃ¡rio da previsÃ£o de 6 dias
+        // 4. Cria o snapshot diário da previsão de 6 dias
         if (!cloudHistory["_snapshots"] || typeof cloudHistory["_snapshots"] !== 'object') {
             cloudHistory["_snapshots"] = {};
             hasChanges = true;
@@ -1089,38 +1089,38 @@ function syncCleaningPlan() {
             hasChanges = true;
         }
 
-        // Grava na cloud apenas se o histÃ³rico foi carregado corretamente
+        // Grava na cloud apenas se o histórico foi carregado corretamente
         if (hasChanges && historyLoadedOk) {
             saveToCloudHistory(cloudHistory);
         }
     } catch(err) {
-        console.error("Erro na sincronizaÃ§Ã£o:", err);
+        console.error("Erro na sincronização:", err);
     }
 }
 
 function showSnapshotsPlan() {
-    let html=renderNavigation(); html+=`<h1>ðŸ•’ PrevisÃµes Passadas</h1>`;
+    let html=renderNavigation(); html+=`<h1>🕒 Previsões Passadas</h1>`;
     const snapshots=cloudHistory["_snapshots"]||{}; const snapshotKeys=Object.keys(snapshots).sort().reverse();
-    if (snapshotKeys.length===0) { html+=`<p>Ainda nÃ£o hÃ¡ previsÃµes guardadas. A primeira foi gerada agora!</p>`; result.innerHTML=html; return; }
+    if (snapshotKeys.length===0) { html+=`<p>Ainda não há previsões guardadas. A primeira foi gerada agora!</p>`; result.innerHTML=html; return; }
     if (!selectedSnapshotDate) {
         html+=`<p style="color: #555;">Escolhe um dia para ver o plano que estava previsto nesse momento:</p><div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px;">`;
         snapshotKeys.forEach(key => {
             const d = parseDateKey(key);
-            html+=`<button onclick="window.selectSnapshot('${key}')" style="padding: 10px 15px; font-size: 14px; cursor: pointer; border-radius: 6px; border: 1px solid #17a2b8; background-color: #f8f9fa; color: #17a2b8; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">ðŸ“… ${d.toLocaleDateString("pt-PT",{day:"numeric",month:"long",year:"numeric"})}</button>`;
+            html+=`<button onclick="window.selectSnapshot('${key}')" style="padding: 10px 15px; font-size: 14px; cursor: pointer; border-radius: 6px; border: 1px solid #17a2b8; background-color: #f8f9fa; color: #17a2b8; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">📅 ${d.toLocaleDateString("pt-PT",{day:"numeric",month:"long",year:"numeric"})}</button>`;
         });
         html+=`</div>`;
     } else {
         const d = parseDateKey(selectedSnapshotDate);
         const label = d.toLocaleDateString("pt-PT",{day:"numeric",month:"long",year:"numeric"});
-        html+=`<div style="margin-bottom: 20px;"><button onclick="window.selectSnapshot(null)" style="padding: 8px 14px; font-size: 14px; cursor: pointer; border-radius: 6px; border: 1px solid #6c757d; background-color: #6c757d; color: white; font-weight: bold;">ðŸ”™ Voltar</button></div>`;
+        html+=`<div style="margin-bottom: 20px;"><button onclick="window.selectSnapshot(null)" style="padding: 8px 14px; font-size: 14px; cursor: pointer; border-radius: 6px; border: 1px solid #6c757d; background-color: #6c757d; color: white; font-weight: bold;">🔙 Voltar</button></div>`;
         html+=`<h2 style="color: #007bff; border-bottom: 2px solid #eee; padding-bottom: 8px;">Plano do dia: <span style="color: #333;">${label}</span></h2>`;
         const plan=snapshots[selectedSnapshotDate]; const planKeys=Object.keys(plan).sort();
         if (planKeys.length===0) html+=`<p>Sem limpezas planeadas.</p>`;
         planKeys.forEach(key => {
             const day=plan[key]; const dDay=parseDateKey(key);
             let title=dDay.toLocaleDateString("pt-PT",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
-            if (day.rooms.some(r=>r.sunday)) title="ðŸ”´ "+title;
-            let rh=""; day.rooms.sort((a,b)=>a.room.localeCompare(b.room)).forEach(c => { rh+=`${c.urgent?"âš ï¸":"ðŸ§¹"} ${c.room}${c.urgent?" <b>(entrada no mesmo dia)</b>":""}<br>`; });
+            if (day.rooms.some(r=>r.sunday)) title="🔴 "+title;
+            let rh=""; day.rooms.sort((a,b)=>a.room.localeCompare(b.room)).forEach(c => { rh+=`${c.urgent?"⚠️":"🧹"} ${c.room}${c.urgent?" <b>(entrada no mesmo dia)</b>":""}<br>`; });
             html+=`<div style="margin-top: 15px; margin-bottom: 15px;"><h3 style="margin: 0 0 8px 0; color: #333; font-size: 18px;">${title}</h3><div style="font-size: 15px;">${rh}</div></div><hr style="border: 0; border-top: 1px solid #eee;">`;
         });
     }
@@ -1133,7 +1133,7 @@ function showCleaningPlan() {
     const planKeys = Object.keys(plan);
 
     if (showHistoryMode) {
-        // 1. HistÃ³rico legado salvo diretamente nas chaves YYYY-MM-DD
+        // 1. Histórico legado salvo diretamente nas chaves YYYY-MM-DD
         Object.keys(cloudHistory).forEach(dk => {
             if (dk !== "_snapshots" && dk !== "_plan") {
                 const val = cloudHistory[dk];
@@ -1163,7 +1163,7 @@ function showCleaningPlan() {
             }
         });
 
-        // 2. HistÃ³rico salvo na estrutura _plan
+        // 2. Histórico salvo na estrutura _plan
         planKeys.forEach(key => {
             const entry = plan[key];
             if (!entry || !entry.cleaningKey) return;
@@ -1227,23 +1227,22 @@ function showCleaningPlan() {
                 }
             });
         }
-
     }
 
     let sortedKeys=Object.keys(grouped).sort(); if (showHistoryMode) sortedKeys.reverse();
     let html=renderNavigation();
-    html+=`<div style="margin-bottom: 25px;"><button onclick="window.toggleHistoryView()" style="padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px; border: 1px solid #6c757d; background-color: #6c757d; color: white; font-weight: bold;">${showHistoryMode?"ðŸ“… Ver PrÃ³ximas Limpezas":"ðŸ“œ Ver Dias Anteriores"}</button></div>`;
-    html+=`<h1>${showHistoryMode?"ðŸ“œ HistÃ³rico de Limpezas (Cloud)":"ðŸ§¹ Plano de Limpezas"}</h1>`;
-    if (sortedKeys.length===0) html+=`<p>NÃ£o hÃ¡ limpezas ${showHistoryMode?'anteriores no histÃ³rico':'agendadas'}.</p>`;
+    html+=`<div style="margin-bottom: 25px;"><button onclick="window.toggleHistoryView()" style="padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px; border: 1px solid #6c757d; background-color: #6c757d; color: white; font-weight: bold;">${showHistoryMode?"📅 Ver Próximas Limpezas":"📜 Ver Dias Anteriores"}</button></div>`;
+    html+=`<h1>${showHistoryMode?"📜 Histórico de Limpezas (Cloud)":"🧹 Plano de Limpezas"}</h1>`;
+    if (sortedKeys.length===0) html+=`<p>Não há limpezas ${showHistoryMode?'anteriores no histórico':'agendadas'}.</p>`;
 
     sortedKeys.forEach(key => {
         const day=grouped[key];
-        if (!day.rooms || day.rooms.length === 0) return; // SÃ³ mostra dias com limpezas
+        if (!day.rooms || day.rooms.length === 0) return; // Só mostra dias com limpezas
 
         let title=day.date.toLocaleDateString("pt-PT",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
-        if (day.rooms.some(r=>r.sunday)) title="ðŸ”´ "+title;
-        let dPt=title.replace("ðŸ”´ ",""); dPt=dPt.charAt(0).toUpperCase()+dPt.slice(1); let cPt=[`ðŸ§¹ Limpezas - ${dPt}:`];
-        let dEs=day.date.toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long",year:"numeric"}); dEs=dEs.charAt(0).toUpperCase()+dEs.slice(1); let cEs=[`ðŸ§¹ Limpiezas - ${dEs}:`];
+        if (day.rooms.some(r=>r.sunday)) title="🔴 "+title;
+        let dPt=title.replace("🔴 ",""); dPt=dPt.charAt(0).toUpperCase()+dPt.slice(1); let cPt=[`🧹 Limpezas - ${dPt}:`];
+        let dEs=day.date.toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long",year:"numeric"}); dEs=dEs.charAt(0).toUpperCase()+dEs.slice(1); let cEs=[`🧹 Limpiezas - ${dEs}:`];
         let rh="";
 
         // 1. Tarefas de Lixo / Reciclagem do dia (Segundas, Quartas, Quintas - apenas se houver limpezas)
@@ -1270,7 +1269,7 @@ function showCleaningPlan() {
                 if (showHistoryMode) {
                     if (clean.urgent) {
                         tPt=" (entrada no mesmo dia)";
-                        tEs=" (entrada en el mismo dÃ­a)";
+                        tEs=" (entrada en el mismo día)";
                         tH=" <b>(entrada no mesmo dia)</b>";
                     }
                 } else {
@@ -1294,7 +1293,7 @@ function showCleaningPlan() {
                     }
                 }
 
-                const em = (clean.urgent || (hCi && !showHistoryMode)) ? "âš ï¸" : "ðŸ§¹";
+                const em = (clean.urgent || (hCi && !showHistoryMode)) ? "⚠️" : "🧹";
                 cPt.push(`${em} ${clean.room}${tPt}`);
                 cEs.push(`${em} ${clean.room}${tEs}`);
                 rh += `${em} ${clean.room}${tH}<br>`;
@@ -1305,8 +1304,8 @@ function showCleaningPlan() {
         html+=`<div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
             <h2 style="margin: 0;">${title}</h2>
             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <button onclick="window.copyFromData(this,'${ePt}')" style="padding: 6px 12px; font-size: 13px; cursor: pointer; border-radius: 6px; border: 1px solid #28a745; background-color: #28a745; color: white; font-weight: bold;">ðŸ‡µðŸ‡¹ Copiar PT</button>
-                <button onclick="window.copyFromData(this,'${eEs}')" style="padding: 6px 12px; font-size: 13px; cursor: pointer; border-radius: 6px; border: 1px solid #17a2b8; background-color: #17a2b8; color: white; font-weight: bold;">ðŸ‡ªðŸ‡¸ Copiar ES</button>
+                <button onclick="window.copyFromData(this,'${ePt}')" style="padding: 6px 12px; font-size: 13px; cursor: pointer; border-radius: 6px; border: 1px solid #28a745; background-color: #28a745; color: white; font-weight: bold;">🇵🇹 Copiar PT</button>
+                <button onclick="window.copyFromData(this,'${eEs}')" style="padding: 6px 12px; font-size: 13px; cursor: pointer; border-radius: 6px; border: 1px solid #17a2b8; background-color: #17a2b8; color: white; font-weight: bold;">🇪🇸 Copiar ES</button>
             </div></div><div style="margin-top: 8px;">${rh}</div><hr>`;
     });
     result.innerHTML=html;
@@ -1347,29 +1346,29 @@ function showOccupancyPlan() {
     let html = renderNavigation();
     
     html += `<div style="margin-bottom: 25px; display: flex; gap: 6px; flex-wrap: nowrap; justify-content: space-between;">
-        <button onclick="window.selectHouse('achada')" style="flex: 1; padding: 10px 2px; font-size: 13px; cursor: pointer; border-radius: 6px; border: 2px solid #17a2b8; background-color: ${selectedHouse==='achada'?'#17a2b8':'#ffffff'}; color: ${selectedHouse==='achada'?'#ffffff':'#17a2b8'}; font-weight: bold; text-align: center; white-space: nowrap;">ðŸ¡ Achada</button>
-        <button onclick="window.selectHouse('impasse')" style="flex: 1; padding: 10px 2px; font-size: 13px; cursor: pointer; border-radius: 6px; border: 2px solid #17a2b8; background-color: ${selectedHouse==='impasse'?'#17a2b8':'#ffffff'}; color: ${selectedHouse==='impasse'?'#ffffff':'#17a2b8'}; font-weight: bold; text-align: center; white-space: nowrap;">ðŸ¡ Impasse</button>
-        <button onclick="window.selectHouse('vizinho')" style="flex: 1; padding: 10px 2px; font-size: 13px; cursor: pointer; border-radius: 6px; border: 2px solid #17a2b8; background-color: ${selectedHouse==='vizinho'?'#17a2b8':'#ffffff'}; color: ${selectedHouse==='vizinho'?'#ffffff':'#17a2b8'}; font-weight: bold; text-align: center; white-space: nowrap;">ðŸ¡ Vizinho</button>
+        <button onclick="window.selectHouse('achada')" style="flex: 1; padding: 10px 2px; font-size: 13px; cursor: pointer; border-radius: 6px; border: 2px solid #17a2b8; background-color: ${selectedHouse==='achada'?'#17a2b8':'#ffffff'}; color: ${selectedHouse==='achada'?'#ffffff':'#17a2b8'}; font-weight: bold; text-align: center; white-space: nowrap;">🏡 Achada</button>
+        <button onclick="window.selectHouse('impasse')" style="flex: 1; padding: 10px 2px; font-size: 13px; cursor: pointer; border-radius: 6px; border: 2px solid #17a2b8; background-color: ${selectedHouse==='impasse'?'#17a2b8':'#ffffff'}; color: ${selectedHouse==='impasse'?'#ffffff':'#17a2b8'}; font-weight: bold; text-align: center; white-space: nowrap;">🏡 Impasse</button>
+        <button onclick="window.selectHouse('vizinho')" style="flex: 1; padding: 10px 2px; font-size: 13px; cursor: pointer; border-radius: 6px; border: 2px solid #17a2b8; background-color: ${selectedHouse==='vizinho'?'#17a2b8':'#ffffff'}; color: ${selectedHouse==='vizinho'?'#ffffff':'#17a2b8'}; font-weight: bold; text-align: center; white-space: nowrap;">🏡 Vizinho</button>
     </div>
-    <h1>ðŸ“Š OcupaÃ§Ã£o - ${houseLabels[selectedHouse]}</h1>
+    <h1>📊 Ocupação - ${houseLabels[selectedHouse]}</h1>
     <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-        <button onclick="window.toggleOccupancyStats()" style="padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px; border: 1px solid #ffc107; background-color: ${showOccupancyStats?'#e0a800':'#ffc107'}; color: #333; font-weight: bold;">${showOccupancyStats?'ðŸ”™ Ocultar EstatÃ­sticas':'ðŸ“ˆ Ver EstatÃ­sticas Mensais'}</button>
-        ${showOccupancyStats?`<button onclick="window.togglePastStats()" style="padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px; border: 1px solid #6c757d; background-color: ${showPastStatsMode?'#5a6268':'#6c757d'}; color: white; font-weight: bold;">${showPastStatsMode?'ðŸ“… Ver Meses Atuais e Futuros':'ðŸ“œ Ver Meses Passados'}</button>`:''}
+        <button onclick="window.toggleOccupancyStats()" style="padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px; border: 1px solid #ffc107; background-color: ${showOccupancyStats?'#e0a800':'#ffc107'}; color: #333; font-weight: bold;">${showOccupancyStats?'🔙 Ocultar Estatísticas':'📈 Ver Estatísticas Mensais'}</button>
+        ${showOccupancyStats?`<button onclick="window.togglePastStats()" style="padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px; border: 1px solid #6c757d; background-color: ${showPastStatsMode?'#5a6268':'#6c757d'}; color: white; font-weight: bold;">${showPastStatsMode?'📅 Ver Meses Atuais e Futuros':'📜 Ver Meses Passados'}</button>`:''}
     </div>`;
 
     if (showOccupancyStats) {
         const stats=calculateHouseStats(selectedHouse); let statKeys=Object.keys(stats);
         const cmk=new Date().getFullYear()+"-"+String(new Date().getMonth()+1).padStart(2,'0');
         statKeys=showPastStatsMode?statKeys.filter(k=>k<cmk).sort().reverse():statKeys.filter(k=>k>=cmk).sort();
-        if(!statKeys.length) html+=`<p>Sem dados de estatÃ­sticas.</p><hr>`;
+        if(!statKeys.length) html+=`<p>Sem dados de estatísticas.</p><hr>`;
         else {
             html+=`<div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 25px;">`;
             statKeys.forEach(key => {
                 const s=stats[key], taxa=s.totalCapacity>0?Math.round((s.dormidas/s.totalCapacity)*100):0;
                 if(currentTheme==="outono") {
-                    html+=`<div class="stat-box" style="flex: 1; min-width: 220px;"><div style="color: #fbbf24; font-weight: 700; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 6px;">${s.label}</div><div class="stat-val">${taxa}% <span style="font-size: 13px; font-weight: 500; color: #a3998e;">ocupaÃ§Ã£o</span></div><div class="bar-bg"><div class="bar-fill" style="width: ${taxa}%;"></div></div><div style="margin-top: 12px; font-size: 13px; color: #a3998e; display: flex; flex-direction: column; gap: 4px;"><span>ðŸŒ™ Dormidas: <strong style="color: #fff;">${s.dormidas}</strong> / ${s.totalCapacity}</span><span>ðŸ§³ Check-ins: <strong style="color: #fff;">${s.checkins}</strong></span><span>ðŸ”¥ Dias 100% cheios: <strong style="color: #34d399;">${s.diasEsgotados}</strong></span></div></div>`;
+                    html+=`<div class="stat-box" style="flex: 1; min-width: 220px;"><div style="color: #fbbf24; font-weight: 700; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 6px;">${s.label}</div><div class="stat-val">${taxa}% <span style="font-size: 13px; font-weight: 500; color: #a3998e;">ocupação</span></div><div class="bar-bg"><div class="bar-fill" style="width: ${taxa}%;"></div></div><div style="margin-top: 12px; font-size: 13px; color: #a3998e; display: flex; flex-direction: column; gap: 4px;"><span>🌙 Dormidas: <strong style="color: #fff;">${s.dormidas}</strong> / ${s.totalCapacity}</span><span>🧳 Check-ins: <strong style="color: #fff;">${s.checkins}</strong></span><span>🔥 Dias 100% cheios: <strong style="color: #34d399;">${s.diasEsgotados}</strong></span></div></div>`;
                 } else {
-                    html+=`<div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; flex: 1; min-width: 220px; background-color: #f8f9fa; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"><h3 style="margin-top: 0; color: #007bff; text-transform: capitalize; border-bottom: 1px solid #ccc; padding-bottom: 8px;">${s.label}</h3><p style="margin: 8px 0; font-size: 15px;"><strong>ðŸ›ï¸ OcupaÃ§Ã£o:</strong> ${taxa}%</p><p style="margin: 8px 0; font-size: 15px;"><strong>ðŸŒ™ Dormidas:</strong> ${s.dormidas} <span style="font-size: 12px; color: #666;">(de ${s.totalCapacity})</span></p><p style="margin: 8px 0; font-size: 15px;"><strong>ðŸ§³ Check-ins:</strong> ${s.checkins}</p><p style="margin: 8px 0; font-size: 15px;"><strong>ðŸ”¥ Dias 100% cheios:</strong> ${s.diasEsgotados}</p></div>`;
+                    html+=`<div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; flex: 1; min-width: 220px; background-color: #f8f9fa; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"><h3 style="margin-top: 0; color: #007bff; text-transform: capitalize; border-bottom: 1px solid #ccc; padding-bottom: 8px;">${s.label}</h3><p style="margin: 8px 0; font-size: 15px;"><strong>🛏️ Ocupação:</strong> ${taxa}%</p><p style="margin: 8px 0; font-size: 15px;"><strong>🌙 Dormidas:</strong> ${s.dormidas} <span style="font-size: 12px; color: #666;">(de ${s.totalCapacity})</span></p><p style="margin: 8px 0; font-size: 15px;"><strong>🧳 Check-ins:</strong> ${s.checkins}</p><p style="margin: 8px 0; font-size: 15px;"><strong>🔥 Dias 100% cheios:</strong> ${s.diasEsgotados}</p></div>`;
                 }
             });
             html+=`</div>`;
@@ -1390,8 +1389,8 @@ function showOccupancyPlan() {
         });
         const cnt=rd.length;
         html+=`<h2>${cd.toLocaleDateString("pt-PT",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}</h2>`;
-        if(cnt===0) html+=`<div style="font-size: 18px; font-weight: bold; color: #28a745; margin-bottom: 5px;">0 ðŸŸ¢</div>`;
-        else { html+=`<div style="font-size: 18px; font-weight: bold; color: #dc3545; margin-bottom: 5px;">${cnt} / ${totalRooms} ðŸ”´</div>`; html+=`<div style="font-size: 14px; color: #333;">Ocupados: ${rd.join(", ")}</div>`; }
+        if(cnt===0) html+=`<div style="font-size: 18px; font-weight: bold; color: #28a745; margin-bottom: 5px;">0 🟢</div>`;
+        else { html+=`<div style="font-size: 18px; font-weight: bold; color: #dc3545; margin-bottom: 5px;">${cnt} / ${totalRooms} 🔴</div>`; html+=`<div style="font-size: 14px; color: #333;">Ocupados: ${rd.join(", ")}</div>`; }
         html+="<hr>";
     }
     result.innerHTML=html;
