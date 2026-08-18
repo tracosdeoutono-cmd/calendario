@@ -1016,12 +1016,14 @@ function syncCleaningPlan() {
         const activeCleanings = {};
         globalReservations.forEach(res => {
             const info = getCleaningInfo(res, globalReservations);
+            const checkinStr = formatDateKey(res.checkIn);
             const checkoutStr = formatDateKey(res.checkOut);
             const cleaningStr = formatDateKey(info.date);
             const key = `${res.room}|${checkoutStr}`;
 
             activeCleanings[key] = {
                 room: res.room,
+                checkinKey: checkinStr,
                 checkoutKey: checkoutStr,
                 cleaningKey: cleaningStr,
                 cleaningIso: info.date.toISOString(),
@@ -1044,6 +1046,7 @@ function syncCleaningPlan() {
                 const cleanDate = parseDateKey(existing.cleaningKey);
                 if (cleanDate >= today) {
                     if (existing.cleaningKey !== active.cleaningKey ||
+                        existing.checkinKey !== active.checkinKey ||
                         existing.cleaningIso !== active.cleaningIso ||
                         existing.sunday !== active.sunday ||
                         existing.urgent !== active.urgent ||
@@ -1063,25 +1066,45 @@ function syncCleaningPlan() {
         }
         const reviews = cloudHistory["_reviews"];
 
-        // 3. Remove do plano futuro reservas que foram canceladas e agenda aviso para rever limpeza
+        // Limpa revisões antigas ou de cancelamentos futuros que tenham sido geradas antes
+        Object.keys(reviews).forEach(k => {
+            const rev = reviews[k];
+            if (!rev || !rev.targetDateKey) {
+                delete reviews[k];
+                hasChanges = true;
+                return;
+            }
+            if (rev.checkinKey && parseDateKey(rev.checkinKey) > parseDateKey(rev.cancelledOn || todayStr)) {
+                delete reviews[k];
+                hasChanges = true;
+            }
+        });
+
+        // 3. Remove do plano futuro reservas canceladas. Apenas estadias ATUAIS (em curso) geram revisão
         Object.keys(plan).forEach(key => {
             const existing = plan[key];
             const cleanDate = parseDateKey(existing.cleaningKey);
 
             if (cleanDate >= today) {
                 if (!activeCleanings[key]) {
-                    // Reserva cancelada: agenda alerta para o dia seguinte (ou segunda-feira se for domingo)
-                    let reviewDate = addDays(today, 1);
-                    if (isSunday(reviewDate)) reviewDate = addDays(reviewDate, 1);
-                    const reviewTargetKey = formatDateKey(reviewDate);
+                    // Só agenda revisão se for uma estadia atual (hóspede já tinha entrado ou entrava hoje)
+                    const checkinDate = existing.checkinKey ? parseDateKey(existing.checkinKey) : null;
+                    const wasCurrentStay = checkinDate ? (checkinDate <= today) : (existing.checkoutKey === todayStr);
 
-                    reviews[key] = {
-                        room: existing.room,
-                        targetDateKey: reviewTargetKey,
-                        targetIso: reviewDate.toISOString(),
-                        cancelledOn: todayStr,
-                        originalCheckout: existing.checkoutKey
-                    };
+                    if (wasCurrentStay) {
+                        let reviewDate = addDays(today, 1);
+                        if (isSunday(reviewDate)) reviewDate = addDays(reviewDate, 1);
+                        const reviewTargetKey = formatDateKey(reviewDate);
+
+                        reviews[key] = {
+                            room: existing.room,
+                            checkinKey: existing.checkinKey || "",
+                            targetDateKey: reviewTargetKey,
+                            targetIso: reviewDate.toISOString(),
+                            cancelledOn: todayStr,
+                            originalCheckout: existing.checkoutKey
+                        };
+                    }
 
                     delete plan[key];
                     hasChanges = true;
@@ -1296,12 +1319,12 @@ function showCleaningPlan() {
             });
         }
 
-        // 2. Avisos de revisão de limpeza (estadias canceladas)
+        // 2. Avisos de revisão de limpeza (estadias atuais canceladas)
         if (hasReviews && !showHistoryMode) {
             day.reviews.forEach(rev => {
-                cPt.push(`⚠️ Rever limpeza: ${rev.room} (estadia cancelada)`);
-                cEs.push(`⚠️ Revisar limpieza: ${rev.room} (estancia cancelada)`);
-                rh += `<div style="margin-top: 4px; margin-bottom: 6px; font-size: 15px; color: #dc3545;">⚠️ <b>Rever limpeza: ${rev.room}</b> <i>(estadia cancelada)</i></div>`;
+                cPt.push(`🔍 Rever limpeza: ${rev.room} (estadia cancelada)`);
+                cEs.push(`🔍 Revisar limpieza: ${rev.room} (estancia cancelada)`);
+                rh += `<div style="margin-top: 4px; margin-bottom: 4px; font-size: 15px;">🔍 <b>Rever limpeza: ${rev.room}</b> <span style="font-size: 13px; color: #666;">(estadia cancelada)</span></div>`;
             });
         }
 
