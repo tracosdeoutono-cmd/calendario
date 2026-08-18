@@ -925,13 +925,16 @@ function formatDateKey(date) {
 function getGarbageTasks(date) {
     const dayOfWeek = date.getDay(); // 0 = Domingo, 1 = Segunda, 2 = Terça, 3 = Quarta, 4 = Quinta, 5 = Sexta, 6 = Sábado
     const tasks = [];
-    if (dayOfWeek === 1) { // Segundas-feiras
+    if (dayOfWeek === 1) { // Segundas-feiras: Impasse (reciclável + lixo) e Achada (lixo)
         tasks.push({ pt: "♻️ Colocar lixo reciclável (Impasse)", es: "♻️ Sacar basura reciclable (Impasse)" });
         tasks.push({ pt: "🗑️ Colocar lixo (Impasse)", es: "🗑️ Sacar basura (Impasse)" });
-    } else if (dayOfWeek === 3) { // Quartas-feiras
+        tasks.push({ pt: "🗑️ Colocar lixo (Achada)", es: "🗑️ Sacar basura (Achada)" });
+    } else if (dayOfWeek === 3) { // Quartas-feiras: Achada (reciclável)
         tasks.push({ pt: "♻️ Colocar lixo reciclável (Achada)", es: "♻️ Sacar basura reciclable (Achada)" });
-    } else if (dayOfWeek === 4) { // Quintas-feiras
+    } else if (dayOfWeek === 4) { // Quintas-feiras: Impasse (lixo)
         tasks.push({ pt: "🗑️ Colocar lixo (Impasse)", es: "🗑️ Sacar basura (Impasse)" });
+    } else if (dayOfWeek === 5) { // Sextas-feiras: Achada (lixo)
+        tasks.push({ pt: "🗑️ Colocar lixo (Achada)", es: "🗑️ Sacar basura (Achada)" });
     }
     return tasks;
 }
@@ -1054,13 +1057,32 @@ function syncCleaningPlan() {
             }
         });
 
-        // 3. Remove do plano futuro reservas que foram canceladas
+        if (!cloudHistory["_reviews"] || typeof cloudHistory["_reviews"] !== 'object') {
+            cloudHistory["_reviews"] = {};
+            hasChanges = true;
+        }
+        const reviews = cloudHistory["_reviews"];
+
+        // 3. Remove do plano futuro reservas que foram canceladas e agenda aviso para rever limpeza
         Object.keys(plan).forEach(key => {
             const existing = plan[key];
             const cleanDate = parseDateKey(existing.cleaningKey);
 
             if (cleanDate >= today) {
                 if (!activeCleanings[key]) {
+                    // Reserva cancelada: agenda alerta para o dia seguinte (ou segunda-feira se for domingo)
+                    let reviewDate = addDays(today, 1);
+                    if (isSunday(reviewDate)) reviewDate = addDays(reviewDate, 1);
+                    const reviewTargetKey = formatDateKey(reviewDate);
+
+                    reviews[key] = {
+                        room: existing.room,
+                        targetDateKey: reviewTargetKey,
+                        targetIso: reviewDate.toISOString(),
+                        cancelledOn: todayStr,
+                        originalCheckout: existing.checkoutKey
+                    };
+
                     delete plan[key];
                     hasChanges = true;
                 }
@@ -1227,6 +1249,23 @@ function showCleaningPlan() {
                 }
             });
         }
+
+        // Incorpora avisos de revisão de limpeza para reservas canceladas
+        const reviews = cloudHistory["_reviews"] || {};
+        Object.keys(reviews).forEach(k => {
+            const rev = reviews[k];
+            if (!rev || !rev.targetDateKey) return;
+            const d = parseDateKey(rev.targetDateKey);
+            if (d >= today) {
+                const dk = rev.targetDateKey;
+                if (!grouped[dk]) grouped[dk] = { date: d, rooms: [], reviews: [] };
+                if (!grouped[dk].reviews) grouped[dk].reviews = [];
+                if (!grouped[dk].reviews.some(r => r.room === rev.room)) {
+                    grouped[dk].reviews.push(rev);
+                }
+            }
+        });
+
     }
 
     let sortedKeys=Object.keys(grouped).sort(); if (showHistoryMode) sortedKeys.reverse();
@@ -1237,16 +1276,18 @@ function showCleaningPlan() {
 
     sortedKeys.forEach(key => {
         const day=grouped[key];
-        if (!day.rooms || day.rooms.length === 0) return; // Só mostra dias com limpezas
+        const hasRooms = day.rooms && day.rooms.length > 0;
+        const hasReviews = day.reviews && day.reviews.length > 0;
+        if (!hasRooms && !hasReviews) return; // Só mostra dias com limpezas ou revisões
 
         let title=day.date.toLocaleDateString("pt-PT",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
-        if (day.rooms.some(r=>r.sunday)) title="🔴 "+title;
+        if (day.rooms && day.rooms.some(r=>r.sunday)) title="🔴 "+title;
         let dPt=title.replace("🔴 ",""); dPt=dPt.charAt(0).toUpperCase()+dPt.slice(1); let cPt=[`🧹 Limpezas - ${dPt}:`];
         let dEs=day.date.toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long",year:"numeric"}); dEs=dEs.charAt(0).toUpperCase()+dEs.slice(1); let cEs=[`🧹 Limpiezas - ${dEs}:`];
         let rh="";
 
-        // 1. Tarefas de Lixo / Reciclagem do dia (Segundas, Quartas, Quintas - apenas se houver limpezas)
-        if (!showHistoryMode) {
+        // 1. Tarefas de Lixo / Reciclagem do dia (Segundas, Quartas, Quintas, Sextas)
+        if (!showHistoryMode && (hasRooms || hasReviews)) {
             const gTasks = getGarbageTasks(day.date);
             gTasks.forEach(gt => {
                 cPt.push(gt.pt);
@@ -1255,12 +1296,17 @@ function showCleaningPlan() {
             });
         }
 
-        // 2. Quartos a limpar
-        if (day.rooms.length === 0) {
-            if (!showHistoryMode) {
-                rh += `<div style="color: #888; font-style: italic; font-size: 14px; margin-top: 4px;">Sem quartos para limpar neste dia.</div>`;
-            }
-        } else {
+        // 2. Avisos de revisão de limpeza (estadias canceladas)
+        if (hasReviews && !showHistoryMode) {
+            day.reviews.forEach(rev => {
+                cPt.push(`⚠️ Rever limpeza: ${rev.room} (estadia cancelada)`);
+                cEs.push(`⚠️ Revisar limpieza: ${rev.room} (estancia cancelada)`);
+                rh += `<div style="margin-top: 4px; margin-bottom: 6px; font-size: 15px; color: #dc3545;">⚠️ <b>Rever limpeza: ${rev.room}</b> <i>(estadia cancelada)</i></div>`;
+            });
+        }
+
+        // 3. Quartos a limpar
+        if (hasRooms) {
             day.rooms.sort((a,b)=>a.room.localeCompare(b.room)).forEach(clean => {
                 let hCo = clean.hasCheckout;
                 let hCi = clean.hasCheckin;
