@@ -12,7 +12,7 @@
     const style = document.createElement("style");
     style.id = "al-app-allthemes";
     style.textContent = `
-        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Kalam:wght@300;400;700&family=Marck+Script&family=Patrick+Hand&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;600;700;800&family=VT323&family=Fredoka:wght@400;600;700&family=Quicksand:wght@300;400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Caveat:wght@400;600;700&family=Cinzel:wght@500;700;900&family=Comfortaa:wght@400;700&family=Fredoka:wght@400;600;700&family=Kalam:wght@300;400;700&family=Marck+Script&family=Orbitron:wght@500;700;900&family=Outfit:wght@400;600;700;800&family=Patrick+Hand&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Quicksand:wght@300;400;600;700&family=Righteous&family=Space+Grotesk:wght@400;600;700&family=VT323&display=swap');
 
         * { box-sizing: border-box; }
 
@@ -674,8 +674,481 @@ const THEME_LIST = [
     { key: 'aquarela',   label: 'Aquarela',      emoji: '🎨' },
     { key: 'jornal',     label: 'Jornal',        emoji: '📰' },
     { key: 'quadro',     label: 'Quadro Negro',  emoji: '🖍️' },
+    { key: 'aleatorio',  label: 'Aleatório 🎲',  emoji: '🎲' },
 ];
 const VALID_THEME_KEYS = THEME_LIST.map(t => t.key);
+
+let currentRandomPresetName = "";
+
+function getRandomUniverseCSS() {
+    const universes = [
+        {
+            name: "Galáxia Cósmica 🌌",
+            css: `
+                body[data-theme="aleatorio"] {
+                    font-family: 'Orbitron', 'Plus Jakarta Sans', sans-serif;
+                    background-color: #070514;
+                    color: #e0e7ff;
+                    background-image:
+                        radial-gradient(ellipse 500px 300px at 15% 20%, rgba(168, 85, 247, 0.28) 0%, transparent 70%),
+                        radial-gradient(ellipse 450px 350px at 85% 75%, rgba(56, 189, 248, 0.24) 0%, transparent 70%),
+                        radial-gradient(circle 2px at 20% 30%, #fff 0%, transparent 100%),
+                        radial-gradient(circle 2px at 70% 20%, #fff 0%, transparent 100%),
+                        radial-gradient(circle 3px at 80% 80%, rgba(244, 114, 182, 0.8) 0%, transparent 100%),
+                        radial-gradient(circle 1.5px at 40% 70%, #fff 0%, transparent 100%);
+                    background-attachment: fixed;
+                }
+                body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"],
+                body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] {
+                    background: rgba(18, 14, 38, 0.8) !important;
+                    border: 1px solid rgba(168, 85, 247, 0.35) !important;
+                    border-radius: 18px !important;
+                    color: #e0e7ff !important;
+                    box-shadow: 0 8px 32px 0 rgba(112, 26, 232, 0.25), inset 0 0 20px rgba(168, 85, 247, 0.08) !important;
+                    backdrop-filter: blur(12px);
+                }
+                body[data-theme="aleatorio"] h1 {
+                    font-weight: 900;
+                    background: linear-gradient(135deg, #38bdf8 0%, #c084fc 50%, #f472b6 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    letter-spacing: 2px;
+                }
+                body[data-theme="aleatorio"] h2 { color: #38bdf8 !important; text-shadow: 0 0 10px rgba(56, 189, 248, 0.4); font-weight: 700; letter-spacing: 1px; }
+                body[data-theme="aleatorio"] h3 { color: #c084fc !important; font-weight: 700; }
+                body[data-theme="aleatorio"] button {
+                    border-radius: 12px !important;
+                    font-family: 'Orbitron', sans-serif !important;
+                    letter-spacing: 1px;
+                    box-shadow: 0 0 15px rgba(168, 85, 247, 0.3) !important;
+                }
+                body[data-theme="aleatorio"] hr { border-color: rgba(168, 85, 247, 0.25) !important; }
+            `
+        },
+        {
+            name: "Vaporwave 80s 🌅",
+            css: `
+                body[data-theme="aleatorio"] {
+                    font-family: 'Righteous', 'Plus Jakarta Sans', cursive;
+                    background-color: #19052b;
+                    color: #fdf4ff;
+                    background-image:
+                        linear-gradient(to bottom, transparent 60%, rgba(244, 63, 94, 0.18) 100%),
+                        repeating-linear-gradient(0deg, rgba(217, 70, 239, 0.08) 0px, rgba(217, 70, 239, 0.08) 1px, transparent 1px, transparent 20px),
+                        radial-gradient(circle 350px at 50% 10%, rgba(244, 63, 94, 0.3) 0%, transparent 100%);
+                    background-attachment: fixed;
+                }
+                body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"],
+                body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] {
+                    background: rgba(45, 10, 75, 0.85) !important;
+                    border: 2px solid #ec4899 !important;
+                    border-radius: 12px !important;
+                    color: #fdf4ff !important;
+                    box-shadow: 0 0 20px rgba(236, 72, 153, 0.3), inset 0 0 15px rgba(6, 182, 212, 0.15) !important;
+                }
+                body[data-theme="aleatorio"] h1 {
+                    font-size: 36px;
+                    background: linear-gradient(180deg, #fef08a 0%, #f43f5e 60%, #a855f7 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    text-shadow: 2px 2px 0px rgba(6, 182, 212, 0.4);
+                }
+                body[data-theme="aleatorio"] h2 { color: #22d3ee !important; text-shadow: 0 0 8px rgba(34, 211, 238, 0.5); font-weight: 700; }
+                body[data-theme="aleatorio"] h3 { color: #f472b6 !important; text-shadow: 0 0 8px rgba(244, 114, 182, 0.5); }
+                body[data-theme="aleatorio"] button {
+                    font-family: 'Righteous', cursive !important;
+                    border-radius: 8px !important;
+                    text-transform: uppercase;
+                    box-shadow: 3px 3px 0px #06b6d4 !important;
+                }
+                body[data-theme="aleatorio"] hr { border-color: #ec4899 !important; }
+            `
+        },
+        {
+            name: "Selva Esmeralda 🌿",
+            css: `
+                body[data-theme="aleatorio"] {
+                    font-family: 'Outfit', sans-serif;
+                    background-color: #051a10;
+                    color: #e6f7ec;
+                    background-image:
+                        radial-gradient(ellipse 500px 300px at 10% 15%, rgba(16, 185, 129, 0.24) 0%, transparent 65%),
+                        radial-gradient(ellipse 400px 400px at 90% 85%, rgba(245, 158, 11, 0.20) 0%, transparent 65%);
+                    background-attachment: fixed;
+                }
+                body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"],
+                body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] {
+                    background: rgba(10, 36, 22, 0.82) !important;
+                    border: 1.5px solid rgba(16, 185, 129, 0.35) !important;
+                    border-radius: 28px 6px 28px 6px !important;
+                    color: #e6f7ec !important;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.4), inset 0 0 20px rgba(16, 185, 129, 0.08) !important;
+                }
+                body[data-theme="aleatorio"] h1 {
+                    font-weight: 800;
+                    background: linear-gradient(135deg, #6ee7b7 0%, #10b981 50%, #fbbf24 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                }
+                body[data-theme="aleatorio"] h2 { color: #34d399 !important; font-weight: 700; }
+                body[data-theme="aleatorio"] h3 { color: #fbbf24 !important; font-weight: 700; }
+                body[data-theme="aleatorio"] button {
+                    border-radius: 20px !important;
+                    font-weight: 700;
+                    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25) !important;
+                }
+                body[data-theme="aleatorio"] hr { border-color: rgba(16, 185, 129, 0.25) !important; }
+            `
+        },
+        {
+            name: "Candy Pop 🍭",
+            css: `
+                body[data-theme="aleatorio"] {
+                    font-family: 'Comfortaa', cursive, sans-serif;
+                    background-color: #fef4f8;
+                    color: #4a2838;
+                    background-image:
+                        radial-gradient(circle 250px at 15% 15%, rgba(244, 114, 182, 0.22) 0%, transparent 100%),
+                        radial-gradient(circle 300px at 85% 80%, rgba(192, 132, 252, 0.22) 0%, transparent 100%),
+                        radial-gradient(circle 200px at 50% 50%, rgba(253, 224, 71, 0.18) 0%, transparent 100%);
+                    background-attachment: fixed;
+                }
+                body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"],
+                body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] {
+                    background: rgba(255, 255, 255, 0.88) !important;
+                    border: 3px solid #fbcfe8 !important;
+                    border-radius: 30px !important;
+                    color: #4a2838 !important;
+                    box-shadow: 0 12px 30px rgba(244, 114, 182, 0.18) !important;
+                    backdrop-filter: blur(10px);
+                }
+                body[data-theme="aleatorio"] h1 {
+                    font-weight: 700;
+                    color: #db2777;
+                    text-shadow: 2px 2px 0px rgba(251, 207, 232, 0.8);
+                }
+                body[data-theme="aleatorio"] h2 { color: #a855f7 !important; font-weight: 700; }
+                body[data-theme="aleatorio"] h3 { color: #ec4899 !important; font-weight: 700; }
+                body[data-theme="aleatorio"] button {
+                    font-family: 'Comfortaa', cursive !important;
+                    border-radius: 50px !important;
+                    font-weight: 700 !important;
+                    box-shadow: 0 6px 15px rgba(219, 39, 119, 0.2) !important;
+                }
+                body[data-theme="aleatorio"] hr { border-color: #fbcfe8 !important; }
+            `
+        },
+        {
+            name: "Neo-Brutalismo Urbano 👾",
+            css: `
+                body[data-theme="aleatorio"] {
+                    font-family: 'Space Grotesk', sans-serif;
+                    background-color: #fef08a;
+                    color: #000000;
+                    background-image:
+                        repeating-linear-gradient(45deg, #fde047 0, #fde047 15px, #fef08a 15px, #fef08a 30px);
+                    background-attachment: fixed;
+                }
+                body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"],
+                body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] {
+                    background: #ffffff !important;
+                    border: 3.5px solid #000000 !important;
+                    border-radius: 0px !important;
+                    color: #000000 !important;
+                    box-shadow: 7px 7px 0px #000000 !important;
+                }
+                body[data-theme="aleatorio"] h1 {
+                    font-weight: 900;
+                    text-transform: uppercase;
+                    background: #000000;
+                    color: #fef08a;
+                    display: inline-block;
+                    padding: 4px 14px;
+                    box-shadow: 4px 4px 0px #ffffff;
+                }
+                body[data-theme="aleatorio"] h2 { color: #000000 !important; font-weight: 800; text-transform: uppercase; border-bottom: 3px solid #000; padding-bottom: 4px; }
+                body[data-theme="aleatorio"] h3 { color: #000000 !important; font-weight: 800; }
+                body[data-theme="aleatorio"] button {
+                    font-family: 'Space Grotesk', sans-serif !important;
+                    border-radius: 0px !important;
+                    border: 3px solid #000000 !important;
+                    font-weight: 800 !important;
+                    box-shadow: 4px 4px 0px #000000 !important;
+                }
+                body[data-theme="aleatorio"] hr { border: none !important; border-top: 3px solid #000000 !important; }
+            `
+        },
+        {
+            name: "Papiro Imperial Antigo 🏺",
+            css: `
+                body[data-theme="aleatorio"] {
+                    font-family: 'Cinzel', serif;
+                    background-color: #1a1612;
+                    color: #f3e9d8;
+                    background-image:
+                        radial-gradient(ellipse at 50% 50%, rgba(217, 119, 6, 0.18) 0%, transparent 80%),
+                        radial-gradient(circle 2px at 25% 25%, rgba(245, 158, 11, 0.35) 0%, transparent 100%),
+                        radial-gradient(circle 2px at 75% 75%, rgba(245, 158, 11, 0.35) 0%, transparent 100%);
+                    background-attachment: fixed;
+                }
+                body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"],
+                body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] {
+                    background: rgba(36, 30, 24, 0.88) !important;
+                    border: 1.5px solid #d97706 !important;
+                    outline: 1px solid rgba(217, 119, 6, 0.3) !important;
+                    outline-offset: -5px;
+                    border-radius: 4px !important;
+                    color: #f3e9d8 !important;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.6) !important;
+                }
+                body[data-theme="aleatorio"] h1 {
+                    font-weight: 900;
+                    letter-spacing: 3px;
+                    color: #fbbf24;
+                    text-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
+                }
+                body[data-theme="aleatorio"] h2 { color: #f59e0b !important; font-weight: 700; letter-spacing: 2px; }
+                body[data-theme="aleatorio"] h3 { color: #d97706 !important; font-weight: 700; letter-spacing: 1px; }
+                body[data-theme="aleatorio"] button {
+                    font-family: 'Cinzel', serif !important;
+                    border-radius: 4px !important;
+                    letter-spacing: 1.5px;
+                    border: 1px solid #d97706 !important;
+                }
+                body[data-theme="aleatorio"] hr { border-color: rgba(217, 119, 6, 0.35) !important; }
+            `
+        },
+        {
+            name: "Abismo Oceânico 🌊",
+            css: `
+                body[data-theme="aleatorio"] {
+                    font-family: 'Outfit', sans-serif;
+                    background-color: #021224;
+                    color: #e0f2fe;
+                    background-image:
+                        radial-gradient(ellipse 600px 400px at 20% 10%, rgba(6, 182, 212, 0.25) 0%, transparent 70%),
+                        radial-gradient(ellipse 500px 350px at 80% 90%, rgba(59, 130, 246, 0.28) 0%, transparent 70%),
+                        radial-gradient(circle 3px at 30% 60%, rgba(34, 211, 238, 0.45) 0%, transparent 100%);
+                    background-attachment: fixed;
+                }
+                body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"],
+                body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] {
+                    background: rgba(8, 30, 58, 0.8) !important;
+                    border: 1.5px solid rgba(34, 211, 238, 0.35) !important;
+                    border-radius: 20px !important;
+                    color: #e0f2fe !important;
+                    box-shadow: 0 10px 35px rgba(2, 18, 36, 0.5), inset 0 0 25px rgba(6, 182, 212, 0.1) !important;
+                    backdrop-filter: blur(14px);
+                }
+                body[data-theme="aleatorio"] h1 {
+                    font-weight: 800;
+                    background: linear-gradient(135deg, #38bdf8 0%, #06b6d4 50%, #67e8f9 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                }
+                body[data-theme="aleatorio"] h2 { color: #38bdf8 !important; font-weight: 700; }
+                body[data-theme="aleatorio"] h3 { color: #22d3ee !important; font-weight: 700; }
+                body[data-theme="aleatorio"] button {
+                    border-radius: 14px !important;
+                    box-shadow: 0 4px 18px rgba(6, 182, 212, 0.3) !important;
+                }
+                body[data-theme="aleatorio"] hr { border-color: rgba(34, 211, 238, 0.25) !important; }
+            `
+        },
+        {
+            name: "Cyberpunk 2077 ⚡",
+            css: `
+                body[data-theme="aleatorio"] {
+                    font-family: 'Orbitron', monospace, sans-serif;
+                    background-color: #08080c;
+                    color: #fef08a;
+                    background-image:
+                        repeating-linear-gradient(0deg, rgba(254, 240, 138, 0.03) 0px, rgba(254, 240, 138, 0.03) 1px, transparent 1px, transparent 4px),
+                        radial-gradient(circle 300px at 80% 20%, rgba(250, 204, 21, 0.18) 0%, transparent 100%);
+                    background-attachment: fixed;
+                }
+                body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"],
+                body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] {
+                    background: rgba(18, 18, 26, 0.92) !important;
+                    border: 2px solid #facc15 !important;
+                    border-left: 8px solid #facc15 !important;
+                    border-radius: 0px !important;
+                    color: #fef08a !important;
+                    box-shadow: 0 0 18px rgba(250, 204, 21, 0.22) !important;
+                }
+                body[data-theme="aleatorio"] h1 {
+                    font-weight: 900;
+                    color: #facc15;
+                    text-transform: uppercase;
+                    letter-spacing: 3px;
+                    text-shadow: 0 0 12px rgba(250, 204, 21, 0.5);
+                }
+                body[data-theme="aleatorio"] h2 { color: #38bdf8 !important; text-transform: uppercase; font-weight: 800; text-shadow: 0 0 8px rgba(56, 189, 248, 0.5); }
+                body[data-theme="aleatorio"] h3 { color: #facc15 !important; font-weight: 800; }
+                body[data-theme="aleatorio"] button {
+                    font-family: 'Orbitron', monospace !important;
+                    border-radius: 0px !important;
+                    text-transform: uppercase;
+                    border: 1.5px solid #facc15 !important;
+                }
+                body[data-theme="aleatorio"] hr { border-color: rgba(250, 204, 21, 0.4) !important; }
+            `
+        },
+        {
+            name: "Aurora Boreal 🌲",
+            css: `
+                body[data-theme="aleatorio"] {
+                    font-family: 'Space Grotesk', sans-serif;
+                    background-color: #030f1c;
+                    color: #d1fae5;
+                    background-image:
+                        linear-gradient(135deg, rgba(16, 185, 129, 0.22) 0%, rgba(139, 92, 246, 0.22) 50%, rgba(6, 182, 212, 0.22) 100%),
+                        radial-gradient(circle 2px at 35% 25%, #fff 0%, transparent 100%),
+                        radial-gradient(circle 2px at 80% 45%, #fff 0%, transparent 100%);
+                    background-attachment: fixed;
+                }
+                body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"],
+                body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] {
+                    background: rgba(7, 28, 48, 0.8) !important;
+                    border: 1px solid rgba(52, 211, 153, 0.4) !important;
+                    border-radius: 20px !important;
+                    color: #d1fae5 !important;
+                    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5), 0 0 15px rgba(52, 211, 153, 0.15) !important;
+                    backdrop-filter: blur(12px);
+                }
+                body[data-theme="aleatorio"] h1 {
+                    font-weight: 800;
+                    background: linear-gradient(135deg, #a7f3d0 0%, #6ee7b7 40%, #c4b5fd 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                }
+                body[data-theme="aleatorio"] h2 { color: #6ee7b7 !important; font-weight: 700; }
+                body[data-theme="aleatorio"] h3 { color: #c4b5fd !important; font-weight: 700; }
+                body[data-theme="aleatorio"] button {
+                    border-radius: 14px !important;
+                    font-weight: 700;
+                    box-shadow: 0 4px 15px rgba(110, 231, 183, 0.25) !important;
+                }
+                body[data-theme="aleatorio"] hr { border-color: rgba(52, 211, 153, 0.3) !important; }
+            `
+        },
+        {
+            name: "Arcade Retro 🕹️",
+            css: `
+                body[data-theme="aleatorio"] {
+                    font-family: 'Bungee', cursive, sans-serif;
+                    background-color: #120524;
+                    color: #fef08a;
+                    background-image:
+                        linear-gradient(rgba(234, 179, 8, 0.06) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(234, 179, 8, 0.06) 1px, transparent 1px);
+                    background-size: 24px 24px;
+                    background-attachment: fixed;
+                }
+                body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"],
+                body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] {
+                    background: #240b44 !important;
+                    border: 4px solid #f43f5e !important;
+                    border-radius: 10px !important;
+                    color: #fef08a !important;
+                    box-shadow: 5px 5px 0px #eab308 !important;
+                }
+                body[data-theme="aleatorio"] h1 {
+                    font-size: 28px;
+                    color: #eab308;
+                    text-shadow: 3px 3px 0px #f43f5e;
+                }
+                body[data-theme="aleatorio"] h2 { color: #38bdf8 !important; text-shadow: 2px 2px 0px #000; }
+                body[data-theme="aleatorio"] h3 { color: #f43f5e !important; }
+                body[data-theme="aleatorio"] button {
+                    font-family: 'Bungee', cursive !important;
+                    border-radius: 8px !important;
+                    border: 2px solid #000 !important;
+                    box-shadow: 3px 3px 0px #f43f5e !important;
+                }
+                body[data-theme="aleatorio"] hr { border: none !important; border-top: 3px dashed #eab308 !important; }
+            `
+        },
+        {
+            name: "Vulcão Magma 🌋",
+            css: `
+                body[data-theme="aleatorio"] {
+                    font-family: 'Outfit', sans-serif;
+                    background-color: #120505;
+                    color: #fed7aa;
+                    background-image:
+                        radial-gradient(ellipse 500px 350px at 20% 80%, rgba(239, 68, 68, 0.30) 0%, transparent 70%),
+                        radial-gradient(ellipse 400px 300px at 80% 20%, rgba(249, 115, 22, 0.25) 0%, transparent 70%);
+                    background-attachment: fixed;
+                }
+                body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"],
+                body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] {
+                    background: rgba(34, 12, 12, 0.88) !important;
+                    border: 1.5px solid rgba(239, 68, 68, 0.4) !important;
+                    border-radius: 16px !important;
+                    color: #fed7aa !important;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), inset 0 0 15px rgba(239, 68, 68, 0.12) !important;
+                }
+                body[data-theme="aleatorio"] h1 {
+                    font-weight: 900;
+                    background: linear-gradient(135deg, #fef08a 0%, #f97316 40%, #ef4444 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                }
+                body[data-theme="aleatorio"] h2 { color: #f97316 !important; font-weight: 700; }
+                body[data-theme="aleatorio"] h3 { color: #ef4444 !important; font-weight: 700; }
+                body[data-theme="aleatorio"] button {
+                    border-radius: 12px !important;
+                    font-weight: 700;
+                    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3) !important;
+                }
+                body[data-theme="aleatorio"] hr { border-color: rgba(239, 68, 68, 0.3) !important; }
+            `
+        },
+        {
+            name: "Holograma Prisma 🦄",
+            css: `
+                body[data-theme="aleatorio"] {
+                    font-family: 'Comfortaa', sans-serif;
+                    background-color: #f8f7ff;
+                    color: #1e1b4b;
+                    background-image:
+                        linear-gradient(135deg, rgba(255, 182, 193, 0.28) 0%, rgba(186, 230, 253, 0.32) 35%, rgba(221, 214, 254, 0.32) 70%, rgba(254, 240, 138, 0.28) 100%);
+                    background-attachment: fixed;
+                }
+                body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"],
+                body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] {
+                    background: rgba(255, 255, 255, 0.84) !important;
+                    border: 2px solid rgba(192, 132, 252, 0.4) !important;
+                    border-radius: 22px !important;
+                    color: #1e1b4b !important;
+                    box-shadow: 0 14px 35px rgba(192, 132, 252, 0.18) !important;
+                    backdrop-filter: blur(12px);
+                }
+                body[data-theme="aleatorio"] h1 {
+                    font-weight: 700;
+                    background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 40%, #06b6d4 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                }
+                body[data-theme="aleatorio"] h2 { color: #8b5cf6 !important; font-weight: 700; }
+                body[data-theme="aleatorio"] h3 { color: #06b6d4 !important; font-weight: 700; }
+                body[data-theme="aleatorio"] button {
+                    font-family: 'Comfortaa', sans-serif !important;
+                    border-radius: 50px !important;
+                    font-weight: 700 !important;
+                    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2) !important;
+                }
+                body[data-theme="aleatorio"] hr { border-color: rgba(192, 132, 252, 0.3) !important; }
+            `
+        }
+    ];
+
+    const idx = Math.floor(Math.random() * universes.length);
+    const chosen = universes[idx];
+    currentRandomPresetName = chosen.name;
+    return chosen.css;
+}
 
 function getThemeEmoji(key) {
     const t = THEME_LIST.find(x => x.key === key);
@@ -700,10 +1173,36 @@ let currentTheme = localStorage.getItem("al_theme") || "white";
 if (!VALID_THEME_KEYS.includes(currentTheme)) currentTheme = "white";
 document.body.setAttribute("data-theme", currentTheme);
 
+function applyDynamicRandomTheme() {
+    let dynStyle = document.getElementById("al-theme-aleatorio-dynamic");
+    if (!dynStyle) {
+        dynStyle = document.createElement("style");
+        dynStyle.id = "al-theme-aleatorio-dynamic";
+        document.head.appendChild(dynStyle);
+    }
+    dynStyle.textContent = getRandomUniverseCSS();
+}
+
+if (currentTheme === "aleatorio") {
+    applyDynamicRandomTheme();
+}
+
 window.setTheme = function(themeKey) {
     currentTheme = themeKey;
     try { localStorage.setItem("al_theme", themeKey); } catch(e){}
     document.body.setAttribute("data-theme", currentTheme);
+    if (themeKey === "aleatorio") {
+        applyDynamicRandomTheme();
+    }
+    renderCurrentView();
+};
+
+window.rerollRandomTheme = function(event) {
+    if (event) event.stopPropagation();
+    currentTheme = "aleatorio";
+    try { localStorage.setItem("al_theme", "aleatorio"); } catch(e){}
+    document.body.setAttribute("data-theme", "aleatorio");
+    applyDynamicRandomTheme();
     renderCurrentView();
 };
 
@@ -749,6 +1248,7 @@ function renderNavigation() {
                 <button onclick="window.toggleThemePopup(event)" class="clock-btn" title="Mudar Estilo">${themeEmoji}</button>
                 ${buildThemePopupHTML()}
             </div>
+            ${currentTheme === 'aleatorio' ? `<button onclick="window.rerollRandomTheme(event)" class="clock-btn" title="Sortear Outro Estilo! (Atual: ${currentRandomPresetName})" style="background: linear-gradient(135deg, #ec4899, #8b5cf6); color: white; border: none;">🎲</button>` : ''}
             <button onclick="window.toggleSnapshots()" class="clock-btn ${isSnapshots?'active':''}" title="${isSnapshots?'Voltar ao Início':'Ver Previsões'}" style="${isSnapshots?'background-color:#e2e6ea;':''}">🕒</button>
         </div>
     `;
@@ -772,7 +1272,10 @@ function renderNavigation() {
     } else {
         html += `
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-right: 60px;">
-                <h1 style="margin: 0; flex: 1; min-width: 0;">Traços de Outono</h1>
+                <div style="flex: 1; min-width: 0;">
+                    <h1 style="margin: 0;">Traços de Outono</h1>
+                    ${currentTheme === 'aleatorio' ? `<div style="font-size: 13px; font-weight: bold; margin-top: 4px; opacity: 0.9;">✨ Estilo: ${currentRandomPresetName} <button onclick="window.rerollRandomTheme(event)" style="font-size: 11px; padding: 2px 8px; margin-left: 6px; cursor: pointer; border-radius: 20px; border: 1px solid currentColor; background: transparent; color: inherit; font-weight: bold;">🎲 Sortear Novo</button></div>` : ''}
+                </div>
             </div>
             <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
                 <button onclick="window.switchMainView('cleaning')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #007bff; background-color: ${isCleaning?'#007bff':'#ffffff'}; color: ${isCleaning?'#ffffff':'#007bff'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">🧹 Plano de Limpezas</button>
