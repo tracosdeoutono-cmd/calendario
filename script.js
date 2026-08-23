@@ -275,13 +275,11 @@
             background-color: #fcf8f2;
             color: #242436;
             background-image:
-                /* Manchas de pigmento vivo (azul cobalto, carmim, açafrão, esmeralda, violeta) */
                 radial-gradient(ellipse 480px 320px at 8% 12%, rgba(2, 132, 199, 0.22) 0%, rgba(2, 132, 199, 0.08) 60%, transparent 100%),
                 radial-gradient(ellipse 420px 290px at 88% 10%, rgba(245, 158, 11, 0.22) 0%, rgba(245, 158, 11, 0.06) 60%, transparent 100%),
                 radial-gradient(ellipse 400px 300px at 92% 80%, rgba(225, 29, 72, 0.18) 0%, rgba(225, 29, 72, 0.05) 60%, transparent 100%),
                 radial-gradient(ellipse 380px 260px at 12% 88%, rgba(16, 185, 129, 0.20) 0%, rgba(16, 185, 129, 0.06) 60%, transparent 100%),
                 radial-gradient(ellipse 340px 240px at 50% 50%, rgba(124, 58, 237, 0.14) 0%, rgba(124, 58, 237, 0.04) 65%, transparent 100%),
-                /* Pingos e salpicos de tinta fresca */
                 radial-gradient(circle 3px at 18% 28%, rgba(2, 132, 199, 0.5) 0%, transparent 100%),
                 radial-gradient(circle 4.5px at 22% 32%, rgba(225, 29, 72, 0.45) 0%, transparent 100%),
                 radial-gradient(circle 2.5px at 78% 22%, rgba(245, 158, 11, 0.6) 0%, transparent 100%),
@@ -289,7 +287,6 @@
                 radial-gradient(circle 4px at 28% 75%, rgba(16, 185, 129, 0.5) 0%, transparent 100%),
                 radial-gradient(circle 2px at 60% 85%, rgba(225, 29, 72, 0.4) 0%, transparent 100%),
                 radial-gradient(circle 3px at 45% 15%, rgba(2, 132, 199, 0.4) 0%, transparent 100%),
-                /* Textura sutil de papel de aguarela prensado a frio */
                 radial-gradient(circle 1px at 30% 40%, rgba(0,0,0,0.03) 0%, transparent 100%),
                 radial-gradient(circle 1px at 70% 60%, rgba(0,0,0,0.025) 0%, transparent 100%);
             background-attachment: fixed;
@@ -355,70 +352,25 @@
             border-radius: 50px !important;
             transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
         }
-        body[data-theme="aquarela"] button:hover {
-            transform: translateY(-2px) scale(1.03) !important;
-        }
-        body[data-theme="aquarela"] button:active {
-            transform: scale(0.97) !important;
-        }
-
-        body[data-theme="aquarela"] button[onclick*="copyFromData"][onclick*="ePt"] {
-            background: linear-gradient(135deg, #059669, #0284c7) !important;
-            border: none !important;
-            color: white !important;
-            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3) !important;
-        }
-        body[data-theme="aquarela"] button[onclick*="copyFromData"][onclick*="eEs"] {
-            background: linear-gradient(135deg, #e11d48, #d97706) !important;
-            border: none !important;
-            color: white !important;
-            box-shadow: 0 4px 15px rgba(225, 29, 72, 0.3) !important;
-        }
-        body[data-theme="aquarela"] button[onclick*="switchMainView('cleaning')"] {
-            background: linear-gradient(135deg, #2563eb, #7c3aed) !important;
-            border: none !important;
-            color: white !important;
-            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3) !important;
-        }
-        body[data-theme="aquarela"] button[onclick*="switchMainView('occupancy')"] {
-            background: linear-gradient(135deg, #059669, #10b981) !important;
-            border: none !important;
-            color: white !important;
-            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3) !important;
-        }
+        body[data-theme="aquarela"] button:hover { transform: translateY(-2px) scale(1.03) !important; }
+        body[data-theme="aquarela"] button:active { transform: scale(0.97) !important; }
+        body[data-theme="aquarela"] button[onclick*="copyFromData"][onclick*="ePt"] { background: linear-gradient(135deg, #059669, #0284c7) !important; border: none !important; color: white !important; box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3) !important; }
+        body[data-theme="aquarela"] button[onclick*="copyFromData"][onclick*="eEs"] { background: linear-gradient(135deg, #e11d48, #d97706) !important; border: none !important; color: white !important; box-shadow: 0 4px 15px rgba(225, 29, 72, 0.3) !important; }
+        body[data-theme="aquarela"] button[onclick*="switchMainView('cleaning')"] { background: linear-gradient(135deg, #2563eb, #7c3aed) !important; border: none !important; color: white !important; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3) !important; }
+        body[data-theme="aquarela"] button[onclick*="switchMainView('occupancy')"] { background: linear-gradient(135deg, #059669, #10b981) !important; border: none !important; color: white !important; box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3) !important; }
 
         body[data-theme="aquarela"] hr {
             border: none !important;
             height: 4px !important;
-            background: linear-gradient(90deg,
-                transparent 0%,
-                rgba(2, 132, 199, 0.5) 15%,
-                rgba(124, 58, 237, 0.5) 38%,
-                rgba(225, 29, 72, 0.5) 65%,
-                rgba(245, 158, 11, 0.45) 85%,
-                transparent 100%
-            ) !important;
+            background: linear-gradient(90deg, transparent 0%, rgba(2, 132, 199, 0.5) 15%, rgba(124, 58, 237, 0.5) 38%, rgba(225, 29, 72, 0.5) 65%, rgba(245, 158, 11, 0.45) 85%, transparent 100%) !important;
             border-radius: 50px !important;
             margin: 20px 0 !important;
             filter: blur(0.25px);
         }
 
-        body[data-theme="aquarela"] .theme-popup {
-            background: rgba(255, 255, 255, 0.95) !important;
-            border: 2px solid rgba(124, 58, 237, 0.25) !important;
-            box-shadow: 0 15px 45px rgba(2, 132, 199, 0.2) !important;
-            backdrop-filter: blur(20px);
-        }
-        body[data-theme="aquarela"] .theme-popup-item {
-            font-family: 'Kalam', cursive, sans-serif !important;
-            font-size: 15px !important;
-            font-weight: 700;
-        }
-        body[data-theme="aquarela"] .theme-popup-item.active {
-            background: linear-gradient(135deg, rgba(2, 132, 199, 0.15), rgba(225, 29, 72, 0.12)) !important;
-            color: #1e40af !important;
-        }
-
+        body[data-theme="aquarela"] .theme-popup { background: rgba(255, 255, 255, 0.95) !important; border: 2px solid rgba(124, 58, 237, 0.25) !important; box-shadow: 0 15px 45px rgba(2, 132, 199, 0.2) !important; backdrop-filter: blur(20px); }
+        body[data-theme="aquarela"] .theme-popup-item { font-family: 'Kalam', cursive, sans-serif !important; font-size: 15px !important; font-weight: 700; }
+        body[data-theme="aquarela"] .theme-popup-item.active { background: linear-gradient(135deg, rgba(2, 132, 199, 0.15), rgba(225, 29, 72, 0.12)) !important; color: #1e40af !important; }
         body[data-theme="aquarela"] #al-theme-overlay { opacity: 0; }
 
         /* ══════════════════════════════════════════════════ */
@@ -429,13 +381,7 @@
             background-color: #f0ebe2;
             color: #1a1a1a;
             background-image:
-                repeating-linear-gradient(90deg,
-                    transparent,
-                    transparent calc(50% - 1px),
-                    rgba(0,0,0,0.04) calc(50% - 1px),
-                    rgba(0,0,0,0.04) calc(50% + 1px),
-                    transparent calc(50% + 1px)
-                ),
+                repeating-linear-gradient(90deg, transparent, transparent calc(50% - 1px), rgba(0,0,0,0.04) calc(50% - 1px), rgba(0,0,0,0.04) calc(50% + 1px), transparent calc(50% + 1px)),
                 radial-gradient(ellipse at 20% 30%, rgba(180,160,120,0.08) 0%, transparent 50%),
                 radial-gradient(ellipse at 80% 70%, rgba(160,140,100,0.06) 0%, transparent 50%),
                 linear-gradient(to bottom, rgba(0,0,0,0.01) 0%, rgba(0,0,0,0.04) 100%);
@@ -443,66 +389,17 @@
         }
         body[data-theme="jornal"] div[style*="background-color: #f8f9fa"],
         body[data-theme="jornal"] div[style*="border: 1px solid #ddd"] {
-            background-color: rgba(255,255,252,0.7) !important;
-            border: 1px solid #1a1a1a !important;
-            border-top: 3px double #1a1a1a !important;
-            border-radius: 0px !important;
-            color: #1a1a1a !important;
-            box-shadow: none !important;
+            background-color: rgba(255,255,252,0.7) !important; border: 1px solid #1a1a1a !important;
+            border-top: 3px double #1a1a1a !important; border-radius: 0px !important;
+            color: #1a1a1a !important; box-shadow: none !important;
         }
-        body[data-theme="jornal"] h1 {
-            font-weight: 900;
-            font-size: 32px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            border-bottom: 3px double #1a1a1a;
-            padding-bottom: 8px;
-            line-height: 1.1;
-        }
-        body[data-theme="jornal"] h2 {
-            color: #1a1a1a !important;
-            font-weight: 700;
-            font-style: italic;
-            font-size: 18px;
-            border-top: 1px solid #1a1a1a;
-            padding-top: 6px;
-            margin-top: 20px;
-        }
-        body[data-theme="jornal"] h3 {
-            color: #444 !important;
-            font-weight: 600;
-            font-variant: small-caps;
-            letter-spacing: 1px;
-        }
-        body[data-theme="jornal"] button {
-            font-family: 'Playfair Display', serif !important;
-            border-radius: 0px !important;
-            font-variant: small-caps;
-            letter-spacing: 1px;
-            border: 1.5px solid #1a1a1a !important;
-            font-weight: 600 !important;
-        }
-        body[data-theme="jornal"] hr {
-            border: none !important;
-            height: 1px !important;
-            background: #1a1a1a !important;
-            margin: 18px 0 !important;
-        }
+        body[data-theme="jornal"] h1 { font-weight: 900; font-size: 32px; text-transform: uppercase; letter-spacing: 2px; border-bottom: 3px double #1a1a1a; padding-bottom: 8px; line-height: 1.1; }
+        body[data-theme="jornal"] h2 { color: #1a1a1a !important; font-weight: 700; font-style: italic; font-size: 18px; border-top: 1px solid #1a1a1a; padding-top: 6px; margin-top: 20px; }
+        body[data-theme="jornal"] h3 { color: #444 !important; font-weight: 600; font-variant: small-caps; letter-spacing: 1px; }
+        body[data-theme="jornal"] button { font-family: 'Playfair Display', serif !important; border-radius: 0px !important; font-variant: small-caps; letter-spacing: 1px; border: 1.5px solid #1a1a1a !important; font-weight: 600 !important; }
+        body[data-theme="jornal"] hr { border: none !important; height: 1px !important; background: #1a1a1a !important; margin: 18px 0 !important; }
         body[data-theme="jornal"] #al-theme-overlay { opacity: 0; }
-        body[data-theme="jornal"]::before {
-            content: "✦ EDIÇÃO DIÁRIA ✦";
-            display: block;
-            text-align: center;
-            font-family: 'Playfair Display', serif;
-            font-variant: small-caps;
-            font-size: 11px;
-            letter-spacing: 4px;
-            color: rgba(0,0,0,0.35);
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-            border-top: 1px solid rgba(0,0,0,0.1);
-            padding: 4px 0;
-            margin: -10px 0 14px 0;
-        }
+        body[data-theme="jornal"]::before { content: "✦ EDIÇÃO DIÁRIA ✦"; display: block; text-align: center; font-family: 'Playfair Display', serif; font-variant: small-caps; font-size: 11px; letter-spacing: 4px; color: rgba(0,0,0,0.35); border-bottom: 1px solid rgba(0,0,0,0.1); border-top: 1px solid rgba(0,0,0,0.1); padding: 4px 0; margin: -10px 0 14px 0; }
 
         /* ══════════════════════════════════════════════════ */
         /* 9. QUADRO NEGRO                                   */
@@ -532,60 +429,17 @@
         }
         body[data-theme="quadro"] div[style*="background-color: #f8f9fa"],
         body[data-theme="quadro"] div[style*="border: 1px solid #ddd"] {
-            background: transparent !important;
-            border: 2px dashed rgba(255,255,255,0.35) !important;
-            border-radius: 4px !important;
-            color: #e2ddd0 !important;
-            box-shadow: none !important;
-            position: relative;
+            background: transparent !important; border: 2px dashed rgba(255,255,255,0.35) !important;
+            border-radius: 4px !important; color: #e2ddd0 !important; box-shadow: none !important; position: relative;
         }
-        body[data-theme="quadro"] h1 {
-            color: #ffffff;
-            font-size: 34px;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.3), 0 0 8px rgba(255,255,255,0.08);
-            text-decoration: underline;
-            text-underline-offset: 6px;
-            text-decoration-style: solid;
-            text-decoration-color: rgba(255,255,255,0.4);
-        }
-        body[data-theme="quadro"] h2 {
-            color: #ffe066 !important;
-            font-weight: 400;
-            text-shadow: 0 0 6px rgba(255,224,102,0.15);
-        }
-        body[data-theme="quadro"] h3 {
-            color: #7ecfff !important;
-            font-weight: 400;
-            text-shadow: 0 0 6px rgba(126,207,255,0.15);
-        }
-        body[data-theme="quadro"] button {
-            font-family: 'Patrick Hand', cursive !important;
-            font-size: 16px !important;
-            border-radius: 4px !important;
-            border: 2px dashed rgba(255,255,255,0.4) !important;
-            background: transparent !important;
-            color: #e2ddd0 !important;
-        }
-        body[data-theme="quadro"] button:hover {
-            background: rgba(255,255,255,0.08) !important;
-        }
-        body[data-theme="quadro"] hr {
-            border: none !important;
-            height: 0px !important;
-            border-bottom: 2px dashed rgba(255,255,255,0.2) !important;
-        }
+        body[data-theme="quadro"] h1 { color: #ffffff; font-size: 34px; text-shadow: 1px 1px 3px rgba(0,0,0,0.3), 0 0 8px rgba(255,255,255,0.08); text-decoration: underline; text-underline-offset: 6px; text-decoration-style: solid; text-decoration-color: rgba(255,255,255,0.4); }
+        body[data-theme="quadro"] h2 { color: #ffe066 !important; font-weight: 400; text-shadow: 0 0 6px rgba(255,224,102,0.15); }
+        body[data-theme="quadro"] h3 { color: #7ecfff !important; font-weight: 400; text-shadow: 0 0 6px rgba(126,207,255,0.15); }
+        body[data-theme="quadro"] button { font-family: 'Patrick Hand', cursive !important; font-size: 16px !important; border-radius: 4px !important; border: 2px dashed rgba(255,255,255,0.4) !important; background: transparent !important; color: #e2ddd0 !important; }
+        body[data-theme="quadro"] button:hover { background: rgba(255,255,255,0.08) !important; }
+        body[data-theme="quadro"] hr { border: none !important; height: 0px !important; border-bottom: 2px dashed rgba(255,255,255,0.2) !important; }
         body[data-theme="quadro"] #al-theme-overlay { opacity: 0; }
-        body[data-theme="quadro"]::after {
-            content: "▬▬";
-            position: fixed;
-            bottom: 12px;
-            right: 16px;
-            font-size: 22px;
-            color: rgba(255,255,255,0.12);
-            letter-spacing: -2px;
-            pointer-events: none;
-            z-index: 0;
-        }
+        body[data-theme="quadro"]::after { content: "▬▬"; position: fixed; bottom: 12px; right: 16px; font-size: 22px; color: rgba(255,255,255,0.12); letter-spacing: -2px; pointer-events: none; z-index: 0; }
 
         /* ══════════════════════════════════════════ */
         /* ANIMAÇÕES                                   */
@@ -601,32 +455,16 @@
         /* ══════════════════════════════════════════ */
         body[data-theme="outono"] .theme-popup,
         body[data-theme="cyber"] .theme-popup,
-        body[data-theme="quadro"] .theme-popup {
-            background: rgba(12,12,12,0.95) !important;
-            border-color: rgba(255,255,255,0.15) !important;
-            color: #fff !important;
-        }
+        body[data-theme="quadro"] .theme-popup { background: rgba(12,12,12,0.95) !important; border-color: rgba(255,255,255,0.15) !important; color: #fff !important; }
         body[data-theme="outono"] .theme-popup-item:hover,
         body[data-theme="cyber"] .theme-popup-item:hover,
-        body[data-theme="quadro"] .theme-popup-item:hover {
-            background: rgba(255,255,255,0.08) !important;
-        }
-        body[data-theme="outono"] .theme-popup-item.active {
-            background: rgba(245,158,11,0.15) !important;
-        }
-        body[data-theme="cyber"] .theme-popup-item.active {
-            background: rgba(0,255,65,0.12) !important;
-        }
-        body[data-theme="quadro"] .theme-popup-item.active {
-            background: rgba(255,224,102,0.12) !important;
-        }
-
+        body[data-theme="quadro"] .theme-popup-item:hover { background: rgba(255,255,255,0.08) !important; }
+        body[data-theme="outono"] .theme-popup-item.active { background: rgba(245,158,11,0.15) !important; }
+        body[data-theme="cyber"] .theme-popup-item.active { background: rgba(0,255,65,0.12) !important; }
+        body[data-theme="quadro"] .theme-popup-item.active { background: rgba(255,224,102,0.12) !important; }
         body[data-theme="outono"] .clock-btn,
         body[data-theme="cyber"] .clock-btn,
-        body[data-theme="quadro"] .clock-btn {
-            background-color: rgba(10,10,10,0.85) !important;
-            border-color: rgba(255,255,255,0.2) !important;
-        }
+        body[data-theme="quadro"] .clock-btn { background-color: rgba(10,10,10,0.85) !important; border-color: rgba(255,255,255,0.2) !important; }
 
         /* ══════════════════════════════════════════ */
         /* COMPONENTES EXCLUSIVOS DO TEMA OUTONO      */
@@ -641,7 +479,6 @@
         .segment-btn { font-family: inherit; padding: 10px 20px; font-size: 14px; font-weight: 600; border-radius: 12px; cursor: pointer; border: none; background: transparent; color: #a3998e; transition: all 0.25s ease; }
         .segment-btn.active-cleaning { background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-weight: 700; box-shadow: 0 4px 15px rgba(245,158,11,0.35); }
         .segment-btn.active-occupancy { background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-weight: 700; box-shadow: 0 4px 15px rgba(16,185,129,0.35); }
-
         body[data-theme="outono"] .clock-btn.active { background: linear-gradient(135deg, #ea580c, #c2410c) !important; box-shadow: 0 0 15px rgba(234,88,12,0.5) !important; border-color: transparent !important; }
     `;
     document.head.appendChild(style);
@@ -683,833 +520,29 @@ let unplayedRandomPool = [];
 
 function getRandomUniverseCSS() {
     const universes = [
-        /* ══════════════════════════════════════════ */
-        /* 1. GALÁXIA CÓSMICA 3D 🌌                  */
-        /* ══════════════════════════════════════════ */
-        {
-            name: "Galáxia Cósmica 🌌",
-            css: `
-                @keyframes ale-nebula-spin {
-                    0%   { background-position: 0% 0%; filter: hue-rotate(0deg); }
-                    50%  { background-position: 100% 100%; filter: hue-rotate(45deg); }
-                    100% { background-position: 0% 0%; filter: hue-rotate(0deg); }
-                }
-                @keyframes ale-star-pulse {
-                    0%, 100% { opacity: 0.6; transform: scale(1); }
-                    50%      { opacity: 1; transform: scale(1.05); }
-                }
-                @keyframes ale-galaxy-card-float {
-                    0%, 100% { transform: translateY(0px) rotateX(0deg); box-shadow: 0 10px 35px rgba(112, 26, 232, 0.3), inset 0 0 25px rgba(168, 85, 247, 0.15); }
-                    50%      { transform: translateY(-10px) rotateX(2deg); box-shadow: 0 20px 50px rgba(56, 189, 248, 0.4), inset 0 0 35px rgba(56, 189, 248, 0.2); }
-                }
-                @keyframes ale-star-glow {
-                    0%, 100% { text-shadow: 0 0 10px #38bdf8, 0 0 20px #c084fc; }
-                    50%      { text-shadow: 0 0 20px #f472b6, 0 0 40px #38bdf8; }
-                }
-                body[data-theme="aleatorio"] {
-                    font-family: 'Orbitron', 'Plus Jakarta Sans', sans-serif;
-                    background-color: #050212;
-                    color: #e0e7ff;
-                    background-image:
-                        radial-gradient(ellipse 600px 400px at 20% 30%, rgba(168, 85, 247, 0.35) 0%, transparent 70%),
-                        radial-gradient(ellipse 500px 400px at 80% 70%, rgba(56, 189, 248, 0.3) 0%, transparent 70%),
-                        radial-gradient(ellipse 400px 300px at 50% 50%, rgba(244, 114, 182, 0.2) 0%, transparent 70%),
-                        radial-gradient(circle 2px at 15% 25%, #ffffff 0%, transparent 100%),
-                        radial-gradient(circle 3px at 75% 15%, rgba(244, 114, 182, 0.9) 0%, transparent 100%),
-                        radial-gradient(circle 2px at 85% 75%, #ffffff 0%, transparent 100%),
-                        radial-gradient(circle 1.5px at 35% 85%, rgba(56, 189, 248, 0.9) 0%, transparent 100%);
-                    background-size: 200% 200%, 200% 200%, 200% 200%, auto, auto, auto, auto;
-                    animation: ale-nebula-spin 12s ease-in-out infinite;
-                    background-attachment: fixed;
-                }
-                body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"],
-                body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] {
-                    background: rgba(14, 10, 32, 0.85) !important;
-                    border: 1.5px solid rgba(168, 85, 247, 0.5) !important;
-                    border-radius: 20px !important;
-                    color: #e0e7ff !important;
-                    animation: ale-galaxy-card-float 4s ease-in-out infinite !important;
-                    backdrop-filter: blur(16px);
-                }
-                body[data-theme="aleatorio"] h1 {
-                    font-weight: 900;
-                    font-size: 36px;
-                    background: linear-gradient(135deg, #38bdf8 0%, #c084fc 40%, #f472b6 80%, #38bdf8 100%);
-                    background-size: 300% 300%;
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    letter-spacing: 3px;
-                    animation: ale-nebula-spin 6s linear infinite, ale-star-glow 3s ease-in-out infinite;
-                }
-                body[data-theme="aleatorio"] h2 { color: #38bdf8 !important; text-shadow: 0 0 12px rgba(56, 189, 248, 0.6); font-weight: 700; letter-spacing: 1.5px; }
-                body[data-theme="aleatorio"] h3 { color: #c084fc !important; text-shadow: 0 0 10px rgba(192, 132, 252, 0.5); font-weight: 700; }
-                body[data-theme="aleatorio"] button {
-                    border-radius: 14px !important;
-                    font-family: 'Orbitron', sans-serif !important;
-                    letter-spacing: 1px;
-                    box-shadow: 0 0 18px rgba(168, 85, 247, 0.4) !important;
-                    border: 1px solid rgba(168, 85, 247, 0.6) !important;
-                    transition: all 0.2s ease !important;
-                }
-                body[data-theme="aleatorio"] button:hover { transform: translateY(-3px) scale(1.05) !important; box-shadow: 0 0 25px rgba(56, 189, 248, 0.6) !important; }
-                body[data-theme="aleatorio"] hr { border: none !important; height: 2px !important; background: linear-gradient(90deg, transparent, #a855f7, #38bdf8, #f472b6, transparent) !important; }
-            `
-        },
-        /* ══════════════════════════════════════════ */
-        /* 2. SYNTHWAVE & OUTRUN SUNSET 🌅            */
-        /* ══════════════════════════════════════════ */
-        {
-            name: "Synthwave 80s 🌅",
-            css: `
-                @keyframes ale-synth-grid {
-                    0%   { background-position: 0 0; }
-                    100% { background-position: 0 40px; }
-                }
-                @keyframes ale-synth-sun {
-                    0%, 100% { transform: scale(1) translateY(0); filter: drop-shadow(0 0 30px #f43f5e); }
-                    50%      { transform: scale(1.04) translateY(-4px); filter: drop-shadow(0 0 50px #eab308); }
-                }
-                @keyframes ale-synth-border-pulse {
-                    0%, 100% { border-color: #ec4899; box-shadow: 0 0 20px rgba(236, 72, 153, 0.4), inset 0 0 15px rgba(6, 182, 212, 0.15); }
-                    50%      { border-color: #06b6d4; box-shadow: 0 0 30px rgba(6, 182, 212, 0.5), inset 0 0 20px rgba(236, 72, 153, 0.2); }
-                }
-                body[data-theme="aleatorio"] {
-                    font-family: 'Righteous', 'Plus Jakarta Sans', cursive;
-                    background-color: #120224;
-                    color: #fdf4ff;
-                    background-image:
-                        linear-gradient(to bottom, transparent 40%, rgba(236, 72, 153, 0.15) 80%, rgba(6, 182, 212, 0.25) 100%),
-                        repeating-linear-gradient(0deg, rgba(217, 70, 239, 0.15) 0px, rgba(217, 70, 239, 0.15) 1px, transparent 1px, transparent 40px),
-                        repeating-linear-gradient(90deg, rgba(6, 182, 212, 0.15) 0px, rgba(6, 182, 212, 0.15) 1px, transparent 1px, transparent 40px),
-                        radial-gradient(circle 320px at 50% 8%, rgba(244, 63, 94, 0.4) 0%, transparent 100%);
-                    background-size: 100% 100%, 100% 40px, 40px 100%, 100% 100%;
-                    animation: ale-synth-grid 2s linear infinite;
-                    background-attachment: fixed;
-                }
-                body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"],
-                body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] {
-                    background: rgba(30, 8, 55, 0.88) !important;
-                    border: 2px solid #ec4899 !important;
-                    border-radius: 14px !important;
-                    color: #fdf4ff !important;
-                    animation: ale-synth-border-pulse 3s ease-in-out infinite !important;
-                    backdrop-filter: blur(10px);
-                }
-                body[data-theme="aleatorio"] h1 {
-                    font-size: 38px;
-                    background: linear-gradient(180deg, #fef08a 0%, #f43f5e 50%, #d946ef 100%);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    text-shadow: 3px 3px 0px rgba(6, 182, 212, 0.5);
-                    letter-spacing: 2px;
-                    animation: ale-synth-sun 3s ease-in-out infinite;
-                }
-                body[data-theme="aleatorio"] h2 { color: #22d3ee !important; text-shadow: 0 0 10px rgba(34, 211, 238, 0.7); font-weight: 700; letter-spacing: 1px; }
-                body[data-theme="aleatorio"] h3 { color: #f472b6 !important; text-shadow: 0 0 8px rgba(244, 114, 182, 0.6); }
-                body[data-theme="aleatorio"] button {
-                    font-family: 'Righteous', cursive !important;
-                    border-radius: 8px !important;
-                    text-transform: uppercase;
-                    box-shadow: 4px 4px 0px #06b6d4 !important;
-                    border: 2px solid #ec4899 !important;
-                }
-                body[data-theme="aleatorio"] button:hover { transform: translate(-3px, -3px) !important; box-shadow: 7px 7px 0px #06b6d4 !important; }
-                body[data-theme="aleatorio"] hr { border: none !important; height: 3px !important; background: linear-gradient(90deg, #ec4899, #fef08a, #06b6d4) !important; }
-            `
-        },
-        /* ══════════════════════════════════════════ */
-        /* 3. SELVA ESMERALDA & VITALIDADE 🌿        */
-        /* ══════════════════════════════════════════ */
-        {
-            name: "Selva Esmeralda 🌿",
-            css: `
-                @keyframes ale-firefly-float {
-                    0%, 100% { transform: translateY(0) scale(1); box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 25px rgba(16, 185, 129, 0.12); }
-                    50%      { transform: translateY(-8px) scale(1.01); box-shadow: 0 18px 45px rgba(16, 185, 129, 0.25), inset 0 0 35px rgba(245, 158, 11, 0.15); }
-                }
-                body[data-theme="aleatorio"] {
-                    font-family: 'Outfit', sans-serif;
-                    background-color: #03140b;
-                    color: #ecfdf5;
-                    background-image:
-                        radial-gradient(ellipse 600px 400px at 15% 20%, rgba(16, 185, 129, 0.3) 0%, transparent 65%),
-                        radial-gradient(ellipse 500px 400px at 85% 80%, rgba(245, 158, 11, 0.25) 0%, transparent 65%),
-                        radial-gradient(circle 3px at 25% 40%, rgba(52, 211, 153, 0.8) 0%, transparent 100%),
-                        radial-gradient(circle 2.5px at 70% 30%, rgba(251, 191, 36, 0.85) 0%, transparent 100%),
-                        radial-gradient(circle 3.5px at 80% 65%, rgba(52, 211, 153, 0.7) 0%, transparent 100%);
-                    background-attachment: fixed;
-                }
-                body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"],
-                body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] {
-                    background: rgba(8, 32, 18, 0.88) !important;
-                    border: 2px solid rgba(16, 185, 129, 0.45) !important;
-                    border-radius: 36px 8px 36px 8px !important;
-                    color: #ecfdf5 !important;
-                    animation: ale-firefly-float 5s ease-in-out infinite !important;
-                    backdrop-filter: blur(12px);
-                }
-                body[data-theme="aleatorio"] h1 {
-                    font-weight: 800;
-                    font-size: 34px;
-                    background: linear-gradient(135deg, #a7f3d0 0%, #10b981 40%, #fbbf24 85%);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    letter-spacing: 1px;
-                }
-                body[data-theme="aleatorio"] h2 { color: #34d399 !important; text-shadow: 0 0 10px rgba(52, 211, 153, 0.4); font-weight: 700; }
-                body[data-theme="aleatorio"] h3 { color: #fbbf24 !important; font-weight: 700; }
-                body[data-theme="aleatorio"] button {
-                    border-radius: 25px !important;
-                    font-weight: 700;
-                    border: 1.5px solid #10b981 !important;
-                    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3) !important;
-                }
-                body[data-theme="aleatorio"] hr { border: none !important; height: 2px !important; background: linear-gradient(90deg, transparent, #10b981, #fbbf24, transparent) !important; }
-            `
-        },
-        /* ══════════════════════════════════════════ */
-        /* 4. CANDY POP & NUVENS DOCES 🍭             */
-        /* ══════════════════════════════════════════ */
-        {
-            name: "Candy Pop 🍭",
-            css: `
-                @keyframes ale-candy-wave {
-                    0%, 100% { background-position: 0% 50%; }
-                    50%      { background-position: 100% 50%; }
-                }
-                @keyframes ale-candy-bounce {
-                    0%, 100% { transform: translateY(0) scale(1); }
-                    50%      { transform: translateY(-7px) scale(1.015); }
-                }
-                body[data-theme="aleatorio"] {
-                    font-family: 'Comfortaa', cursive, sans-serif;
-                    background: linear-gradient(135deg, #fdf2f8, #fce7f3, #fae8ff, #fef9c3);
-                    background-size: 300% 300%;
-                    animation: ale-candy-wave 6s ease infinite;
-                    color: #4a1d34;
-                    background-attachment: fixed;
-                }
-                body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"],
-                body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] {
-                    background: rgba(255, 255, 255, 0.9) !important;
-                    border: 3.5px solid #f472b6 !important;
-                    border-radius: 32px !important;
-                    color: #4a1d34 !important;
-                    box-shadow: 0 14px 35px rgba(244, 114, 182, 0.25) !important;
-                    animation: ale-candy-bounce 3.5s ease-in-out infinite !important;
-                    backdrop-filter: blur(10px);
-                }
-                body[data-theme="aleatorio"] h1 {
-                    font-weight: 700;
-                    font-size: 34px;
-                    color: #db2777;
-                    text-shadow: 3px 3px 0px rgba(251, 207, 232, 0.9), 5px 5px 0px rgba(192, 132, 252, 0.3);
-                }
-                body[data-theme="aleatorio"] h2 { color: #a855f7 !important; font-weight: 700; }
-                body[data-theme="aleatorio"] h3 { color: #ec4899 !important; font-weight: 700; }
-                body[data-theme="aleatorio"] button {
-                    font-family: 'Comfortaa', cursive !important;
-                    border-radius: 50px !important;
-                    font-weight: 700 !important;
-                    border: 2px solid #ec4899 !important;
-                    box-shadow: 0 6px 18px rgba(219, 39, 119, 0.25) !important;
-                }
-                body[data-theme="aleatorio"] button:hover { transform: scale(1.06) !important; }
-                body[data-theme="aleatorio"] hr { border: none !important; height: 4px !important; background: linear-gradient(90deg, #f472b6, #c084fc, #fde047, #f472b6) !important; border-radius: 50px !important; }
-            `
-        },
-        /* ══════════════════════════════════════════ */
-        /* 5. NEO-BRUTALISMO POP-ART 👾              */
-        /* ══════════════════════════════════════════ */
-        {
-            name: "Neo-Brutalismo 👾",
-            css: `
-                @keyframes ale-brutal-tilt {
-                    0%, 100% { transform: rotate(0deg); }
-                    25%      { transform: rotate(1deg) scale(1.01); }
-                    75%      { transform: rotate(-1deg) scale(0.99); }
-                }
-                body[data-theme="aleatorio"] {
-                    font-family: 'Space Grotesk', sans-serif;
-                    background-color: #fde047;
-                    color: #000000;
-                    background-image:
-                        radial-gradient(#000000 15%, transparent 16%),
-                        radial-gradient(#000000 15%, transparent 16%);
-                    background-size: 20px 20px;
-                    background-position: 0 0, 10px 10px;
-                    background-attachment: fixed;
-                }
-                body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"],
-                body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] {
-                    background: #ffffff !important;
-                    border: 4px solid #000000 !important;
-                    border-radius: 0px !important;
-                    color: #000000 !important;
-                    box-shadow: 10px 10px 0px #000000 !important;
-                    animation: ale-brutal-tilt 5s ease-in-out infinite !important;
-                }
-                body[data-theme="aleatorio"] h1 {
-                    font-weight: 900;
-                    font-size: 34px;
-                    text-transform: uppercase;
-                    background: #000000;
-                    color: #fde047;
-                    display: inline-block;
-                    padding: 6px 16px;
-                    box-shadow: 6px 6px 0px #ffffff, 10px 10px 0px #000000;
-                    letter-spacing: 2px;
-                }
-                body[data-theme="aleatorio"] h2 { color: #000000 !important; font-weight: 800; text-transform: uppercase; border-bottom: 4px solid #000; padding-bottom: 4px; }
-                body[data-theme="aleatorio"] h3 { color: #000000 !important; font-weight: 800; }
-                body[data-theme="aleatorio"] button {
-                    font-family: 'Space Grotesk', sans-serif !important;
-                    border-radius: 0px !important;
-                    border: 3.5px solid #000000 !important;
-                    font-weight: 800 !important;
-                    box-shadow: 5px 5px 0px #000000 !important;
-                    text-transform: uppercase;
-                    letter-spacing: 1px;
-                }
-                body[data-theme="aleatorio"] button:hover { transform: translate(-3px, -3px) !important; box-shadow: 8px 8px 0px #000000 !important; }
-                body[data-theme="aleatorio"] hr { border: none !important; border-top: 4px solid #000000 !important; }
-            `
-        },
-        /* ══════════════════════════════════════════ */
-        /* 6. PAPIRO IMPERIAL & OURO ALQUÍMICO 🏺    */
-        /* ══════════════════════════════════════════ */
-        {
-            name: "Ouro Imperial 🏺",
-            css: `
-                @keyframes ale-gold-shimmer {
-                    0%   { background-position: -200% center; }
-                    100% { background-position: 200% center; }
-                }
-                @keyframes ale-imperial-float {
-                    0%, 100% { box-shadow: 0 10px 30px rgba(0,0,0,0.7), 0 0 20px rgba(217, 119, 6, 0.3); }
-                    50%      { box-shadow: 0 16px 45px rgba(0,0,0,0.8), 0 0 35px rgba(251, 191, 36, 0.5); }
-                }
-                body[data-theme="aleatorio"] {
-                    font-family: 'Cinzel', serif;
-                    background-color: #120e0a;
-                    color: #fef3c7;
-                    background-image:
-                        radial-gradient(ellipse at 50% 50%, rgba(217, 119, 6, 0.22) 0%, transparent 80%),
-                        radial-gradient(circle 2px at 20% 20%, rgba(245, 158, 11, 0.4) 0%, transparent 100%),
-                        radial-gradient(circle 2px at 80% 80%, rgba(245, 158, 11, 0.4) 0%, transparent 100%);
-                    background-attachment: fixed;
-                }
-                body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"],
-                body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] {
-                    background: rgba(28, 22, 16, 0.92) !important;
-                    border: 2px solid #d97706 !important;
-                    outline: 1px solid rgba(251, 191, 36, 0.4) !important;
-                    outline-offset: -6px;
-                    border-radius: 6px !important;
-                    color: #fef3c7 !important;
-                    animation: ale-imperial-float 4s ease-in-out infinite !important;
-                }
-                body[data-theme="aleatorio"] h1 {
-                    font-weight: 900;
-                    font-size: 34px;
-                    letter-spacing: 4px;
-                    background: linear-gradient(90deg, #d97706, #fbbf24, #fef08a, #fbbf24, #d97706);
-                    background-size: 200% auto;
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    animation: ale-gold-shimmer 4s linear infinite;
-                }
-                body[data-theme="aleatorio"] h2 { color: #fbbf24 !important; font-weight: 700; letter-spacing: 2px; text-shadow: 0 0 10px rgba(251, 191, 36, 0.4); }
-                body[data-theme="aleatorio"] h3 { color: #d97706 !important; font-weight: 700; letter-spacing: 1px; }
-                body[data-theme="aleatorio"] button {
-                    font-family: 'Cinzel', serif !important;
-                    border-radius: 4px !important;
-                    letter-spacing: 2px;
-                    border: 1.5px solid #d97706 !important;
-                    background: rgba(217, 119, 6, 0.15) !important;
-                }
-                body[data-theme="aleatorio"] hr { border-color: rgba(217, 119, 6, 0.4) !important; }
-            `
-        },
-        /* ══════════════════════════════════════════ */
-        /* 7. ABISMO OCEÂNICO BIOLUMINESCENTE 🌊      */
-        /* ══════════════════════════════════════════ */
-        {
-            name: "Abismo Oceânico 🌊",
-            css: `
-                @keyframes ale-ocean-undulate {
-                    0%, 100% { background-position: 0% 0%; }
-                    50%      { background-position: 50% 100%; }
-                }
-                @keyframes ale-jelly-glow {
-                    0%, 100% { transform: translateY(0); box-shadow: 0 10px 35px rgba(2, 18, 36, 0.7), inset 0 0 25px rgba(6, 182, 212, 0.15); }
-                    50%      { transform: translateY(-9px); box-shadow: 0 20px 50px rgba(6, 182, 212, 0.35), inset 0 0 35px rgba(34, 211, 238, 0.25); }
-                }
-                body[data-theme="aleatorio"] {
-                    font-family: 'Outfit', sans-serif;
-                    background-color: #010d1a;
-                    color: #e0f2fe;
-                    background-image:
-                        radial-gradient(ellipse 700px 500px at 20% 10%, rgba(6, 182, 212, 0.28) 0%, transparent 70%),
-                        radial-gradient(ellipse 600px 400px at 80% 90%, rgba(59, 130, 246, 0.32) 0%, transparent 70%),
-                        radial-gradient(circle 3px at 30% 60%, rgba(34, 211, 238, 0.6) 0%, transparent 100%),
-                        radial-gradient(circle 2px at 70% 30%, rgba(56, 189, 248, 0.7) 0%, transparent 100%);
-                    background-attachment: fixed;
-                    animation: ale-ocean-undulate 8s ease-in-out infinite;
-                }
-                body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"],
-                body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] {
-                    background: rgba(6, 25, 48, 0.85) !important;
-                    border: 1.5px solid rgba(34, 211, 238, 0.45) !important;
-                    border-radius: 22px !important;
-                    color: #e0f2fe !important;
-                    animation: ale-jelly-glow 4.5s ease-in-out infinite !important;
-                    backdrop-filter: blur(15px);
-                }
-                body[data-theme="aleatorio"] h1 {
-                    font-weight: 800;
-                    font-size: 34px;
-                    background: linear-gradient(135deg, #38bdf8 0%, #06b6d4 50%, #a5f3fc 100%);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                }
-                body[data-theme="aleatorio"] h2 { color: #38bdf8 !important; text-shadow: 0 0 10px rgba(56, 189, 248, 0.5); font-weight: 700; }
-                body[data-theme="aleatorio"] h3 { color: #22d3ee !important; font-weight: 700; }
-                body[data-theme="aleatorio"] button {
-                    border-radius: 16px !important;
-                    box-shadow: 0 4px 18px rgba(6, 182, 212, 0.35) !important;
-                    border: 1px solid rgba(34, 211, 238, 0.5) !important;
-                }
-                body[data-theme="aleatorio"] hr { border-color: rgba(34, 211, 238, 0.3) !important; }
-            `
-        },
-        /* ══════════════════════════════════════════ */
-        /* 8. CYBERPUNK 2077 HUD ⚡                   */
-        /* ══════════════════════════════════════════ */
-        {
-            name: "Cyberpunk 2077 ⚡",
-            css: `
-                @keyframes ale-cyber-hud-glitch {
-                    0%, 100% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
-                    92%      { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
-                    94%      { clip-path: polygon(0 15%, 100% 15%, 100% 85%, 0 85%); transform: translate(-3px, 1px); }
-                    96%      { clip-path: polygon(0 50%, 100% 50%, 100% 60%, 0 60%); transform: translate(3px, -1px); }
-                    98%      { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); transform: translate(0, 0); }
-                }
-                body[data-theme="aleatorio"] {
-                    font-family: 'Orbitron', monospace, sans-serif;
-                    background-color: #08080c;
-                    color: #fef08a;
-                    background-image:
-                        repeating-linear-gradient(0deg, rgba(250, 204, 21, 0.04) 0px, rgba(250, 204, 21, 0.04) 1px, transparent 1px, transparent 4px),
-                        radial-gradient(circle 300px at 80% 20%, rgba(250, 204, 21, 0.2) 0%, transparent 100%);
-                    background-attachment: fixed;
-                }
-                body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"],
-                body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] {
-                    background: rgba(16, 16, 24, 0.94) !important;
-                    border: 2px solid #facc15 !important;
-                    border-left: 8px solid #facc15 !important;
-                    border-radius: 0px !important;
-                    color: #fef08a !important;
-                    box-shadow: 0 0 20px rgba(250, 204, 21, 0.25) !important;
-                    animation: ale-cyber-hud-glitch 5s infinite !important;
-                }
-                body[data-theme="aleatorio"] h1 {
-                    font-weight: 900;
-                    color: #facc15;
-                    text-transform: uppercase;
-                    letter-spacing: 3px;
-                    text-shadow: 0 0 12px rgba(250, 204, 21, 0.6);
-                }
-                body[data-theme="aleatorio"] h2 { color: #38bdf8 !important; text-transform: uppercase; font-weight: 800; text-shadow: 0 0 8px rgba(56, 189, 248, 0.6); }
-                body[data-theme="aleatorio"] h3 { color: #facc15 !important; font-weight: 800; }
-                body[data-theme="aleatorio"] button {
-                    font-family: 'Orbitron', monospace !important;
-                    border-radius: 0px !important;
-                    text-transform: uppercase;
-                    border: 2px solid #facc15 !important;
-                }
-                body[data-theme="aleatorio"] hr { border-color: rgba(250, 204, 21, 0.5) !important; }
-            `
-        },
-        /* ══════════════════════════════════════════ */
-        /* 9. AURORA BOREAL POLAR 🌲                  */
-        /* ══════════════════════════════════════════ */
-        {
-            name: "Aurora Boreal 🌲",
-            css: `
-                @keyframes ale-aurora-sweep {
-                    0%   { background-position: 0% 50%; filter: hue-rotate(0deg); }
-                    50%  { background-position: 100% 50%; filter: hue-rotate(30deg); }
-                    100% { background-position: 0% 50%; filter: hue-rotate(0deg); }
-                }
-                @keyframes ale-aurora-float {
-                    0%, 100% { transform: translateY(0); box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6), 0 0 20px rgba(52, 211, 153, 0.2); }
-                    50%      { transform: translateY(-8px); box-shadow: 0 18px 45px rgba(0, 0, 0, 0.7), 0 0 35px rgba(139, 92, 246, 0.35); }
-                }
-                body[data-theme="aleatorio"] {
-                    font-family: 'Space Grotesk', sans-serif;
-                    background-color: #020c17;
-                    color: #d1fae5;
-                    background: linear-gradient(135deg, #020c17, #063124, #12103a, #031e2b, #020c17);
-                    background-size: 300% 300%;
-                    animation: ale-aurora-sweep 10s ease infinite;
-                    background-attachment: fixed;
-                }
-                body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"],
-                body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] {
-                    background: rgba(6, 24, 42, 0.82) !important;
-                    border: 1.5px solid rgba(52, 211, 153, 0.45) !important;
-                    border-radius: 22px !important;
-                    color: #d1fae5 !important;
-                    animation: ale-aurora-float 5s ease-in-out infinite !important;
-                    backdrop-filter: blur(14px);
-                }
-                body[data-theme="aleatorio"] h1 {
-                    font-weight: 800;
-                    font-size: 34px;
-                    background: linear-gradient(135deg, #a7f3d0 0%, #6ee7b7 40%, #c4b5fd 100%);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                }
-                body[data-theme="aleatorio"] h2 { color: #6ee7b7 !important; font-weight: 700; text-shadow: 0 0 10px rgba(110, 231, 183, 0.4); }
-                body[data-theme="aleatorio"] h3 { color: #c4b5fd !important; font-weight: 700; }
-                body[data-theme="aleatorio"] button {
-                    border-radius: 14px !important;
-                    font-weight: 700;
-                    box-shadow: 0 4px 15px rgba(110, 231, 183, 0.3) !important;
-                    border: 1px solid rgba(52, 211, 153, 0.5) !important;
-                }
-                body[data-theme="aleatorio"] hr { border-color: rgba(52, 211, 153, 0.35) !important; }
-            `
-        },
-        /* ══════════════════════════════════════════ */
-        /* 10. ARCADE 8-BIT RETRO PIXEL 🕹️            */
-        /* ══════════════════════════════════════════ */
-        {
-            name: "Arcade 8-Bit 🕹️",
-            css: `
-                @keyframes ale-pixel-star {
-                    0%   { background-position: 0 0; }
-                    100% { background-position: 32px 32px; }
-                }
-                @keyframes ale-arcade-jump {
-                    0%, 100% { transform: translateY(0); }
-                    50%      { transform: translateY(-6px); }
-                }
-                body[data-theme="aleatorio"] {
-                    font-family: 'Press Start 2P', 'Bungee', cursive;
-                    font-size: 13px;
-                    background-color: #0f0024;
-                    color: #fef08a;
-                    background-image:
-                        linear-gradient(rgba(234, 179, 8, 0.08) 1px, transparent 1px),
-                        linear-gradient(90deg, rgba(234, 179, 8, 0.08) 1px, transparent 1px);
-                    background-size: 16px 16px;
-                    animation: ale-pixel-star 2s linear infinite;
-                    background-attachment: fixed;
-                }
-                body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"],
-                body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] {
-                    background: #1f083d !important;
-                    border: 4px solid #f43f5e !important;
-                    border-radius: 0px !important;
-                    color: #fef08a !important;
-                    box-shadow: 6px 6px 0px #eab308 !important;
-                    animation: ale-arcade-jump 3s ease-in-out infinite !important;
-                }
-                body[data-theme="aleatorio"] h1 {
-                    font-size: 24px;
-                    color: #eab308;
-                    text-shadow: 3px 3px 0px #f43f5e;
-                    line-height: 1.4;
-                }
-                body[data-theme="aleatorio"] h2 { color: #38bdf8 !important; text-shadow: 2px 2px 0px #000; font-size: 16px; }
-                body[data-theme="aleatorio"] h3 { color: #f43f5e !important; font-size: 14px; }
-                body[data-theme="aleatorio"] button {
-                    font-family: 'Press Start 2P', cursive !important;
-                    font-size: 11px !important;
-                    border-radius: 0px !important;
-                    border: 3px solid #000 !important;
-                    box-shadow: 4px 4px 0px #f43f5e !important;
-                }
-                body[data-theme="aleatorio"] hr { border: none !important; border-top: 4px dashed #eab308 !important; }
-            `
-        },
-        /* ══════════════════════════════════════════ */
-        /* 11. VULCÃO & MAGMA INCANDESCENTE 🌋        */
-        /* ══════════════════════════════════════════ */
-        {
-            name: "Vulcão Magma 🌋",
-            css: `
-                @keyframes ale-magma-boil {
-                    0%, 100% { filter: hue-rotate(0deg) brightness(1); }
-                    50%      { filter: hue-rotate(15deg) brightness(1.2); }
-                }
-                @keyframes ale-magma-pulse {
-                    0%, 100% { box-shadow: 0 10px 35px rgba(0, 0, 0, 0.8), 0 0 20px rgba(239, 68, 68, 0.3); border-color: rgba(239, 68, 68, 0.5); }
-                    50%      { box-shadow: 0 15px 45px rgba(0, 0, 0, 0.9), 0 0 40px rgba(249, 115, 22, 0.6); border-color: #f97316; }
-                }
-                body[data-theme="aleatorio"] {
-                    font-family: 'Outfit', sans-serif;
-                    background-color: #0f0303;
-                    color: #fed7aa;
-                    background-image:
-                        radial-gradient(ellipse 600px 400px at 20% 80%, rgba(239, 68, 68, 0.35) 0%, transparent 70%),
-                        radial-gradient(ellipse 500px 350px at 80% 20%, rgba(249, 115, 22, 0.3) 0%, transparent 70%);
-                    background-attachment: fixed;
-                    animation: ale-magma-boil 4s ease-in-out infinite;
-                }
-                body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"],
-                body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] {
-                    background: rgba(30, 10, 10, 0.92) !important;
-                    border: 2px solid rgba(239, 68, 68, 0.5) !important;
-                    border-radius: 18px !important;
-                    color: #fed7aa !important;
-                    animation: ale-magma-pulse 3s ease-in-out infinite !important;
-                }
-                body[data-theme="aleatorio"] h1 {
-                    font-weight: 900;
-                    font-size: 34px;
-                    background: linear-gradient(135deg, #fef08a 0%, #f97316 40%, #ef4444 100%);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                }
-                body[data-theme="aleatorio"] h2 { color: #f97316 !important; font-weight: 700; text-shadow: 0 0 10px rgba(249, 115, 22, 0.5); }
-                body[data-theme="aleatorio"] h3 { color: #ef4444 !important; font-weight: 700; }
-                body[data-theme="aleatorio"] button {
-                    border-radius: 12px !important;
-                    font-weight: 700;
-                    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4) !important;
-                    border: 1px solid #f97316 !important;
-                }
-                body[data-theme="aleatorio"] hr { border-color: rgba(239, 68, 68, 0.4) !important; }
-            `
-        },
-        /* ══════════════════════════════════════════ */
-        /* 12. PRISMA HOLOGRÁFICO FURTA-COR 🦄       */
-        /* ══════════════════════════════════════════ */
-        {
-            name: "Holograma Prisma 🦄",
-            css: `
-                @keyframes ale-holo-sheen {
-                    0%   { background-position: 0% 50%; }
-                    50%  { background-position: 100% 50%; }
-                    100% { background-position: 0% 50%; }
-                }
-                @keyframes ale-holo-glass {
-                    0%, 100% { transform: translateY(0); box-shadow: 0 14px 35px rgba(192, 132, 252, 0.25); border-color: rgba(192, 132, 252, 0.5); }
-                    50%      { transform: translateY(-7px); box-shadow: 0 20px 45px rgba(236, 72, 153, 0.35); border-color: rgba(6, 182, 212, 0.6); }
-                }
-                body[data-theme="aleatorio"] {
-                    font-family: 'Comfortaa', sans-serif;
-                    background: linear-gradient(135deg, #fdf2f8, #f0fdf4, #e0f2fe, #faf5ff, #fdf2f8);
-                    background-size: 400% 400%;
-                    animation: ale-holo-sheen 8s ease infinite;
-                    color: #1e1b4b;
-                    background-attachment: fixed;
-                }
-                body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"],
-                body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] {
-                    background: rgba(255, 255, 255, 0.85) !important;
-                    border: 2px solid rgba(192, 132, 252, 0.5) !important;
-                    border-radius: 24px !important;
-                    color: #1e1b4b !important;
-                    animation: ale-holo-glass 4s ease-in-out infinite !important;
-                    backdrop-filter: blur(14px);
-                }
-                body[data-theme="aleatorio"] h1 {
-                    font-weight: 700;
-                    font-size: 34px;
-                    background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 40%, #06b6d4 100%);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                }
-                body[data-theme="aleatorio"] h2 { color: #8b5cf6 !important; font-weight: 700; }
-                body[data-theme="aleatorio"] h3 { color: #06b6d4 !important; font-weight: 700; }
-                body[data-theme="aleatorio"] button {
-                    font-family: 'Comfortaa', sans-serif !important;
-                    border-radius: 50px !important;
-                    font-weight: 700 !important;
-                    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.25) !important;
-                    border: 1.5px solid #8b5cf6 !important;
-                }
-                body[data-theme="aleatorio"] hr { border: none !important; height: 3px !important; background: linear-gradient(90deg, #ec4899, #8b5cf6, #06b6d4) !important; }
-            `
-        },
-        /* ══════════════════════════════════════════ */
-        /* 13. HIPER ARCO-ÍRIS GIRATÓRIO 🌈           */
-        /* ══════════════════════════════════════════ */
-        {
-            name: "Arco-Íris Giratório 🌈",
-            css: `
-                @keyframes ale-rainbow-bg {
-                    0%   { background-position: 0% 50%; }
-                    50%  { background-position: 100% 50%; }
-                    100% { background-position: 0% 50%; }
-                }
-                @keyframes ale-spin-border {
-                    0%   { border-color: #ff0000; }
-                    50%  { border-color: #00ff00; }
-                    100% { border-color: #ff0000; }
-                }
-                body[data-theme="aleatorio"] {
-                    font-family: 'Fredoka', sans-serif;
-                    background: linear-gradient(270deg, #ff0080, #ff8c00, #ffd700, #00ff80, #00bfff, #8000ff);
-                    background-size: 400% 400%;
-                    animation: ale-rainbow-bg 5s ease infinite;
-                }
-                body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"],
-                body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] {
-                    background: rgba(255, 255, 255, 0.9) !important;
-                    border: 4px solid #ff0080 !important;
-                    border-radius: 24px !important;
-                    animation: ale-spin-border 2s linear infinite !important;
-                }
-                body[data-theme="aleatorio"] h1 {
-                    font-weight: 900;
-                    font-size: 38px;
-                    background: linear-gradient(90deg, #ff0080, #00bfff);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                }
-                body[data-theme="aleatorio"] hr { background: linear-gradient(90deg, #ff0080, #00bfff) !important; height: 4px !important; }
-            `
-        },
-        /* ══════════════════════════════════════════ */
-        /* 14. LETRAS SALTITANTES 🎵                  */
-        /* ══════════════════════════════════════════ */
-        {
-            name: "Letras Saltitantes 🎵",
-            css: `
-                @keyframes ale-bounce-h1 {
-                    0%, 100% { transform: translateY(0); }
-                    50%      { transform: translateY(-10px); }
-                }
-                body[data-theme="aleatorio"] {
-                    font-family: 'Bungee', cursive;
-                    background: #0f0a2a;
-                    color: #fff;
-                }
-                body[data-theme="aleatorio"] h1 { animation: ale-bounce-h1 1s infinite; display: inline-block; }
-            `
-        },
-        /* ══════════════════════════════════════════ */
-        /* 15. MATRIX GLITCH 💀                      */
-        /* ══════════════════════════════════════════ */
-        {
-            name: "Matrix Glitch 💀",
-            css: `
-                @keyframes ale-glitch-shake { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(-2px, 2px); } }
-                body[data-theme="aleatorio"] { font-family: 'VT323', monospace; background: #000; color: #00ff41; }
-                body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"] { background: #000 !important; border: 1px solid #00ff41 !important; }
-                body[data-theme="aleatorio"] h1 { text-shadow: 2px 0 #ff0000; animation: ale-glitch-shake 0.1s infinite; }
-            `
-        },
-        /* ══════════════════════════════════════════ */
-        /* 16. DISCO INFERNO 🕺                      */
-        /* ══════════════════════════════════════════ */
-        {
-            name: "Disco Inferno 🕺",
-            css: `
-                @keyframes ale-disco-bg { 0% { background: #1a0533; } 50% { background: #33001a; } }
-                body[data-theme="aleatorio"] { animation: ale-disco-bg 2s infinite; color: #fff; }
-            `
-        },
-        /* ══════════════════════════════════════════ */
-        /* 17. QUADRADOS LOUCOS 🟥                    */
-        /* ══════════════════════════════════════════ */
-        {
-            name: "Quadrados Loucos 🟥",
-            css: `
-                body[data-theme="aleatorio"] { background: #0f0f0f; color: #fff; }
-                body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] { border: 4px solid #facc15 !important; border-radius: 0 !important; }
-            `
-        },
-        /* ══════════════════════════════════════════ */
-        /* 18. EXPLOSÃO DE NÉON 💥                   */
-        /* ══════════════════════════════════════════ */
-        {
-            name: "Explosão de Néon 💥",
-            css: `
-                body[data-theme="aleatorio"] { background: #000; color: #fff; }
-                body[data-theme="aleatorio"] h1 { text-shadow: 0 0 10px #ff00ff, 0 0 20px #00ffff; }
-            `
-        },
-        /* ══════════════════════════════════════════ */
-        /* 19. PSICADÉLICO ÁCIDO 🍄                  */
-        /* ══════════════════════════════════════════ */
-        {
-            name: "Psicodélico Ácido 🍄",
-            css: `
-                @keyframes ale-psych-bg { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
-                body[data-theme="aleatorio"] { animation: ale-psych-bg 5s infinite; background: #0a0010; color: #fff; }
-            `
-        },
-        /* ══════════════════════════════════════════ */
-        /* 20. CARTAZ DE CIRCO 🎠                    */
-        /* ══════════════════════════════════════════ */
-        {
-            name: "Cartaz de Circo 🎠",
-            css: `
-                body[data-theme="aleatorio"] { background: #fef3c7; color: #1a0000; }
-                body[data-theme="aleatorio"] h1 { text-transform: uppercase; color: #dc2626; }
-            `
-        },
-        /* ══════════════════════════════════════════ */
-        /* 21. COSMOS MÍSTICO ✨                      */
-        /* ══════════════════════════════════════════ */
-        {
-            name: "Cosmos Infinito ✨",
-            css: `
-                }
-                body[data-theme="aleatorio"] h1 {
-                    font-size: 36px;
-                    font-weight: 900;
-                    text-transform: uppercase;
-                    letter-spacing: 3px;
-                    animation: ale-geo-h1-chaos 3s ease-in-out infinite;
-                    display: inline-block;
-                    text-shadow: 3px 3px 0 rgba(51,153,255,0.5);
-                }
-                body[data-theme="aleatorio"] h2 {
-                    color: #3399ff !important;
-                    font-weight: 800;
-                    text-transform: uppercase;
-                    letter-spacing: 2px;
-                    animation: ale-geo-h1-chaos 4s ease-in-out infinite reverse;
-                    display: inline-block;
-                }
-                body[data-theme="aleatorio"] h3 {
-                    color: #33ff99 !important;
-                    font-weight: 800;
-                    animation: ale-geo-h1-chaos 2.5s ease-in-out infinite;
-                    display: inline-block;
-                }
-                body[data-theme="aleatorio"] button {
-                    font-family: 'Space Grotesk', sans-serif !important;
-                    font-weight: 800 !important;
-                    text-transform: uppercase;
-                    letter-spacing: 1px;
-                    border: 2px solid #ff3366 !important;
-                    animation: ale-geo-card-morph 4s ease-in-out infinite !important;
-                    box-shadow: 0 0 15px rgba(255,51,102,0.3) !important;
-                }
-                body[data-theme="aleatorio"] hr {
-                    border: none !important;
-                    height: 3px !important;
-                    background: linear-gradient(90deg, #ff3366, #ffcc00, #33ff99, #3399ff, #cc33ff, #ff3366) !important;
-                    background-size: 300% !important;
-                    animation: ale-geo-bg-anim 2s linear infinite !important;
-                }
-            `
-        }
+        { name: "Galáxia Cósmica 🌌", css: `@keyframes ale-nebula-spin { 0% { background-position: 0% 0%; filter: hue-rotate(0deg); } 50% { background-position: 100% 100%; filter: hue-rotate(45deg); } 100% { background-position: 0% 0%; filter: hue-rotate(0deg); } } @keyframes ale-galaxy-card-float { 0%, 100% { transform: translateY(0px); box-shadow: 0 10px 35px rgba(112, 26, 232, 0.3), inset 0 0 25px rgba(168, 85, 247, 0.15); } 50% { transform: translateY(-10px); box-shadow: 0 20px 50px rgba(56, 189, 248, 0.4), inset 0 0 35px rgba(56, 189, 248, 0.2); } } @keyframes ale-star-glow { 0%, 100% { text-shadow: 0 0 10px #38bdf8, 0 0 20px #c084fc; } 50% { text-shadow: 0 0 20px #f472b6, 0 0 40px #38bdf8; } } body[data-theme="aleatorio"] { font-family: 'Orbitron', 'Plus Jakarta Sans', sans-serif; background-color: #050212; color: #e0e7ff; background-image: radial-gradient(ellipse 600px 400px at 20% 30%, rgba(168, 85, 247, 0.35) 0%, transparent 70%), radial-gradient(ellipse 500px 400px at 80% 70%, rgba(56, 189, 248, 0.3) 0%, transparent 70%), radial-gradient(ellipse 400px 300px at 50% 50%, rgba(244, 114, 182, 0.2) 0%, transparent 70%); background-size: 200% 200%, 200% 200%, 200% 200%; animation: ale-nebula-spin 12s ease-in-out infinite; background-attachment: fixed; } body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"], body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] { background: rgba(14, 10, 32, 0.85) !important; border: 1.5px solid rgba(168, 85, 247, 0.5) !important; border-radius: 20px !important; color: #e0e7ff !important; animation: ale-galaxy-card-float 4s ease-in-out infinite !important; backdrop-filter: blur(16px); } body[data-theme="aleatorio"] h1 { font-weight: 900; font-size: 36px; background: linear-gradient(135deg, #38bdf8 0%, #c084fc 40%, #f472b6 80%, #38bdf8 100%); background-size: 300% 300%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 3px; animation: ale-nebula-spin 6s linear infinite, ale-star-glow 3s ease-in-out infinite; } body[data-theme="aleatorio"] h2 { color: #38bdf8 !important; text-shadow: 0 0 12px rgba(56, 189, 248, 0.6); font-weight: 700; } body[data-theme="aleatorio"] h3 { color: #c084fc !important; font-weight: 700; } body[data-theme="aleatorio"] button { border-radius: 14px !important; font-family: 'Orbitron', sans-serif !important; box-shadow: 0 0 18px rgba(168, 85, 247, 0.4) !important; border: 1px solid rgba(168, 85, 247, 0.6) !important; } body[data-theme="aleatorio"] hr { border: none !important; height: 2px !important; background: linear-gradient(90deg, transparent, #a855f7, #38bdf8, #f472b6, transparent) !important; }` },
+        { name: "Synthwave 80s 🌅", css: `@keyframes ale-synth-grid { 0% { background-position: 0 0; } 100% { background-position: 0 40px; } } @keyframes ale-synth-border-pulse { 0%, 100% { border-color: #ec4899; box-shadow: 0 0 20px rgba(236, 72, 153, 0.4); } 50% { border-color: #06b6d4; box-shadow: 0 0 30px rgba(6, 182, 212, 0.5); } } body[data-theme="aleatorio"] { font-family: 'Righteous', cursive; background-color: #120224; color: #fdf4ff; background-image: repeating-linear-gradient(0deg, rgba(217, 70, 239, 0.15) 0px, rgba(217, 70, 239, 0.15) 1px, transparent 1px, transparent 40px), repeating-linear-gradient(90deg, rgba(6, 182, 212, 0.15) 0px, rgba(6, 182, 212, 0.15) 1px, transparent 1px, transparent 40px), radial-gradient(circle 320px at 50% 8%, rgba(244, 63, 94, 0.4) 0%, transparent 100%); background-size: 100% 40px, 40px 100%, 100% 100%; animation: ale-synth-grid 2s linear infinite; background-attachment: fixed; } body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"], body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] { background: rgba(30, 8, 55, 0.88) !important; border: 2px solid #ec4899 !important; border-radius: 14px !important; color: #fdf4ff !important; animation: ale-synth-border-pulse 3s ease-in-out infinite !important; } body[data-theme="aleatorio"] h1 { font-size: 38px; background: linear-gradient(180deg, #fef08a 0%, #f43f5e 50%, #d946ef 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 2px; } body[data-theme="aleatorio"] h2 { color: #22d3ee !important; font-weight: 700; } body[data-theme="aleatorio"] h3 { color: #f472b6 !important; } body[data-theme="aleatorio"] button { font-family: 'Righteous', cursive !important; border-radius: 8px !important; box-shadow: 4px 4px 0px #06b6d4 !important; border: 2px solid #ec4899 !important; } body[data-theme="aleatorio"] hr { border: none !important; height: 3px !important; background: linear-gradient(90deg, #ec4899, #fef08a, #06b6d4) !important; }` },
+        { name: "Selva Esmeralda 🌿", css: `@keyframes ale-firefly-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } } body[data-theme="aleatorio"] { font-family: 'Outfit', sans-serif; background-color: #03140b; color: #ecfdf5; background-image: radial-gradient(ellipse 600px 400px at 15% 20%, rgba(16, 185, 129, 0.3) 0%, transparent 65%), radial-gradient(ellipse 500px 400px at 85% 80%, rgba(245, 158, 11, 0.25) 0%, transparent 65%); background-attachment: fixed; } body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"], body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] { background: rgba(8, 32, 18, 0.88) !important; border: 2px solid rgba(16, 185, 129, 0.45) !important; border-radius: 36px 8px 36px 8px !important; color: #ecfdf5 !important; animation: ale-firefly-float 5s ease-in-out infinite !important; } body[data-theme="aleatorio"] h1 { font-weight: 800; font-size: 34px; background: linear-gradient(135deg, #a7f3d0 0%, #10b981 40%, #fbbf24 85%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; } body[data-theme="aleatorio"] h2 { color: #34d399 !important; font-weight: 700; } body[data-theme="aleatorio"] h3 { color: #fbbf24 !important; font-weight: 700; } body[data-theme="aleatorio"] hr { border: none !important; height: 2px !important; background: linear-gradient(90deg, transparent, #10b981, #fbbf24, transparent) !important; }` },
+        { name: "Candy Pop 🍭", css: `@keyframes ale-candy-wave { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } } @keyframes ale-candy-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } } body[data-theme="aleatorio"] { font-family: 'Comfortaa', cursive; background: linear-gradient(135deg, #fdf2f8, #fce7f3, #fae8ff, #fef9c3); background-size: 300% 300%; animation: ale-candy-wave 6s ease infinite; color: #4a1d34; } body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"], body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] { background: rgba(255,255,255,0.9) !important; border: 3.5px solid #f472b6 !important; border-radius: 32px !important; color: #4a1d34 !important; animation: ale-candy-bounce 3.5s ease-in-out infinite !important; } body[data-theme="aleatorio"] h1 { font-weight: 700; font-size: 34px; color: #db2777; } body[data-theme="aleatorio"] h2 { color: #a855f7 !important; font-weight: 700; } body[data-theme="aleatorio"] h3 { color: #ec4899 !important; font-weight: 700; } body[data-theme="aleatorio"] hr { border: none !important; height: 4px !important; background: linear-gradient(90deg, #f472b6, #c084fc, #fde047, #f472b6) !important; border-radius: 50px !important; }` },
+        { name: "Neo-Brutalismo 👾", css: `@keyframes ale-brutal-tilt { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(1deg); } 75% { transform: rotate(-1deg); } } body[data-theme="aleatorio"] { font-family: 'Space Grotesk', sans-serif; background-color: #fde047; color: #000000; background-image: radial-gradient(#000000 15%, transparent 16%), radial-gradient(#000000 15%, transparent 16%); background-size: 20px 20px; background-position: 0 0, 10px 10px; } body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"], body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] { background: #ffffff !important; border: 4px solid #000000 !important; border-radius: 0px !important; color: #000000 !important; box-shadow: 10px 10px 0px #000000 !important; animation: ale-brutal-tilt 5s ease-in-out infinite !important; } body[data-theme="aleatorio"] h1 { font-weight: 900; font-size: 34px; text-transform: uppercase; background: #000000; color: #fde047; display: inline-block; padding: 6px 16px; } body[data-theme="aleatorio"] h2 { color: #000000 !important; font-weight: 800; text-transform: uppercase; } body[data-theme="aleatorio"] button { border-radius: 0px !important; border: 3.5px solid #000000 !important; font-weight: 800 !important; box-shadow: 5px 5px 0px #000000 !important; } body[data-theme="aleatorio"] hr { border: none !important; border-top: 4px solid #000000 !important; }` },
+        { name: "Ouro Imperial 🏺", css: `@keyframes ale-gold-shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } } @keyframes ale-imperial-float { 0%, 100% { box-shadow: 0 10px 30px rgba(0,0,0,0.7), 0 0 20px rgba(217,119,6,0.3); } 50% { box-shadow: 0 16px 45px rgba(0,0,0,0.8), 0 0 35px rgba(251,191,36,0.5); } } body[data-theme="aleatorio"] { font-family: 'Cinzel', serif; background-color: #120e0a; color: #fef3c7; background-image: radial-gradient(ellipse at 50% 50%, rgba(217,119,6,0.22) 0%, transparent 80%); background-attachment: fixed; } body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"], body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] { background: rgba(28,22,16,0.92) !important; border: 2px solid #d97706 !important; border-radius: 6px !important; color: #fef3c7 !important; animation: ale-imperial-float 4s ease-in-out infinite !important; } body[data-theme="aleatorio"] h1 { font-weight: 900; font-size: 34px; letter-spacing: 4px; background: linear-gradient(90deg, #d97706, #fbbf24, #fef08a, #fbbf24, #d97706); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: ale-gold-shimmer 4s linear infinite; } body[data-theme="aleatorio"] h2 { color: #fbbf24 !important; font-weight: 700; } body[data-theme="aleatorio"] h3 { color: #d97706 !important; font-weight: 700; } body[data-theme="aleatorio"] hr { border-color: rgba(217,119,6,0.4) !important; }` },
+        { name: "Abismo Oceânico 🌊", css: `@keyframes ale-ocean-undulate { 0%, 100% { background-position: 0% 0%; } 50% { background-position: 50% 100%; } } @keyframes ale-jelly-glow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } } body[data-theme="aleatorio"] { font-family: 'Outfit', sans-serif; background-color: #010d1a; color: #e0f2fe; background-image: radial-gradient(ellipse 700px 500px at 20% 10%, rgba(6,182,212,0.28) 0%, transparent 70%), radial-gradient(ellipse 600px 400px at 80% 90%, rgba(59,130,246,0.32) 0%, transparent 70%); background-attachment: fixed; animation: ale-ocean-undulate 8s ease-in-out infinite; } body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"], body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] { background: rgba(6,25,48,0.85) !important; border: 1.5px solid rgba(34,211,238,0.45) !important; border-radius: 22px !important; color: #e0f2fe !important; animation: ale-jelly-glow 4.5s ease-in-out infinite !important; } body[data-theme="aleatorio"] h1 { font-weight: 800; background: linear-gradient(135deg, #38bdf8 0%, #06b6d4 50%, #a5f3fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; } body[data-theme="aleatorio"] h2 { color: #38bdf8 !important; font-weight: 700; } body[data-theme="aleatorio"] h3 { color: #22d3ee !important; font-weight: 700; } body[data-theme="aleatorio"] hr { border-color: rgba(34,211,238,0.3) !important; }` },
+        { name: "Cyberpunk 2077 ⚡", css: `body[data-theme="aleatorio"] { font-family: 'Orbitron', monospace; background-color: #08080c; color: #fef08a; background-image: repeating-linear-gradient(0deg, rgba(250,204,21,0.04) 0px, rgba(250,204,21,0.04) 1px, transparent 1px, transparent 4px), radial-gradient(circle 300px at 80% 20%, rgba(250,204,21,0.2) 0%, transparent 100%); background-attachment: fixed; } body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"], body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] { background: rgba(16,16,24,0.94) !important; border: 2px solid #facc15 !important; border-left: 8px solid #facc15 !important; border-radius: 0px !important; color: #fef08a !important; box-shadow: 0 0 20px rgba(250,204,21,0.25) !important; } body[data-theme="aleatorio"] h1 { font-weight: 900; color: #facc15; text-transform: uppercase; letter-spacing: 3px; } body[data-theme="aleatorio"] h2 { color: #38bdf8 !important; text-transform: uppercase; font-weight: 800; } body[data-theme="aleatorio"] h3 { color: #facc15 !important; font-weight: 800; } body[data-theme="aleatorio"] button { border-radius: 0px !important; text-transform: uppercase; border: 2px solid #facc15 !important; } body[data-theme="aleatorio"] hr { border-color: rgba(250,204,21,0.5) !important; }` },
+        { name: "Aurora Boreal 🌲", css: `@keyframes ale-aurora-sweep { 0% { background-position: 0% 50%; filter: hue-rotate(0deg); } 50% { background-position: 100% 50%; filter: hue-rotate(30deg); } 100% { background-position: 0% 50%; filter: hue-rotate(0deg); } } @keyframes ale-aurora-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } } body[data-theme="aleatorio"] { font-family: 'Space Grotesk', sans-serif; background: linear-gradient(135deg, #020c17, #063124, #12103a, #031e2b, #020c17); background-size: 300% 300%; animation: ale-aurora-sweep 10s ease infinite; color: #d1fae5; } body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"], body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] { background: rgba(6,24,42,0.82) !important; border: 1.5px solid rgba(52,211,153,0.45) !important; border-radius: 22px !important; color: #d1fae5 !important; animation: ale-aurora-float 5s ease-in-out infinite !important; } body[data-theme="aleatorio"] h1 { font-weight: 800; font-size: 34px; background: linear-gradient(135deg, #a7f3d0 0%, #6ee7b7 40%, #c4b5fd 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; } body[data-theme="aleatorio"] h2 { color: #6ee7b7 !important; font-weight: 700; } body[data-theme="aleatorio"] h3 { color: #c4b5fd !important; font-weight: 700; } body[data-theme="aleatorio"] hr { border-color: rgba(52,211,153,0.35) !important; }` },
+        { name: "Arcade 8-Bit 🕹️", css: `@keyframes ale-arcade-jump { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } } body[data-theme="aleatorio"] { font-family: 'Press Start 2P', cursive; font-size: 13px; background-color: #0f0024; color: #fef08a; background-image: linear-gradient(rgba(234,179,8,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(234,179,8,0.08) 1px, transparent 1px); background-size: 16px 16px; } body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"], body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] { background: #1f083d !important; border: 4px solid #f43f5e !important; border-radius: 0px !important; color: #fef08a !important; box-shadow: 6px 6px 0px #eab308 !important; animation: ale-arcade-jump 3s ease-in-out infinite !important; } body[data-theme="aleatorio"] h1 { font-size: 24px; color: #eab308; text-shadow: 3px 3px 0px #f43f5e; } body[data-theme="aleatorio"] h2 { color: #38bdf8 !important; font-size: 16px; } body[data-theme="aleatorio"] h3 { color: #f43f5e !important; font-size: 14px; } body[data-theme="aleatorio"] hr { border: none !important; border-top: 4px dashed #eab308 !important; }` },
+        { name: "Vulcão Magma 🌋", css: `@keyframes ale-magma-boil { 0%, 100% { filter: hue-rotate(0deg) brightness(1); } 50% { filter: hue-rotate(15deg) brightness(1.2); } } @keyframes ale-magma-pulse { 0%, 100% { border-color: rgba(239,68,68,0.5); } 50% { border-color: #f97316; } } body[data-theme="aleatorio"] { font-family: 'Outfit', sans-serif; background-color: #0f0303; color: #fed7aa; background-image: radial-gradient(ellipse 600px 400px at 20% 80%, rgba(239,68,68,0.35) 0%, transparent 70%), radial-gradient(ellipse 500px 350px at 80% 20%, rgba(249,115,22,0.3) 0%, transparent 70%); background-attachment: fixed; animation: ale-magma-boil 4s ease-in-out infinite; } body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"], body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] { background: rgba(30,10,10,0.92) !important; border: 2px solid rgba(239,68,68,0.5) !important; border-radius: 18px !important; color: #fed7aa !important; animation: ale-magma-pulse 3s ease-in-out infinite !important; } body[data-theme="aleatorio"] h1 { font-weight: 900; font-size: 34px; background: linear-gradient(135deg, #fef08a 0%, #f97316 40%, #ef4444 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; } body[data-theme="aleatorio"] h2 { color: #f97316 !important; font-weight: 700; } body[data-theme="aleatorio"] h3 { color: #ef4444 !important; font-weight: 700; } body[data-theme="aleatorio"] hr { border-color: rgba(239,68,68,0.4) !important; }` },
+        { name: "Holograma Prisma 🦄", css: `@keyframes ale-holo-sheen { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } } @keyframes ale-holo-glass { 0%, 100% { transform: translateY(0); border-color: rgba(192,132,252,0.5); } 50% { transform: translateY(-7px); border-color: rgba(6,182,212,0.6); } } body[data-theme="aleatorio"] { font-family: 'Comfortaa', sans-serif; background: linear-gradient(135deg, #fdf2f8, #f0fdf4, #e0f2fe, #faf5ff, #fdf2f8); background-size: 400% 400%; animation: ale-holo-sheen 8s ease infinite; color: #1e1b4b; } body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"], body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] { background: rgba(255,255,255,0.85) !important; border: 2px solid rgba(192,132,252,0.5) !important; border-radius: 24px !important; color: #1e1b4b !important; animation: ale-holo-glass 4s ease-in-out infinite !important; } body[data-theme="aleatorio"] h1 { font-weight: 700; font-size: 34px; background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 40%, #06b6d4 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; } body[data-theme="aleatorio"] h2 { color: #8b5cf6 !important; font-weight: 700; } body[data-theme="aleatorio"] h3 { color: #06b6d4 !important; font-weight: 700; } body[data-theme="aleatorio"] hr { border: none !important; height: 3px !important; background: linear-gradient(90deg, #ec4899, #8b5cf6, #06b6d4) !important; }` },
+        { name: "Arco-Íris Giratório 🌈", css: `@keyframes ale-rainbow-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } } @keyframes ale-spin-border { 0% { border-color: #ff0000; } 50% { border-color: #00ff00; } 100% { border-color: #ff0000; } } body[data-theme="aleatorio"] { font-family: 'Fredoka', sans-serif; background: linear-gradient(270deg, #ff0080, #ff8c00, #ffd700, #00ff80, #00bfff, #8000ff); background-size: 400% 400%; animation: ale-rainbow-bg 5s ease infinite; } body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"], body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] { background: rgba(255,255,255,0.9) !important; border: 4px solid #ff0080 !important; border-radius: 24px !important; animation: ale-spin-border 2s linear infinite !important; } body[data-theme="aleatorio"] h1 { font-weight: 900; font-size: 38px; background: linear-gradient(90deg, #ff0080, #00bfff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; } body[data-theme="aleatorio"] hr { background: linear-gradient(90deg, #ff0080, #00bfff) !important; height: 4px !important; }` },
+        { name: "Letras Saltitantes 🎵", css: `@keyframes ale-bounce-h1 { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } } body[data-theme="aleatorio"] { font-family: 'Bungee', cursive; background: #0f0a2a; color: #fff; } body[data-theme="aleatorio"] h1 { animation: ale-bounce-h1 1s infinite; display: inline-block; }` },
+        { name: "Matrix Glitch 💀", css: `@keyframes ale-glitch-shake { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(-2px, 2px); } } body[data-theme="aleatorio"] { font-family: 'VT323', monospace; background: #000; color: #00ff41; } body[data-theme="aleatorio"] div[style*="background-color: #f8f9fa"] { background: #000 !important; border: 1px solid #00ff41 !important; } body[data-theme="aleatorio"] h1 { text-shadow: 2px 0 #ff0000; animation: ale-glitch-shake 0.1s infinite; }` },
+        { name: "Disco Inferno 🕺", css: `@keyframes ale-disco-bg { 0% { background: #1a0533; } 50% { background: #33001a; } } body[data-theme="aleatorio"] { animation: ale-disco-bg 2s infinite; color: #fff; }` },
+        { name: "Quadrados Loucos 🟥", css: `body[data-theme="aleatorio"] { background: #0f0f0f; color: #fff; } body[data-theme="aleatorio"] div[style*="border: 1px solid #ddd"] { border: 4px solid #facc15 !important; border-radius: 0 !important; }` },
+        { name: "Explosão de Néon 💥", css: `body[data-theme="aleatorio"] { background: #000; color: #fff; } body[data-theme="aleatorio"] h1 { text-shadow: 0 0 10px #ff00ff, 0 0 20px #00ffff; }` },
+        { name: "Psicodélico Ácido 🍄", css: `@keyframes ale-psych-bg { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } } body[data-theme="aleatorio"] { animation: ale-psych-bg 5s infinite; background: #0a0010; color: #fff; }` },
+        { name: "Cartaz de Circo 🎠", css: `body[data-theme="aleatorio"] { background: #fef3c7; color: #1a0000; } body[data-theme="aleatorio"] h1 { text-transform: uppercase; color: #dc2626; }` },
+        { name: "Cosmos Infinito ✨", css: `body[data-theme="aleatorio"] { background: #050520; color: #e0e7ff; } body[data-theme="aleatorio"] h1 { font-size: 36px; font-weight: 900; text-transform: uppercase; letter-spacing: 3px; display: inline-block; text-shadow: 3px 3px 0 rgba(51,153,255,0.5); } body[data-theme="aleatorio"] h2 { color: #3399ff !important; font-weight: 800; } body[data-theme="aleatorio"] h3 { color: #33ff99 !important; font-weight: 800; } body[data-theme="aleatorio"] hr { border: none !important; height: 3px !important; background: linear-gradient(90deg, #ff3366, #ffcc00, #33ff99, #3399ff, #cc33ff, #ff3366) !important; }` }
     ];
 
-
-
-    // Baralho sem repetição: se o baralho estiver vazio, reabastece com todos os 24 e baralha
     if (!unplayedRandomPool || unplayedRandomPool.length === 0) {
         unplayedRandomPool = universes.map((_, i) => i);
         for (let i = unplayedRandomPool.length - 1; i > 0; i--) {
@@ -1542,6 +575,50 @@ let selectedSnapshotDate = null;
 // Proteção para nunca gravar na cloud se o histórico não carregou
 let historyLoadedOk = false;
 
+// ══════════════════════════════════════════════════
+// DIAS BLOQUEADOS (guardados em localStorage)
+// Datas no formato "YYYY-MM-DD" em que não se fazem
+// limpezas, exceto turnarounds obrigatórios (saída e
+// entrada no mesmo dia).
+// ══════════════════════════════════════════════════
+let blockedDates = [];
+try {
+    blockedDates = JSON.parse(localStorage.getItem("al_blocked_dates") || "[]");
+    if (!Array.isArray(blockedDates)) blockedDates = [];
+} catch(e) { blockedDates = []; }
+
+let showBlockedDatesPanel = false;
+
+function isBlockedDate(date) {
+    return blockedDates.includes(formatDateKey(date));
+}
+
+window.toggleBlockedDatesPanel = function() {
+    showBlockedDatesPanel = !showBlockedDatesPanel;
+    showCleaningPlan();
+};
+
+window.addBlockedDate = function() {
+    const input = document.getElementById('al-blocked-date-input');
+    if (!input || !input.value) return;
+    const dk = input.value; // já está em formato YYYY-MM-DD
+    if (!blockedDates.includes(dk)) {
+        blockedDates.push(dk);
+        blockedDates.sort();
+        try { localStorage.setItem("al_blocked_dates", JSON.stringify(blockedDates)); } catch(e) {}
+        syncCleaningPlan();
+    }
+    input.value = '';
+    showCleaningPlan();
+};
+
+window.removeBlockedDate = function(dk) {
+    blockedDates = blockedDates.filter(d => d !== dk);
+    try { localStorage.setItem("al_blocked_dates", JSON.stringify(blockedDates)); } catch(e) {}
+    syncCleaningPlan();
+    showCleaningPlan();
+};
+
 // TEMA INICIAL
 let currentTheme = localStorage.getItem("al_theme") || "white";
 if (!VALID_THEME_KEYS.includes(currentTheme)) currentTheme = "white";
@@ -1565,9 +642,7 @@ window.setTheme = function(themeKey) {
     currentTheme = themeKey;
     try { localStorage.setItem("al_theme", themeKey); } catch(e){}
     document.body.setAttribute("data-theme", currentTheme);
-    if (themeKey === "aleatorio") {
-        applyDynamicRandomTheme();
-    }
+    if (themeKey === "aleatorio") applyDynamicRandomTheme();
     renderCurrentView();
 };
 
@@ -1589,7 +664,6 @@ window.toggleThemePopup = function(event) {
     }
 };
 
-// Fechar popup ao clicar fora
 document.addEventListener('click', function(e) {
     const popup = document.getElementById('al-theme-popup');
     if (popup && popup.style.display === 'block') {
@@ -1610,7 +684,6 @@ function renderNavigation() {
     const isCleaning = currentView === "cleaning";
     const isOccupancy = currentView === "occupancy";
     const isSnapshots = currentView === "snapshots";
-
     const themeEmoji = getThemeEmoji(currentTheme);
 
     const floatingMenu = `
@@ -1759,7 +832,6 @@ function parseDate(d) {
     return new Date(Number(d.substring(0,4)), Number(d.substring(4,6))-1, Number(d.substring(6,8)));
 }
 
-// Converte chaves "YYYY-MM-DD" em Date seguro sem desfasamento de fuso horário UTC
 function parseDateKey(key) {
     if (!key || typeof key !== 'string') return new Date();
     const parts = key.split("-");
@@ -1767,7 +839,6 @@ function parseDateKey(key) {
     return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
 }
 
-// Converte os ficheiros iCalendar (.ics) em reservas, ignorando datas bloqueadas
 function parseICS(text, roomName) {
     const r = [];
     if (!text || !text.includes("BEGIN:VEVENT")) return r;
@@ -1798,28 +869,30 @@ function formatDateKey(date) {
     return date.getFullYear() + "-" + (date.getMonth() + 1).toString().padStart(2, '0') + "-" + date.getDate().toString().padStart(2, '0');
 }
 
-// Tarefas de lixo e reciclagem automáticas por dia da semana
 function getGarbageTasks(date) {
-    const dayOfWeek = date.getDay(); // 0 = Domingo, 1 = Segunda, 2 = Terça, 3 = Quarta, 4 = Quinta, 5 = Sexta, 6 = Sábado
+    const dayOfWeek = date.getDay();
     const tasks = [];
-    if (dayOfWeek === 1) { // Segundas-feiras: Impasse (reciclável + lixo) e Achada (lixo)
+    if (dayOfWeek === 1) {
         tasks.push({ pt: "♻️ Colocar lixo reciclável (Impasse)", es: "♻️ Sacar basura reciclable (Impasse)" });
         tasks.push({ pt: "🗑️ Colocar lixo (Impasse)", es: "🗑️ Sacar basura (Impasse)" });
         tasks.push({ pt: "🗑️ Colocar lixo (Achada)", es: "🗑️ Sacar basura (Achada)" });
-    } else if (dayOfWeek === 3) { // Quartas-feiras: Achada (reciclável)
+    } else if (dayOfWeek === 3) {
         tasks.push({ pt: "♻️ Colocar lixo reciclável (Achada)", es: "♻️ Sacar basura reciclable (Achada)" });
-    } else if (dayOfWeek === 4) { // Quintas-feiras: Impasse (lixo)
+    } else if (dayOfWeek === 4) {
         tasks.push({ pt: "🗑️ Colocar lixo (Impasse)", es: "🗑️ Sacar basura (Impasse)" });
-    } else if (dayOfWeek === 5) { // Sextas-feiras: Achada (lixo)
+    } else if (dayOfWeek === 5) {
         tasks.push({ pt: "🗑️ Colocar lixo (Achada)", es: "🗑️ Sacar basura (Achada)" });
     }
     return tasks;
 }
 
-// Algoritmo de determinação da data ideal de limpeza
-// Regra: limpar o mais próximo possível do checkout (preferencialmente no próprio dia).
-// Se o checkout for domingo sem entrada no mesmo dia, passa para segunda-feira.
-// O agrupamento de quartos é natural: quartos com checkout no mesmo dia ficam automaticamente juntos.
+// Algoritmo de determinação da data ideal de limpeza.
+// Regras:
+//  1. Se houver turnaround no mesmo dia (saída e entrada do mesmo quarto),
+//     OBRIGATORIAMENTE limpa nesse dia, mesmo que seja domingo ou data bloqueada.
+//  2. Caso contrário, limpa o mais próximo possível do checkout:
+//     - Se checkout for domingo → começa a procurar na segunda-feira seguinte.
+//     - Avança dia a dia até encontrar um dia que não seja domingo nem data bloqueada.
 function getCleaningInfo(reservation, allReservations) {
     const checkout = reservation.checkOut;
 
@@ -1832,14 +905,22 @@ function getCleaningInfo(reservation, allReservations) {
     let bestDay = checkout;
     let isForcedSunday = false;
 
-    // Regra: Domingo só é dia de limpeza se houver saída E entrada no mesmo dia
-    if (isSunday(checkout) && sameDayTurnaround) {
+    if (sameDayTurnaround) {
+        // Turnaround obrigatório: tem de limpar no dia de checkout, independentemente de tudo
         bestDay = checkout;
-        isForcedSunday = true;
+        if (isSunday(checkout)) isForcedSunday = true;
     } else {
-        // Se a saída foi ao domingo, a limpeza passa para segunda-feira;
-        // caso contrário, limpa no próprio dia de checkout.
-        bestDay = isSunday(checkout) ? addDays(checkout, 1) : checkout;
+        // Começa no próprio dia de checkout (ou segunda se for domingo)
+        let candidate = isSunday(checkout) ? addDays(checkout, 1) : checkout;
+
+        // Avança enquanto o dia for bloqueado ou domingo (segurança: máx 14 dias)
+        let safety = 0;
+        while ((isSunday(candidate) || isBlockedDate(candidate)) && safety < 14) {
+            candidate = addDays(candidate, 1);
+            safety++;
+        }
+
+        bestDay = candidate;
     }
 
     const hasCheckout = sameDay(bestDay, checkout);
@@ -1867,7 +948,6 @@ function syncCleaningPlan() {
         }
         const plan = cloudHistory["_plan"];
 
-        // 1. Calcula o plano atual com base nas reservas ativas
         const activeCleanings = {};
         globalReservations.forEach(res => {
             const info = getCleaningInfo(res, globalReservations);
@@ -1889,7 +969,6 @@ function syncCleaningPlan() {
             };
         });
 
-        // 2. Atualiza o plano na cloud para datas atuais e futuras
         Object.keys(activeCleanings).forEach(key => {
             const active = activeCleanings[key];
             const existing = plan[key];
@@ -1907,7 +986,6 @@ function syncCleaningPlan() {
                         existing.urgent !== active.urgent ||
                         existing.hasCheckout !== active.hasCheckout ||
                         existing.hasCheckin !== active.hasCheckin) {
-                        
                         plan[key] = active;
                         hasChanges = true;
                     }
@@ -1921,7 +999,6 @@ function syncCleaningPlan() {
         }
         const reviews = cloudHistory["_reviews"];
 
-        // Limpa revisões antigas ou de cancelamentos futuros que tenham sido geradas antes
         Object.keys(reviews).forEach(k => {
             const rev = reviews[k];
             if (!rev || !rev.targetDateKey) {
@@ -1935,14 +1012,12 @@ function syncCleaningPlan() {
             }
         });
 
-        // 3. Remove do plano futuro reservas canceladas. Apenas estadias ATUAIS (em curso) geram revisão
         Object.keys(plan).forEach(key => {
             const existing = plan[key];
             const cleanDate = parseDateKey(existing.cleaningKey);
 
             if (cleanDate >= today) {
                 if (!activeCleanings[key]) {
-                    // Só agenda revisão se for uma estadia atual (hóspede já tinha entrado ou entrava hoje)
                     const checkinDate = existing.checkinKey ? parseDateKey(existing.checkinKey) : null;
                     const wasCurrentStay = checkinDate ? (checkinDate <= today) : (existing.checkoutKey === todayStr);
 
@@ -1967,7 +1042,6 @@ function syncCleaningPlan() {
             }
         });
 
-        // 4. Cria o snapshot diário da previsão de 6 dias
         if (!cloudHistory["_snapshots"] || typeof cloudHistory["_snapshots"] !== 'object') {
             cloudHistory["_snapshots"] = {};
             hasChanges = true;
@@ -1989,7 +1063,6 @@ function syncCleaningPlan() {
             hasChanges = true;
         }
 
-        // Grava na cloud apenas se o histórico foi carregado corretamente
         if (hasChanges && historyLoadedOk) {
             saveToCloudHistory(cloudHistory);
         }
@@ -2027,43 +1100,85 @@ function showSnapshotsPlan() {
     result.innerHTML=html;
 }
 
+function buildBlockedDatesPanelHTML() {
+    const hasBlocked = blockedDates.length > 0;
+
+    // Filtra datas passadas para mostrar separadas
+    const today = new Date(); today.setHours(0,0,0,0);
+    const futureDates = blockedDates.filter(dk => parseDateKey(dk) >= today);
+    const pastDates = blockedDates.filter(dk => parseDateKey(dk) < today);
+
+    let chipsHtml = '';
+    if (futureDates.length > 0) {
+        chipsHtml += `<div style="margin-bottom: 8px; font-size: 12px; font-weight: 700; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Próximas</div>`;
+        chipsHtml += futureDates.map(dk => {
+            const d = parseDateKey(dk);
+            const label = d.toLocaleDateString("pt-PT", { weekday: "short", day: "numeric", month: "short" });
+            return `<div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(220,53,69,0.1); border: 1px solid rgba(220,53,69,0.3); border-radius: 20px; padding: 5px 12px; font-size: 14px; font-weight: 600;">
+                <span>📅 ${label}</span>
+                <button onclick="window.removeBlockedDate('${dk}')" title="Remover" style="background: none; border: none; cursor: pointer; font-size: 16px; line-height: 1; padding: 0; color: #dc3545; font-weight: bold;">×</button>
+            </div>`;
+        }).join('');
+    }
+    if (pastDates.length > 0) {
+        chipsHtml += `<div style="margin-top: 10px; margin-bottom: 8px; font-size: 12px; font-weight: 700; opacity: 0.4; text-transform: uppercase; letter-spacing: 1px;">Passadas</div>`;
+        chipsHtml += pastDates.map(dk => {
+            const d = parseDateKey(dk);
+            const label = d.toLocaleDateString("pt-PT", { weekday: "short", day: "numeric", month: "short" });
+            return `<div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(108,117,125,0.08); border: 1px solid rgba(108,117,125,0.2); border-radius: 20px; padding: 5px 12px; font-size: 14px; opacity: 0.6;">
+                <span>📅 ${label}</span>
+                <button onclick="window.removeBlockedDate('${dk}')" title="Remover" style="background: none; border: none; cursor: pointer; font-size: 16px; line-height: 1; padding: 0; color: #6c757d; font-weight: bold;">×</button>
+            </div>`;
+        }).join('');
+    }
+    if (!hasBlocked) {
+        chipsHtml = `<div style="font-size: 14px; opacity: 0.5; font-style: italic;">Nenhum dia bloqueado ainda.</div>`;
+    }
+
+    return `
+        <div style="border: 1px solid #ddd; border-radius: 12px; padding: 18px; margin-bottom: 20px; background-color: #f8f9fa; border-left: 4px solid #dc3545;">
+            <div style="font-size: 15px; font-weight: 700; margin-bottom: 14px; color: #dc3545;">
+                🚫 Dias sem Limpezas
+                <span style="font-size: 12px; font-weight: 400; color: #666; margin-left: 8px;">(exceto turnarounds obrigatórios)</span>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 14px; flex-wrap: wrap;">
+                <input type="date" id="al-blocked-date-input"
+                    style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; cursor: pointer;"
+                    onkeydown="if(event.key==='Enter') window.addBlockedDate()">
+                <button onclick="window.addBlockedDate()"
+                    style="padding: 8px 16px; font-size: 14px; cursor: pointer; border-radius: 8px; border: none; background-color: #dc3545; color: white; font-weight: bold;">
+                    ➕ Adicionar
+                </button>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">${chipsHtml}</div>
+        </div>
+    `;
+}
+
 function showCleaningPlan() {
     const today=new Date(); today.setHours(0,0,0,0); let grouped={};
     const plan = cloudHistory["_plan"] || {};
     const planKeys = Object.keys(plan);
 
     if (showHistoryMode) {
-        // 1. Histórico legado salvo diretamente nas chaves YYYY-MM-DD
         Object.keys(cloudHistory).forEach(dk => {
             if (dk !== "_snapshots" && dk !== "_plan") {
                 const val = cloudHistory[dk];
                 const d = parseDateKey(dk);
                 if (d < today) {
                     if (!grouped[dk]) grouped[dk] = { date: d, rooms: [] };
-                    
                     let roomsList = [];
-                    if (Array.isArray(val)) {
-                        roomsList = val;
-                    } else if (val && Array.isArray(val.rooms)) {
-                        roomsList = val.rooms;
-                    }
-
+                    if (Array.isArray(val)) { roomsList = val; }
+                    else if (val && Array.isArray(val.rooms)) { roomsList = val.rooms; }
                     roomsList.forEach(r => {
                         if (r && r.room && !grouped[dk].rooms.some(existing => existing.room === r.room)) {
-                            grouped[dk].rooms.push({
-                                room: r.room,
-                                sunday: !!r.sunday,
-                                urgent: !!r.urgent,
-                                hasCheckout: r.hasCheckout,
-                                hasCheckin: r.hasCheckin
-                            });
+                            grouped[dk].rooms.push({ room: r.room, sunday: !!r.sunday, urgent: !!r.urgent, hasCheckout: r.hasCheckout, hasCheckin: r.hasCheckin });
                         }
                     });
                 }
             }
         });
 
-        // 2. Histórico salvo na estrutura _plan
         planKeys.forEach(key => {
             const entry = plan[key];
             if (!entry || !entry.cleaningKey) return;
@@ -2071,25 +1186,13 @@ function showCleaningPlan() {
             if (d < today) {
                 const dk = entry.cleaningKey;
                 if (!grouped[dk]) grouped[dk] = { date: d, rooms: [] };
-
                 const existingRoomIdx = grouped[dk].rooms.findIndex(r => r.room === entry.room);
-                const roomObj = {
-                    room: entry.room,
-                    sunday: !!entry.sunday,
-                    urgent: !!entry.urgent,
-                    hasCheckout: entry.hasCheckout,
-                    hasCheckin: entry.hasCheckin
-                };
-
-                if (existingRoomIdx >= 0) {
-                    grouped[dk].rooms[existingRoomIdx] = roomObj;
-                } else {
-                    grouped[dk].rooms.push(roomObj);
-                }
+                const roomObj = { room: entry.room, sunday: !!entry.sunday, urgent: !!entry.urgent, hasCheckout: entry.hasCheckout, hasCheckin: entry.hasCheckin };
+                if (existingRoomIdx >= 0) { grouped[dk].rooms[existingRoomIdx] = roomObj; }
+                else { grouped[dk].rooms.push(roomObj); }
             }
         });
     } else {
-        // Plano futuro
         if (planKeys.length > 0) {
             planKeys.forEach(key => {
                 const entry = plan[key];
@@ -2099,13 +1202,7 @@ function showCleaningPlan() {
                     const dk = entry.cleaningKey;
                     if (!grouped[dk]) grouped[dk] = { date: d, rooms: [] };
                     if (!grouped[dk].rooms.some(r => r.room === entry.room)) {
-                        grouped[dk].rooms.push({
-                            room: entry.room,
-                            sunday: !!entry.sunday,
-                            urgent: !!entry.urgent,
-                            hasCheckout: entry.hasCheckout,
-                            hasCheckin: entry.hasCheckin
-                        });
+                        grouped[dk].rooms.push({ room: entry.room, sunday: !!entry.sunday, urgent: !!entry.urgent, hasCheckout: entry.hasCheckout, hasCheckin: entry.hasCheckin });
                     }
                 }
             });
@@ -2116,19 +1213,12 @@ function showCleaningPlan() {
                     const dk = formatDateKey(info.date);
                     if (!grouped[dk]) grouped[dk] = { date: info.date, rooms: [] };
                     if (!grouped[dk].rooms.some(r => r.room === res.room)) {
-                        grouped[dk].rooms.push({
-                            room: res.room,
-                            sunday: info.sunday,
-                            urgent: info.urgent,
-                            hasCheckout: info.hasCheckout,
-                            hasCheckin: info.hasCheckin
-                        });
+                        grouped[dk].rooms.push({ room: res.room, sunday: info.sunday, urgent: info.urgent, hasCheckout: info.hasCheckout, hasCheckin: info.hasCheckin });
                     }
                 }
             });
         }
 
-        // Incorpora avisos de revisão de limpeza para reservas canceladas
         const reviews = cloudHistory["_reviews"] || {};
         Object.keys(reviews).forEach(k => {
             const rev = reviews[k];
@@ -2143,12 +1233,42 @@ function showCleaningPlan() {
                 }
             }
         });
-
     }
 
     let sortedKeys=Object.keys(grouped).sort(); if (showHistoryMode) sortedKeys.reverse();
     let html=renderNavigation();
-    html+=`<div style="margin-bottom: 25px;"><button onclick="window.toggleHistoryView()" style="padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px; border: 1px solid #6c757d; background-color: #6c757d; color: white; font-weight: bold;">${showHistoryMode?"📅 Ver Próximas Limpezas":"📜 Ver Dias Anteriores"}</button></div>`;
+
+    // ── Barra de botões de controlo ──
+    const blockedBtnLabel = showBlockedDatesPanel
+        ? '🚫 Fechar Dias Bloqueados'
+        : `🚫 Dias Bloqueados${blockedDates.length > 0 ? ` (${blockedDates.length})` : ''}`;
+    const blockedBtnStyle = showBlockedDatesPanel || blockedDates.length > 0
+        ? 'border: 1px solid #dc3545; background-color: #dc3545; color: white;'
+        : 'border: 1px solid #6c757d; background-color: #6c757d; color: white;';
+
+    html += `<div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+        <button onclick="window.toggleHistoryView()" style="padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px; border: 1px solid #6c757d; background-color: #6c757d; color: white; font-weight: bold;">
+            ${showHistoryMode ? "📅 Ver Próximas Limpezas" : "📜 Ver Dias Anteriores"}
+        </button>
+        <button onclick="window.toggleBlockedDatesPanel()" style="padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px; font-weight: bold; ${blockedBtnStyle}">
+            ${blockedBtnLabel}
+        </button>
+    </div>`;
+
+    // ── Painel de dias bloqueados ──
+    if (showBlockedDatesPanel) {
+        html += buildBlockedDatesPanelHTML();
+    } else if (blockedDates.length > 0 && !showHistoryMode) {
+        // Aviso discreto quando há dias bloqueados mas o painel está fechado
+        const futureBlocked = blockedDates.filter(dk => parseDateKey(dk) >= today);
+        if (futureBlocked.length > 0) {
+            const labels = futureBlocked.map(dk => parseDateKey(dk).toLocaleDateString("pt-PT", { day: "numeric", month: "short" })).join(", ");
+            html += `<div style="padding: 8px 14px; border-radius: 8px; background: rgba(220,53,69,0.08); border: 1px solid rgba(220,53,69,0.2); font-size: 13px; margin-bottom: 16px; color: #dc3545;">
+                🚫 <strong>Dias bloqueados ativos:</strong> ${labels}
+            </div>`;
+        }
+    }
+
     html+=`<h1>${showHistoryMode?"📜 Histórico de Limpezas (Cloud)":"🧹 Plano de Limpezas"}</h1>`;
     if (sortedKeys.length===0) html+=`<p>Não há limpezas ${showHistoryMode?'anteriores no histórico':'agendadas'}.</p>`;
 
@@ -2156,25 +1276,34 @@ function showCleaningPlan() {
         const day=grouped[key];
         const hasRooms = day.rooms && day.rooms.length > 0;
         const hasReviews = day.reviews && day.reviews.length > 0;
-        if (!hasRooms && !hasReviews) return; // Só mostra dias com limpezas ou revisões
+        if (!hasRooms && !hasReviews) return;
 
         let title=day.date.toLocaleDateString("pt-PT",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
         if (day.rooms && day.rooms.some(r=>r.sunday)) title="🔴 "+title;
-        let dPt=title.replace("🔴 ",""); dPt=dPt.charAt(0).toUpperCase()+dPt.slice(1); let cPt=[`🧹 Limpezas - ${dPt}:`];
+
+        // Indica se o dia está bloqueado (mas tem limpezas obrigatórias - turnarounds)
+        const dayIsBlocked = isBlockedDate(day.date);
+        if (dayIsBlocked && !showHistoryMode) {
+            title = "⚠️ " + title;
+        }
+
+        let dPt=title.replace("🔴 ","").replace("⚠️ ",""); dPt=dPt.charAt(0).toUpperCase()+dPt.slice(1); let cPt=[`🧹 Limpezas - ${dPt}:`];
         let dEs=day.date.toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long",year:"numeric"}); dEs=dEs.charAt(0).toUpperCase()+dEs.slice(1); let cEs=[`🧹 Limpiezas - ${dEs}:`];
         let rh="";
 
-        // 1. Tarefas de Lixo / Reciclagem do dia (Segundas, Quartas, Quintas, Sextas)
+        // Aviso de dia bloqueado com limpezas forçadas
+        if (dayIsBlocked && hasRooms && !showHistoryMode) {
+            rh += `<div style="margin-bottom: 8px; font-size: 13px; color: #dc3545; font-weight: 600;">⚠️ Dia bloqueado — limpezas abaixo são obrigatórias (turnaround)</div>`;
+        }
+
         if (!showHistoryMode && (hasRooms || hasReviews)) {
             const gTasks = getGarbageTasks(day.date);
             gTasks.forEach(gt => {
-                cPt.push(gt.pt);
-                cEs.push(gt.es);
+                cPt.push(gt.pt); cEs.push(gt.es);
                 rh += `<div style="margin-bottom: 4px; font-size: 15px;"><b>${gt.pt}</b></div>`;
             });
         }
 
-        // 2. Avisos de revisão de limpeza (estadias atuais canceladas)
         if (hasReviews && !showHistoryMode) {
             day.reviews.forEach(rev => {
                 cPt.push(`🔍 Rever limpeza: ${rev.room} (estadia cancelada)`);
@@ -2183,40 +1312,22 @@ function showCleaningPlan() {
             });
         }
 
-        // 3. Quartos a limpar
         if (hasRooms) {
             day.rooms.sort((a,b)=>a.room.localeCompare(b.room)).forEach(clean => {
                 let hCo = clean.hasCheckout;
                 let hCi = clean.hasCheckin;
-
                 let tPt="",tEs="",tH="";
                 if (showHistoryMode) {
-                    if (clean.urgent) {
-                        tPt=" (entrada no mesmo dia)";
-                        tEs=" (entrada en el mismo día)";
-                        tH=" <b>(entrada no mesmo dia)</b>";
-                    }
+                    if (clean.urgent) { tPt=" (entrada no mesmo dia)"; tEs=" (entrada en el mismo día)"; tH=" <b>(entrada no mesmo dia)</b>"; }
                 } else {
                     if (hCo === undefined || hCi === undefined) {
                         hCo = globalReservations.some(r=>r.room===clean.room&&sameDay(r.checkOut,day.date));
                         hCi = clean.urgent||globalReservations.some(r=>r.room===clean.room&&sameDay(r.checkIn,day.date));
                     }
-
-                    if (hCo && hCi) {
-                        tPt=" (sai e entra)";
-                        tEs=" (sale y entra)";
-                        tH=" <b>(sai e entra)</b>";
-                    } else if (hCo) {
-                        tPt=" (sai hoje)";
-                        tEs=" (sale hoy)";
-                        tH=" <b>(sai hoje)</b>";
-                    } else if (hCi) {
-                        tPt=" (entrada hoje)";
-                        tEs=" (entrada hoy)";
-                        tH=" <b>(entrada hoje)</b>";
-                    }
+                    if (hCo && hCi) { tPt=" (sai e entra)"; tEs=" (sale y entra)"; tH=" <b>(sai e entra)</b>"; }
+                    else if (hCo) { tPt=" (sai hoje)"; tEs=" (sale hoy)"; tH=" <b>(sai hoje)</b>"; }
+                    else if (hCi) { tPt=" (entrada hoje)"; tEs=" (entrada hoy)"; tH=" <b>(entrada hoje)</b>"; }
                 }
-
                 const em = (clean.urgent || (hCi && !showHistoryMode)) ? "⚠️" : "🧹";
                 cPt.push(`${em} ${clean.room}${tPt}`);
                 cEs.push(`${em} ${clean.room}${tEs}`);
