@@ -1817,6 +1817,9 @@ function getGarbageTasks(date) {
 }
 
 // Algoritmo de determinação da data ideal de limpeza
+// Regra: limpar o mais próximo possível do checkout (preferencialmente no próprio dia).
+// Se o checkout for domingo sem entrada no mesmo dia, passa para segunda-feira.
+// O agrupamento de quartos é natural: quartos com checkout no mesmo dia ficam automaticamente juntos.
 function getCleaningInfo(reservation, allReservations) {
     const checkout = reservation.checkOut;
 
@@ -1834,34 +1837,9 @@ function getCleaningInfo(reservation, allReservations) {
         bestDay = checkout;
         isForcedSunday = true;
     } else {
-        // Se a saída foi ao domingo, a limpeza passa para segunda-feira
-        let startDay = isSunday(checkout) ? addDays(checkout, 1) : checkout;
-        let endDay = startDay;
-
-        // Se houver uma entrada próxima (até 2 dias), pode agrupar até ao dia da entrada
-        if (nextR && getDaysBetween(checkout, nextR.checkIn) <= 2) {
-            endDay = nextR.checkIn;
-        }
-
-        let bestScore = -1;
-        bestDay = startDay;
-
-        for (let d = new Date(startDay); d <= endDay; d = addDays(d, 1)) {
-            if (isSunday(d)) continue; // Domingos nunca são escolhidos
-            let score = 0;
-            allReservations.forEach(r => {
-                if (sameDay(r.checkOut, d)) {
-                    score += 1;
-                    if (reservation.room.toLowerCase().includes("achada") && r.room.toLowerCase().includes("achada")) {
-                        score += 10;
-                    }
-                }
-            });
-            if (score >= bestScore) {
-                bestScore = score;
-                bestDay = new Date(d);
-            }
-        }
+        // Se a saída foi ao domingo, a limpeza passa para segunda-feira;
+        // caso contrário, limpa no próprio dia de checkout.
+        bestDay = isSunday(checkout) ? addDays(checkout, 1) : checkout;
     }
 
     const hasCheckout = sameDay(bestDay, checkout);
