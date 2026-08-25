@@ -537,6 +537,100 @@
             letter-spacing: 0.5px;
             line-height: 1.2;
         }
+
+        /* ══════════════════════════════════════════ */
+        /* COMPONENTES DE DEFINIÇÕES E DISPOSITIVOS   */
+        /* ══════════════════════════════════════════ */
+        .toggle-switch-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255,255,255,0.7);
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 14px;
+            padding: 16px 20px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        }
+        body[data-theme="outono"] .toggle-switch-container {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(245,158,11,0.25);
+        }
+        body[data-theme="cyber"] .toggle-switch-container {
+            background: rgba(0,255,65,0.05);
+            border-color: #00ff41;
+            border-radius: 0;
+        }
+        body[data-theme="quadro"] .toggle-switch-container {
+            background: rgba(255,255,255,0.05);
+            border: 1px dashed rgba(255,255,255,0.3);
+        }
+        .toggle-pill {
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 700;
+            border: none;
+            transition: all 0.2s ease;
+        }
+        .toggle-pill.active {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 3px 10px rgba(16,185,129,0.4);
+        }
+        .toggle-pill.inactive {
+            background: #6c757d;
+            color: white;
+            opacity: 0.85;
+        }
+        .device-card {
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 12px;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.7);
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        body[data-theme="outono"] .device-card {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(245,158,11,0.2);
+        }
+        body[data-theme="cyber"] .device-card {
+            background: rgba(0,255,65,0.05);
+            border-color: #00ff41;
+            border-radius: 0;
+        }
+        body[data-theme="quadro"] .device-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px dashed rgba(255,255,255,0.3);
+        }
+        .log-day-box {
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 12px;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.7);
+            margin-bottom: 12px;
+        }
+        body[data-theme="outono"] .log-day-box {
+            background: rgba(255,255,255,0.04);
+            border-color: rgba(245,158,11,0.2);
+        }
+        body[data-theme="cyber"] .log-day-box {
+            background: rgba(0,255,65,0.04);
+            border-color: #00ff41;
+            border-radius: 0;
+        }
+        body[data-theme="quadro"] .log-day-box {
+            background: rgba(255,255,255,0.04);
+            border: 1px dashed rgba(255,255,255,0.3);
+        }
     `;
     document.head.appendChild(style);
 })();
@@ -573,8 +667,7 @@ const ROOM_LINEN = {
     "Achada 6":      { edredonCasal: 0, edredonSolteiro: 3, lencolCasal: 0, lencolSolteiro: 3, capaAlmofada: 3, toalhaGrande: 3, toalhaPequena: 3 },
     "Impasse 2":     { edredonCasal: 1, edredonSolteiro: 0, lencolCasal: 1, lencolSolteiro: 0, capaAlmofada: 2, toalhaGrande: 2, toalhaPequena: 2 },
     "Impasse 3":     { edredonCasal: 0, edredonSolteiro: 2, lencolCasal: 0, lencolSolteiro: 2, capaAlmofada: 2, toalhaGrande: 2, toalhaPequena: 2 },
-    "Impasse 4":     { edredonCasal: 1, edredonSolteiro: 0, lencolCasal: 1, lencolSolteiro: 0, capaAlmofada: 2, toalhaGrande: 2, toalhaPequena: 3 },
-    "Impasse Villa": { edredonCasal: 1, edredonSolteiro: 0, lencolCasal: 1, lencolSolteiro: 0, capaAlmofada: 2, toalhaGrande: 2, toalhaPequena: 2 }
+    "Impasse 4":     { edredonCasal: 0, edredonSolteiro: 2, lencolCasal: 0, lencolSolteiro: 2, capaAlmofada: 2, toalhaGrande: 2, toalhaPequena: 3 }
 };
 
 const LINEN_ITEMS_DEF = [
@@ -668,7 +761,7 @@ let showRoomConfigModal = false;
 let historyLoadedOk = false;
 
 // ══════════════════════════════════════════════════
-// DIAS BLOQUEADOS (guardados em localStorage)
+// DIAS BLOQUEADOS (sincronizados na Cloud & localStorage)
 // Datas no formato "YYYY-MM-DD" em que não se fazem
 // limpezas, exceto turnarounds obrigatórios (saída e
 // entrada no mesmo dia).
@@ -697,7 +790,9 @@ window.addBlockedDate = function() {
     if (!blockedDates.includes(dk)) {
         blockedDates.push(dk);
         blockedDates.sort();
+        cloudHistory["_blockedDates"] = blockedDates;
         try { localStorage.setItem("al_blocked_dates", JSON.stringify(blockedDates)); } catch(e) {}
+        if (historyLoadedOk) saveToCloudHistory(cloudHistory);
         syncCleaningPlan();
     }
     input.value = '';
@@ -706,9 +801,142 @@ window.addBlockedDate = function() {
 
 window.removeBlockedDate = function(dk) {
     blockedDates = blockedDates.filter(d => d !== dk);
+    cloudHistory["_blockedDates"] = blockedDates;
     try { localStorage.setItem("al_blocked_dates", JSON.stringify(blockedDates)); } catch(e) {}
+    if (historyLoadedOk) saveToCloudHistory(cloudHistory);
     syncCleaningPlan();
     showCleaningPlan();
+};
+
+// ══════════════════════════════════════════════════
+// DEFINIÇÕES DA APP (Moradas nas Cópias, etc.)
+// ══════════════════════════════════════════════════
+function getAppSettings() {
+    if (!cloudHistory["_settings"] || typeof cloudHistory["_settings"] !== 'object') {
+        let localInclude = localStorage.getItem("al_include_addresses");
+        cloudHistory["_settings"] = {
+            includeAddresses: localInclude !== null ? localInclude === 'true' : true
+        };
+    }
+    if (cloudHistory["_settings"].includeAddresses === undefined) {
+        cloudHistory["_settings"].includeAddresses = true;
+    }
+    return cloudHistory["_settings"];
+}
+
+window.toggleIncludeAddresses = function() {
+    const settings = getAppSettings();
+    settings.includeAddresses = !settings.includeAddresses;
+    try { localStorage.setItem("al_include_addresses", String(settings.includeAddresses)); } catch(e) {}
+    if (historyLoadedOk) saveToCloudHistory(cloudHistory);
+    renderCurrentView();
+};
+
+// ══════════════════════════════════════════════════
+// REGISTO E DETEÇÃO DE DISPOSITIVOS
+// ══════════════════════════════════════════════════
+function getDeviceFingerprint() {
+    let devId = localStorage.getItem("al_device_id");
+    if (!devId) {
+        devId = "dev_" + Math.random().toString(36).substring(2, 10) + "_" + Date.now().toString(36);
+        try { localStorage.setItem("al_device_id", devId); } catch(e) {}
+    }
+    return devId;
+}
+
+function detectDeviceName() {
+    const ua = navigator.userAgent || "";
+    let name = "Dispositivo";
+    let icon = "💻";
+
+    if (/iPhone/i.test(ua)) { name = "iPhone (iOS)"; icon = "📱"; }
+    else if (/iPad/i.test(ua)) { name = "iPad (iOS)"; icon = "📱"; }
+    else if (/Android/i.test(ua)) {
+        if (/Mobile/i.test(ua)) { name = "Telemóvel Android"; icon = "📱"; }
+        else { name = "Tablet Android"; icon = "📱"; }
+    }
+    else if (/Windows/i.test(ua)) { name = "Computador Windows"; icon = "💻"; }
+    else if (/Macintosh|Mac OS/i.test(ua)) { name = "MacBook / Mac"; icon = "💻"; }
+    else if (/Linux/i.test(ua)) { name = "Computador Linux"; icon = "💻"; }
+
+    return { name, icon };
+}
+
+function logDeviceAccess() {
+    try {
+        const devId = getDeviceFingerprint();
+        const detected = detectDeviceName();
+        const customName = localStorage.getItem("al_device_custom_name");
+
+        if (!cloudHistory["_devices"] || typeof cloudHistory["_devices"] !== 'object') {
+            cloudHistory["_devices"] = {};
+        }
+
+        const now = new Date();
+        const todayStr = formatDateKey(now);
+        const existing = cloudHistory["_devices"][devId] || {};
+
+        cloudHistory["_devices"][devId] = {
+            id: devId,
+            name: customName || existing.name || detected.name,
+            icon: detected.icon,
+            platform: navigator.platform || "",
+            screen: `${window.innerWidth}x${window.innerHeight}`,
+            firstSeen: existing.firstSeen || now.toISOString(),
+            lastSeen: now.toISOString(),
+            visitsCount: (existing.visitsCount || 0) + 1
+        };
+
+        if (!Array.isArray(cloudHistory["_access_logs"])) {
+            cloudHistory["_access_logs"] = [];
+        }
+
+        const lastLog = cloudHistory["_access_logs"][cloudHistory["_access_logs"].length - 1];
+        const isRecent = lastLog && lastLog.deviceId === devId && (now.getTime() - new Date(lastLog.timestamp).getTime()) < 5 * 60 * 1000;
+
+        if (!isRecent) {
+            cloudHistory["_access_logs"].push({
+                deviceId: devId,
+                deviceName: customName || existing.name || detected.name,
+                icon: detected.icon,
+                timestamp: now.toISOString(),
+                dateKey: todayStr,
+                timeStr: now.toLocaleTimeString("pt-PT", { hour: '2-digit', minute: '2-digit' })
+            });
+
+            if (cloudHistory["_access_logs"].length > 150) {
+                cloudHistory["_access_logs"] = cloudHistory["_access_logs"].slice(-150);
+            }
+        }
+    } catch(e) {
+        console.warn("Erro ao registar dispositivo:", e);
+    }
+}
+
+window.renameDevice = function(devId) {
+    const dev = cloudHistory["_devices"] && cloudHistory["_devices"][devId];
+    const currentName = dev ? dev.name : "";
+    const newName = prompt("Insere um novo nome para este dispositivo (ex: Telemóvel Martinho):", currentName);
+    if (newName && newName.trim()) {
+        const trimmed = newName.trim();
+        if (dev) dev.name = trimmed;
+        if (devId === getDeviceFingerprint()) {
+            try { localStorage.setItem("al_device_custom_name", trimmed); } catch(e) {}
+        }
+        if (Array.isArray(cloudHistory["_access_logs"])) {
+            cloudHistory["_access_logs"].forEach(l => {
+                if (l.deviceId === devId) l.deviceName = trimmed;
+            });
+        }
+        if (historyLoadedOk) saveToCloudHistory(cloudHistory);
+        showSettingsView();
+    }
+};
+
+window.clearAccessLogs = function() {
+    cloudHistory["_access_logs"] = [];
+    if (historyLoadedOk) saveToCloudHistory(cloudHistory);
+    showSettingsView();
 };
 
 // TEMA INICIAL
@@ -777,6 +1005,7 @@ function renderNavigation() {
     const isOccupancy = currentView === "occupancy";
     const isLaundry = currentView === "laundry";
     const isSnapshots = currentView === "snapshots";
+    const isSettings = currentView === "settings";
     const themeEmoji = getThemeEmoji(currentTheme);
 
     const floatingMenu = `
@@ -790,6 +1019,7 @@ function renderNavigation() {
             </div>
             ${currentTheme === 'aleatorio' ? `<button onclick="window.rerollRandomTheme(event)" class="clock-btn" title="Sortear Outro Estilo! (Atual: ${currentRandomPresetName})" style="background: linear-gradient(135deg, #ec4899, #8b5cf6); color: white; border: none;">🎲</button>` : ''}
             <button onclick="window.toggleSnapshots()" class="clock-btn ${isSnapshots?'active':''}" title="${isSnapshots?'Voltar ao Início':'Ver Previsões'}" style="${isSnapshots?'background-color:#e2e6ea;':''}">🕒</button>
+            <button onclick="window.toggleSettings()" class="clock-btn ${isSettings?'active':''}" title="${isSettings?'Voltar ao Início':'Definições e Dispositivos'}" style="${isSettings?'background-color:#e2e6ea;':''}">⚙️</button>
         </div>
     `;
 
@@ -833,6 +1063,7 @@ function renderCurrentView() {
     else if (currentView === "occupancy") showOccupancyPlan();
     else if (currentView === "snapshots") showSnapshotsPlan();
     else if (currentView === "laundry") showLaundryStockView();
+    else if (currentView === "settings") showSettingsView();
 }
 
 window.toggleSnapshots = function() {
@@ -841,6 +1072,15 @@ window.toggleSnapshots = function() {
     } else {
         currentView = "snapshots";
         selectedSnapshotDate = null;
+    }
+    renderCurrentView();
+};
+
+window.toggleSettings = function() {
+    if (currentView === "settings") {
+        currentView = "cleaning";
+    } else {
+        currentView = "settings";
     }
     renderCurrentView();
 };
@@ -881,13 +1121,28 @@ async function fetchCloudHistory() {
         cloudHistory = typeof data === 'string' ? JSON.parse(data) : data;
         if (typeof cloudHistory !== 'object' || cloudHistory === null || Array.isArray(cloudHistory)) cloudHistory = {};
         historyLoadedOk = true;
+
+        // Sincroniza dias bloqueados vindos da cloud
+        if (Array.isArray(cloudHistory["_blockedDates"])) {
+            blockedDates = cloudHistory["_blockedDates"];
+            try { localStorage.setItem("al_blocked_dates", JSON.stringify(blockedDates)); } catch(e) {}
+        } else if (blockedDates.length > 0) {
+            cloudHistory["_blockedDates"] = blockedDates;
+        }
+
+        // Regista o acesso do dispositivo atual
+        logDeviceAccess();
     }
     catch (e) {
         console.warn("Aviso: Histórico não carregou da cloud. A usar armazenamento local.", e);
         try {
             cloudHistory = JSON.parse(localStorage.getItem("al_cloud_history_backup") || "{}");
+            if (Array.isArray(cloudHistory["_blockedDates"])) {
+                blockedDates = cloudHistory["_blockedDates"];
+            }
         } catch(err) { cloudHistory = {}; }
         historyLoadedOk = false;
+        logDeviceAccess();
     }
 }
 
@@ -1416,11 +1671,16 @@ function showCleaningPlan() {
                 cEs.push(`${em} ${clean.room}${tEs}`);
                 rh += `${em} ${clean.room}${tH}<br>`;
             });
-        }
+        const settings = getAppSettings();
+        if (settings.includeAddresses) {
+            cPt.push("");
+            cPt.push("Endereço da minha casa: Impasse Romeiras 6");
+            cPt.push("Endereço da casa Funchal: Beco da Achada 3");
 
-        cEs.push("");
-        cEs.push("Dirección de mi casa: Impasse Romeiras 6");
-        cEs.push("Dirección de la casa Funchal: Beco da Achada 3");
+            cEs.push("");
+            cEs.push("Dirección de mi casa: Impasse Romeiras 6");
+            cEs.push("Dirección de la casa Funchal: Beco da Achada 3");
+        }
 
         const ePt=encodeURIComponent(cPt.join("\n")), eEs=encodeURIComponent(cEs.join("\n"));
         html+=`<div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
@@ -1549,7 +1809,7 @@ function saveLaundryData() {
     }
 }
 
-// Reúne todas as limpezas de forma cronológica única
+// Reúne todas as limpezas de forma cronológica única (ignora Impasse Villa)
 function getAllCleaningsList() {
     const list = [];
     const seen = new Set();
@@ -1558,7 +1818,7 @@ function getAllCleaningsList() {
     const plan = cloudHistory["_plan"] || {};
     Object.keys(plan).forEach(k => {
         const entry = plan[k];
-        if (entry && entry.cleaningKey && entry.room) {
+        if (entry && entry.cleaningKey && entry.room && entry.room !== "Impasse Villa") {
             const uid = `${entry.cleaningKey}|${entry.room}`;
             if (!seen.has(uid)) {
                 seen.add(uid);
@@ -1569,14 +1829,14 @@ function getAllCleaningsList() {
 
     // 2. A partir do histórico legado por datas (YYYY-MM-DD)
     Object.keys(cloudHistory).forEach(dk => {
-        if (dk !== "_snapshots" && dk !== "_plan" && dk !== "_reviews" && dk !== "_laundry" && /^\d{4}-\d{2}-\d{2}$/.test(dk)) {
+        if (dk !== "_snapshots" && dk !== "_plan" && dk !== "_reviews" && dk !== "_laundry" && dk !== "_blockedDates" && dk !== "_settings" && dk !== "_devices" && dk !== "_access_logs" && /^\d{4}-\d{2}-\d{2}$/.test(dk)) {
             const val = cloudHistory[dk];
             let roomsList = [];
             if (Array.isArray(val)) roomsList = val;
             else if (val && Array.isArray(val.rooms)) roomsList = val.rooms;
             roomsList.forEach(r => {
                 const roomName = typeof r === 'string' ? r : (r && r.room ? r.room : null);
-                if (roomName) {
+                if (roomName && roomName !== "Impasse Villa") {
                     const uid = `${dk}|${roomName}`;
                     if (!seen.has(uid)) {
                         seen.add(uid);
@@ -1590,6 +1850,7 @@ function getAllCleaningsList() {
     // 3. Fallback a partir das reservas se o plano ainda não tiver limpezas
     if (list.length === 0) {
         globalReservations.forEach(res => {
+            if (res.room === "Impasse Villa") return;
             const info = getCleaningInfo(res, globalReservations);
             const dk = formatDateKey(info.date);
             const uid = `${dk}|${res.room}`;
@@ -1616,6 +1877,7 @@ function calculateLinenItems(cleanings) {
         toalhaPequena: 0
     };
     cleanings.forEach(c => {
+        if (c.room === "Impasse Villa") return;
         const r = ROOM_LINEN[c.room] || { edredonCasal: 1, edredonSolteiro: 0, lencolCasal: 1, lencolSolteiro: 0, capaAlmofada: 2, toalhaGrande: 2, toalhaPequena: 2 };
         counts.edredonCasal += r.edredonCasal || 0;
         counts.edredonSolteiro += r.edredonSolteiro || 0;
@@ -1761,6 +2023,50 @@ window.onDropOffDateChange = function() {
     previewDiv.innerHTML = previewHtml;
 };
 
+// 🔄 FUI LEVANTAR E DEIXAR TUDO (Ação Completa num só clique)
+window.submitLaundrySwapAll = function(customDateKey = null) {
+    const todayStr = customDateKey || formatDateKey(new Date());
+    const lData = getLaundryData();
+
+    // 1. Marca todos os lotes atualmente não recolhidos como retirados hoje
+    let uncollectedCount = 0;
+    lData.dropOffs.forEach(drop => {
+        if (!drop.collected) {
+            drop.collected = true;
+            drop.collectedDateKey = todayStr;
+            uncollectedCount++;
+        }
+    });
+
+    if (uncollectedCount > 0) {
+        lData.pickUps.push({
+            id: "pick_" + Date.now(),
+            type: "pick_up",
+            dateKey: todayStr,
+            collectedCount: uncollectedCount,
+            note: "Levantamento total (Troca)",
+            createdAt: new Date().toISOString()
+        });
+    }
+
+    // 2. Regista a entrega de toda a roupa suja acumulada até hoje
+    const newDropOff = {
+        id: "drop_" + (Date.now() + 1),
+        type: "drop_off",
+        dateKey: todayStr,
+        collected: false,
+        collectedDateKey: null,
+        note: "Entrega total (Troca)",
+        createdAt: new Date().toISOString()
+    };
+    lData.dropOffs.push(newDropOff);
+
+    saveLaundryData();
+    showAddDropOffForm = false;
+    showAddPickUpForm = false;
+    showLaundryStockView();
+};
+
 window.submitLaundryDropOff = function() {
     const input = document.getElementById('al-dropoff-date-input');
     const dk = input ? input.value : formatDateKey(new Date());
@@ -1789,7 +2095,6 @@ window.submitLaundryPickUp = function(targetDropOffId = null) {
     const pickDateKey = dateInput ? dateInput.value : todayStr;
 
     if (targetDropOffId) {
-        // Levantamento de um lote específico
         const drop = lData.dropOffs.find(d => d.id === targetDropOffId);
         if (drop) {
             drop.collected = true;
@@ -1807,7 +2112,6 @@ window.submitLaundryPickUp = function(targetDropOffId = null) {
         }
     }
 
-    // Levantamento via formulário geral
     const checkboxes = document.querySelectorAll('.al-pickup-batch-cb:checked');
     let collectedCount = 0;
 
@@ -1848,9 +2152,8 @@ window.submitLaundryPickUp = function(targetDropOffId = null) {
     showLaundryStockView();
 };
 
+// Apaga imediatamente sem confirmação (conforme pedido)
 window.removeLaundryEvent = function(eventId, eventType) {
-    if (!confirm("Tens a certeza que queres remover este registo do histórico de lavandaria?")) return;
-
     const lData = getLaundryData();
     if (eventType === "drop_off") {
         lData.dropOffs = lData.dropOffs.filter(d => d.id !== eventId);
@@ -1913,11 +2216,15 @@ function showLaundryStockView() {
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 18px;">
             <h1 style="margin: 0; font-size: 26px;">🧺 Stock na Lavandaria</h1>
             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <button onclick="window.toggleAddDropOffForm()" style="padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #0284c7, #0369a1); color: white; font-weight: bold; box-shadow: 0 3px 8px rgba(2,132,199,0.25);">
-                    ➕ Fui à Lavandaria (Levar)
+                <button onclick="window.submitLaundrySwapAll()" title="Levanta toda a roupa que estava na lavandaria e deixa toda a roupa suja acumulada até hoje"
+                    style="padding: 10px 18px; font-size: 14px; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #7c3aed, #4f46e5); color: white; font-weight: bold; box-shadow: 0 4px 12px rgba(124,58,237,0.35);">
+                    🔄 Fui Levantar e Deixar Tudo
                 </button>
-                <button onclick="window.toggleAddPickUpForm()" style="padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #059669, #047857); color: white; font-weight: bold; box-shadow: 0 3px 8px rgba(5,150,105,0.25);">
-                    📦 Retirar da Lavandaria
+                <button onclick="window.toggleAddDropOffForm()" style="padding: 10px 14px; font-size: 14px; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #0284c7, #0369a1); color: white; font-weight: bold; box-shadow: 0 3px 8px rgba(2,132,199,0.25);">
+                    ➕ Só Levar Roupa
+                </button>
+                <button onclick="window.toggleAddPickUpForm()" style="padding: 10px 14px; font-size: 14px; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #059669, #047857); color: white; font-weight: bold; box-shadow: 0 3px 8px rgba(5,150,105,0.25);">
+                    📦 Só Retirar Roupa
                 </button>
                 <button onclick="window.toggleLaundryHistory()" style="padding: 10px 14px; font-size: 14px; cursor: pointer; border-radius: 8px; border: 1px solid #6c757d; background-color: ${showLaundryHistory?'#6c757d':'#ffffff'}; color: ${showLaundryHistory?'#ffffff':'#6c757d'}; font-weight: bold;">
                     ${showLaundryHistory ? "🧺 Ver Stock Atual" : "📜 Ver Histórico"}
@@ -2173,9 +2480,12 @@ function showLaundryStockView() {
                         `;
                     }).join('')}
                 </div>
-                <div style="margin-top: 16px;">
+                <div style="margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button onclick="window.submitLaundrySwapAll()" style="padding: 10px 18px; font-size: 14px; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #7c3aed, #4f46e5); color: white; font-weight: bold; box-shadow: 0 4px 12px rgba(124,58,237,0.3);">
+                        🔄 Fui Levantar e Deixar Tudo Hoje
+                    </button>
                     <button onclick="window.submitLaundryDropOff()" style="padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; font-weight: bold; box-shadow: 0 3px 8px rgba(245,158,11,0.25);">
-                        🧺 Registar Ida à Lavandaria com esta Roupa Hoje
+                        🧺 Só Deixar Roupa Hoje
                     </button>
                 </div>
             `}
@@ -2188,5 +2498,158 @@ function showLaundryStockView() {
     }
 }
 
+// ══════════════════════════════════════════════════
+// VISTA DE DEFINIÇÕES & HISTÓRICO DE DISPOSITIVOS ⚙️
+// ══════════════════════════════════════════════════
+function showSettingsView() {
+    let html = renderNavigation();
+    const settings = getAppSettings();
+    const isIncludeOn = !!settings.includeAddresses;
+    const myDevId = getDeviceFingerprint();
+    const devices = cloudHistory["_devices"] || {};
+    const devKeys = Object.keys(devices);
+    const logs = Array.isArray(cloudHistory["_access_logs"]) ? [...cloudHistory["_access_logs"]] : [];
+
+    html += `
+        <div style="margin-bottom: 25px;">
+            <h1 style="margin: 0 0 6px 0; font-size: 26px;">⚙️ Definições & Dispositivos</h1>
+            <div style="font-size: 13px; color: #666;">Personalização de cópias e monitorização de acessos ao site.</div>
+        </div>
+
+        <!-- Secção 1: Moradas nas Cópias -->
+        <div class="toggle-switch-container">
+            <div>
+                <div style="font-size: 16px; font-weight: bold; margin-bottom: 4px;">
+                    📍 Incluir Moradas nas Cópias (PT e ES)
+                </div>
+                <div style="font-size: 13px; opacity: 0.8; max-width: 550px; line-height: 1.4;">
+                    Quando <strong>Ligado</strong>, anexa automaticamente os endereços das casas no final do texto ao clicar em 🇵🇹 <b>Copiar PT</b> e 🇪🇸 <b>Copiar ES</b>. As moradas <em>não aparecem no ecrã</em>.
+                </div>
+            </div>
+            <div>
+                <button onclick="window.toggleIncludeAddresses()" class="toggle-pill ${isIncludeOn ? 'active' : 'inactive'}">
+                    ${isIncludeOn ? '🟢 LIGADO' : '⚪ DESLIGADO'}
+                </button>
+            </div>
+        </div>
+
+        <!-- Secção 2: Dispositivos Conectados -->
+        <div style="margin-top: 30px; margin-bottom: 25px;">
+            <h2 style="margin: 0 0 14px 0; font-size: 20px;">📱 Dispositivos Conectados (${devKeys.length})</h2>
+            <div style="font-size: 13px; color: #666; margin-bottom: 15px;">
+                Dispositivos (telemóveis, tablets, computadores) que já abriram esta aplicação:
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+    `;
+
+    if (devKeys.length === 0) {
+        html += `<p style="color: #888; font-size: 14px;">Ainda não há dispositivos registados.</p>`;
+    } else {
+        devKeys.forEach(devId => {
+            const dev = devices[devId];
+            const isCurrent = devId === myDevId;
+            const lastDate = dev.lastSeen ? new Date(dev.lastSeen).toLocaleDateString("pt-PT", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "Recentemente";
+
+            html += `
+                <div class="device-card">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 24px;">${dev.icon || '📱'}</span>
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <strong style="font-size: 15px;">${dev.name || 'Dispositivo'}</strong>
+                                ${isCurrent ? `<span style="background: rgba(16,185,129,0.15); color: #059669; border: 1px solid rgba(16,185,129,0.3); padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold;">👉 Este Dispositivo</span>` : ''}
+                            </div>
+                            <div style="font-size: 12px; opacity: 0.7; margin-top: 2px;">
+                                Último acesso: ${lastDate} • Visitas: <strong>${dev.visitsCount || 1}</strong> ${dev.screen ? `• Ecrã: ${dev.screen}` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <button onclick="window.renameDevice('${devId}')" style="padding: 6px 12px; font-size: 12px; cursor: pointer; border-radius: 6px; border: 1px solid #ccc; background: white; font-weight: 600;">
+                            ✏️ Mudar Nome
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    html += `
+            </div>
+        </div>
+
+        <!-- Secção 3: Histórico de Acessos Recentes por Dia -->
+        <div style="margin-top: 30px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+                <h2 style="margin: 0; font-size: 20px;">📜 Histórico de Acessos Recentes</h2>
+                ${logs.length > 0 ? `
+                    <button onclick="window.clearAccessLogs()" style="padding: 6px 12px; font-size: 12px; cursor: pointer; border-radius: 6px; border: 1px solid #dc3545; background: transparent; color: #dc3545; font-weight: bold;">
+                        🗑️ Limpar Histórico
+                    </button>
+                ` : ''}
+            </div>
+
+            <div style="font-size: 13px; color: #666; margin-bottom: 15px;">
+                Registo cronológico organizado por dia dos acessos efetuados ao programa:
+            </div>
+    `;
+
+    if (logs.length === 0) {
+        html += `<p style="color: #888; font-size: 14px;">Sem histórico de acessos recente.</p>`;
+    } else {
+        // Agrupa os logs por dia
+        const logsByDay = {};
+        logs.slice().reverse().forEach(log => {
+            const dk = log.dateKey || formatDateKey(new Date(log.timestamp));
+            if (!logsByDay[dk]) logsByDay[dk] = [];
+            logsByDay[dk].push(log);
+        });
+
+        const sortedDayKeys = Object.keys(logsByDay).sort().reverse();
+
+        sortedDayKeys.forEach(dk => {
+            const dayLogs = logsByDay[dk];
+            const d = parseDateKey(dk);
+            const dayTitle = d.toLocaleDateString("pt-PT", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+            const capitalizedTitle = dayTitle.charAt(0).toUpperCase() + dayTitle.slice(1);
+
+            let logsListHtml = '';
+            dayLogs.forEach(entry => {
+                const dev = devices[entry.deviceId] || {};
+                const isCurrent = entry.deviceId === myDevId;
+                const devName = dev.name || entry.deviceName || "Dispositivo";
+                const devIcon = dev.icon || entry.icon || "📱";
+
+                logsListHtml += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 13px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span>${devIcon}</span>
+                            <strong>${devName}</strong>
+                            ${isCurrent ? `<span style="font-size: 11px; opacity: 0.6;">(atual)</span>` : ''}
+                        </div>
+                        <div style="font-weight: 600; opacity: 0.8; font-family: monospace;">
+                            🕒 ${entry.timeStr || new Date(entry.timestamp).toLocaleTimeString("pt-PT", { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                <div class="log-day-box">
+                    <div style="font-size: 14px; font-weight: bold; color: #007bff; margin-bottom: 8px; border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 4px;">
+                        📅 ${capitalizedTitle} <span style="font-size: 12px; font-weight: normal; color: #666;">(${dayLogs.length} acesso${dayLogs.length!==1?'s':''})</span>
+                    </div>
+                    <div>${logsListHtml}</div>
+                </div>
+            `;
+        });
+    }
+
+    html += `</div>`;
+    result.innerHTML = html;
+}
+
 loadCalendars();
+
 
