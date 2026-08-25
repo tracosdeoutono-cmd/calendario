@@ -849,15 +849,69 @@ function detectDeviceName() {
     let name = "Dispositivo";
     let icon = "💻";
 
-    if (/iPhone/i.test(ua)) { name = "iPhone (iOS)"; icon = "📱"; }
-    else if (/iPad/i.test(ua)) { name = "iPad (iOS)"; icon = "📱"; }
-    else if (/Android/i.test(ua)) {
-        if (/Mobile/i.test(ua)) { name = "Telemóvel Android"; icon = "📱"; }
-        else { name = "Tablet Android"; icon = "📱"; }
+    // 1. Detectar Navegador
+    let browser = "";
+    if (/Edg\//i.test(ua)) browser = "Edge";
+    else if (/Chrome\//i.test(ua) && !/Chromium|Edg/i.test(ua)) browser = "Chrome";
+    else if (/Safari\//i.test(ua) && !/Chrome/i.test(ua)) browser = "Safari";
+    else if (/Firefox\//i.test(ua)) browser = "Firefox";
+    else if (/OPR\//i.test(ua) || /Opera/i.test(ua)) browser = "Opera";
+
+    // 2. Detectar Android e Modelo Específico do Hardware
+    if (/Android/i.test(ua)) {
+        icon = "📱";
+        let model = "";
+        const m = ua.match(/Android\s+[^;]+;\s*([^;)]+?)(?:\s+Build|\))/i);
+        if (m && m[1]) {
+            model = m[1].trim().replace(/^wv\s+/i, '').replace(/;\s*wv/i, '');
+        }
+
+        if (model && model !== "K" && model.toLowerCase() !== "mobile") {
+            let brand = "";
+            if (/^SM-|^GT-|^SCH-/i.test(model)) brand = "Samsung ";
+            else if (/^Pixel/i.test(model)) brand = "Google ";
+            else if (/^Redmi|^Mi\s|^POCO|^2\d{3}[A-Z0-9]+/i.test(model)) brand = "Xiaomi ";
+            else if (/^CPH|^RMX/i.test(model)) brand = "Oppo/Realme ";
+            else if (/^moto/i.test(model)) brand = "Motorola ";
+            else if (/^HUAWEI|^VOG-|^ELE-/i.test(model)) brand = "Huawei ";
+            else if (/^ONEPLUS/i.test(model)) brand = "OnePlus ";
+
+            name = `${brand}${model}${browser ? ` (${browser})` : ''}`;
+        } else {
+            name = (/Mobile/i.test(ua) ? "Android" : "Tablet Android") + (browser ? ` (${browser})` : '');
+        }
     }
-    else if (/Windows/i.test(ua)) { name = "Computador Windows"; icon = "💻"; }
-    else if (/Macintosh|Mac OS/i.test(ua)) { name = "MacBook / Mac"; icon = "💻"; }
-    else if (/Linux/i.test(ua)) { name = "Computador Linux"; icon = "💻"; }
+    // 3. Detectar iPhone / iPad
+    else if (/iPhone/i.test(ua)) {
+        icon = "📱";
+        name = `iPhone${browser ? ` (${browser})` : ' (iOS)'}`;
+    }
+    else if (/iPad/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
+        icon = "📱";
+        name = `iPad${browser ? ` (${browser})` : ' (iOS)'}`;
+    }
+    // 4. Detectar Windows
+    else if (/Windows NT 10\.0/i.test(ua)) {
+        name = `Windows 10/11${browser ? ` (${browser})` : ' PC'}`;
+        icon = "💻";
+    }
+    else if (/Windows NT 6\./i.test(ua)) {
+        name = `Windows 7/8${browser ? ` (${browser})` : ' PC'}`;
+        icon = "💻";
+    }
+    else if (/Windows/i.test(ua)) {
+        name = `Windows PC${browser ? ` (${browser})` : ''}`;
+        icon = "💻";
+    }
+    // 5. Detectar Mac / Linux
+    else if (/Macintosh|Mac OS/i.test(ua)) {
+        name = `Mac / MacBook${browser ? ` (${browser})` : ''}`;
+        icon = "💻";
+    }
+    else if (/Linux/i.test(ua)) {
+        name = `Computador Linux${browser ? ` (${browser})` : ''}`;
+        icon = "💻";
+    }
 
     return { name, icon };
 }
@@ -866,7 +920,6 @@ function logDeviceAccess() {
     try {
         const devId = getDeviceFingerprint();
         const detected = detectDeviceName();
-        const customName = localStorage.getItem("al_device_custom_name");
 
         if (!cloudHistory["_devices"] || typeof cloudHistory["_devices"] !== 'object') {
             cloudHistory["_devices"] = {};
@@ -878,7 +931,7 @@ function logDeviceAccess() {
 
         cloudHistory["_devices"][devId] = {
             id: devId,
-            name: customName || existing.name || detected.name,
+            name: detected.name,
             icon: detected.icon,
             platform: navigator.platform || "",
             screen: `${window.innerWidth}x${window.innerHeight}`,
@@ -897,7 +950,7 @@ function logDeviceAccess() {
         if (!isRecent) {
             cloudHistory["_access_logs"].push({
                 deviceId: devId,
-                deviceName: customName || existing.name || detected.name,
+                deviceName: detected.name,
                 icon: detected.icon,
                 timestamp: now.toISOString(),
                 dateKey: todayStr,
@@ -908,36 +961,28 @@ function logDeviceAccess() {
                 cloudHistory["_access_logs"] = cloudHistory["_access_logs"].slice(-150);
             }
         }
+
+        // Se o dispositivo suportar Client Hints de alta precisão (Chrome/Edge em Android ou PC), atualiza com o modelo exato
+        if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+            navigator.userAgentData.getHighEntropyValues(['model', 'platform']).then(uaData => {
+                if (uaData && uaData.model && uaData.model.trim() !== "") {
+                    let brand = "";
+                    const m = uaData.model.trim();
+                    if (/^SM-|^GT-/i.test(m)) brand = "Samsung ";
+                    else if (/^Pixel/i.test(m)) brand = "Google ";
+                    else if (/^Redmi|^POCO/i.test(m)) brand = "Xiaomi ";
+
+                    const exactName = `${brand}${m}`;
+                    if (cloudHistory["_devices"] && cloudHistory["_devices"][devId]) {
+                        cloudHistory["_devices"][devId].name = exactName;
+                    }
+                }
+            }).catch(() => {});
+        }
     } catch(e) {
         console.warn("Erro ao registar dispositivo:", e);
     }
 }
-
-window.renameDevice = function(devId) {
-    const dev = cloudHistory["_devices"] && cloudHistory["_devices"][devId];
-    const currentName = dev ? dev.name : "";
-    const newName = prompt("Insere um novo nome para este dispositivo (ex: Telemóvel Martinho):", currentName);
-    if (newName && newName.trim()) {
-        const trimmed = newName.trim();
-        if (dev) dev.name = trimmed;
-        if (devId === getDeviceFingerprint()) {
-            try { localStorage.setItem("al_device_custom_name", trimmed); } catch(e) {}
-        }
-        if (Array.isArray(cloudHistory["_access_logs"])) {
-            cloudHistory["_access_logs"].forEach(l => {
-                if (l.deviceId === devId) l.deviceName = trimmed;
-            });
-        }
-        if (historyLoadedOk) saveToCloudHistory(cloudHistory);
-        showSettingsView();
-    }
-};
-
-window.clearAccessLogs = function() {
-    cloudHistory["_access_logs"] = [];
-    if (historyLoadedOk) saveToCloudHistory(cloudHistory);
-    showSettingsView();
-};
 
 // TEMA INICIAL
 let currentTheme = localStorage.getItem("al_theme") || "white";
@@ -2567,11 +2612,6 @@ function showSettingsView() {
                             </div>
                         </div>
                     </div>
-                    <div>
-                        <button onclick="window.renameDevice('${devId}')" style="padding: 6px 12px; font-size: 12px; cursor: pointer; border-radius: 6px; border: 1px solid #ccc; background: white; font-weight: 600;">
-                            ✏️ Mudar Nome
-                        </button>
-                    </div>
                 </div>
             `;
         });
@@ -2583,15 +2623,7 @@ function showSettingsView() {
 
         <!-- Secção 3: Histórico de Acessos Recentes por Dia -->
         <div style="margin-top: 30px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
-                <h2 style="margin: 0; font-size: 20px;">📜 Histórico de Acessos Recentes</h2>
-                ${logs.length > 0 ? `
-                    <button onclick="window.clearAccessLogs()" style="padding: 6px 12px; font-size: 12px; cursor: pointer; border-radius: 6px; border: 1px solid #dc3545; background: transparent; color: #dc3545; font-weight: bold;">
-                        🗑️ Limpar Histórico
-                    </button>
-                ` : ''}
-            </div>
-
+            <h2 style="margin: 0 0 8px 0; font-size: 20px;">📜 Histórico de Acessos Recentes</h2>
             <div style="font-size: 13px; color: #666; margin-bottom: 15px;">
                 Registo cronológico organizado por dia dos acessos efetuados ao programa:
             </div>
