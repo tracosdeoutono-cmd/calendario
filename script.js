@@ -358,6 +358,7 @@
         body[data-theme="aquarela"] button[onclick*="copyFromData"][onclick*="eEs"] { background: linear-gradient(135deg, #e11d48, #d97706) !important; border: none !important; color: white !important; box-shadow: 0 4px 15px rgba(225, 29, 72, 0.3) !important; }
         body[data-theme="aquarela"] button[onclick*="switchMainView('cleaning')"] { background: linear-gradient(135deg, #2563eb, #7c3aed) !important; border: none !important; color: white !important; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3) !important; }
         body[data-theme="aquarela"] button[onclick*="switchMainView('occupancy')"] { background: linear-gradient(135deg, #059669, #10b981) !important; border: none !important; color: white !important; box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3) !important; }
+        body[data-theme="aquarela"] button[onclick*="switchMainView('laundry')"] { background: linear-gradient(135deg, #0284c7, #06b6d4) !important; border: none !important; color: white !important; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3) !important; }
 
         body[data-theme="aquarela"] hr {
             border: none !important;
@@ -479,7 +480,63 @@
         .segment-btn { font-family: inherit; padding: 10px 20px; font-size: 14px; font-weight: 600; border-radius: 12px; cursor: pointer; border: none; background: transparent; color: #a3998e; transition: all 0.25s ease; }
         .segment-btn.active-cleaning { background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-weight: 700; box-shadow: 0 4px 15px rgba(245,158,11,0.35); }
         .segment-btn.active-occupancy { background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-weight: 700; box-shadow: 0 4px 15px rgba(16,185,129,0.35); }
+        .segment-btn.active-laundry { background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff; font-weight: 700; box-shadow: 0 4px 15px rgba(2,132,199,0.35); }
         body[data-theme="outono"] .clock-btn.active { background: linear-gradient(135deg, #ea580c, #c2410c) !important; box-shadow: 0 0 15px rgba(234,88,12,0.5) !important; border-color: transparent !important; }
+
+        /* ══════════════════════════════════════════ */
+        /* COMPONENTES DE STOCK DE LAVANDARIA         */
+        /* ══════════════════════════════════════════ */
+        .laundry-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+            margin-top: 14px;
+        }
+        .laundry-item-card {
+            border: 1px solid rgba(0,0,0,0.1);
+            background: rgba(255,255,255,0.7);
+            border-radius: 12px;
+            padding: 12px 10px;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        body[data-theme="outono"] .laundry-item-card {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(245,158,11,0.25);
+            color: #fff8f0;
+        }
+        body[data-theme="cyber"] .laundry-item-card {
+            background: rgba(0,255,65,0.05);
+            border-color: #00ff41;
+            color: #00ff41;
+            border-radius: 0;
+        }
+        body[data-theme="quadro"] .laundry-item-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px dashed rgba(255,255,255,0.3);
+            color: #e2ddd0;
+        }
+        .laundry-item-val {
+            font-size: 22px;
+            font-weight: 800;
+            margin: 4px 0 2px 0;
+            color: #0284c7;
+        }
+        body[data-theme="outono"] .laundry-item-val { color: #f59e0b; }
+        body[data-theme="cyber"] .laundry-item-val { color: #00ff41; }
+        body[data-theme="quadro"] .laundry-item-val { color: #ffe066; }
+        .laundry-item-lbl {
+            font-size: 11px;
+            font-weight: 600;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            line-height: 1.2;
+        }
     `;
     document.head.appendChild(style);
 })();
@@ -499,6 +556,35 @@ const calendars = [
     { name: "Vizinho 1", url: `${WORKER_BASE_URL}?room=vizinho1` },
     { name: "Vizinho 2", url: `${WORKER_BASE_URL}?room=vizinho2` },
     { name: "Vizinho 3", url: `${WORKER_BASE_URL}?room=vizinho3` }
+];
+
+// ══════════════════════════════════════════════════
+// CONFIGURAÇÃO DE ROUPA POR QUARTO (STOCK LAVANDARIA)
+// ══════════════════════════════════════════════════
+const ROOM_LINEN = {
+    "Vizinho 1":     { edredonCasal: 1, edredonSolteiro: 0, lencolCasal: 0, lencolSolteiro: 2, capaAlmofada: 2, toalhaGrande: 2, toalhaPequena: 2 },
+    "Vizinho 2":     { edredonCasal: 0, edredonSolteiro: 1, lencolCasal: 0, lencolSolteiro: 1, capaAlmofada: 1, toalhaGrande: 1, toalhaPequena: 1 },
+    "Vizinho 3":     { edredonCasal: 1, edredonSolteiro: 0, lencolCasal: 1, lencolSolteiro: 0, capaAlmofada: 2, toalhaGrande: 2, toalhaPequena: 2 },
+    "Achada 1":      { edredonCasal: 1, edredonSolteiro: 0, lencolCasal: 1, lencolSolteiro: 0, capaAlmofada: 2, toalhaGrande: 2, toalhaPequena: 3 },
+    "Achada 2":      { edredonCasal: 0, edredonSolteiro: 1, lencolCasal: 0, lencolSolteiro: 1, capaAlmofada: 1, toalhaGrande: 1, toalhaPequena: 1 },
+    "Achada 3":      { edredonCasal: 1, edredonSolteiro: 0, lencolCasal: 1, lencolSolteiro: 0, capaAlmofada: 2, toalhaGrande: 2, toalhaPequena: 2 },
+    "Achada 4":      { edredonCasal: 1, edredonSolteiro: 0, lencolCasal: 1, lencolSolteiro: 0, capaAlmofada: 2, toalhaGrande: 2, toalhaPequena: 2 },
+    "Achada 5":      { edredonCasal: 1, edredonSolteiro: 0, lencolCasal: 1, lencolSolteiro: 0, capaAlmofada: 2, toalhaGrande: 2, toalhaPequena: 2 },
+    "Achada 6":      { edredonCasal: 0, edredonSolteiro: 3, lencolCasal: 0, lencolSolteiro: 3, capaAlmofada: 3, toalhaGrande: 3, toalhaPequena: 3 },
+    "Impasse 2":     { edredonCasal: 1, edredonSolteiro: 0, lencolCasal: 1, lencolSolteiro: 0, capaAlmofada: 2, toalhaGrande: 2, toalhaPequena: 2 },
+    "Impasse 3":     { edredonCasal: 0, edredonSolteiro: 2, lencolCasal: 0, lencolSolteiro: 2, capaAlmofada: 2, toalhaGrande: 2, toalhaPequena: 2 },
+    "Impasse 4":     { edredonCasal: 1, edredonSolteiro: 0, lencolCasal: 1, lencolSolteiro: 0, capaAlmofada: 2, toalhaGrande: 2, toalhaPequena: 3 },
+    "Impasse Villa": { edredonCasal: 1, edredonSolteiro: 0, lencolCasal: 1, lencolSolteiro: 0, capaAlmofada: 2, toalhaGrande: 2, toalhaPequena: 2 }
+};
+
+const LINEN_ITEMS_DEF = [
+    { key: "edredonCasal",    label: "Edredões Casal",     short: "Edredão Casal",    emoji: "🛏️" },
+    { key: "edredonSolteiro", label: "Edredões Solteiro",  short: "Edredão Solteiro", emoji: "🛏️" },
+    { key: "lencolCasal",     label: "Lençóis Casal",      short: "Lençol Casal",     emoji: "🛏️" },
+    { key: "lencolSolteiro",  label: "Lençóis Solteiro",   short: "Lençol Solteiro",  emoji: "🛏️" },
+    { key: "capaAlmofada",    label: "Capas Almofada",     short: "Capa Almofada",    emoji: "枕" },
+    { key: "toalhaGrande",    label: "Toalhas Grandes",    short: "Toalha Grande",    emoji: "🛁" },
+    { key: "toalhaPequena",   label: "Toalhas Pequenas",   short: "Toalha Pequena",   emoji: "🧴" }
 ];
 
 const THEME_LIST = [
@@ -565,12 +651,18 @@ function getThemeEmoji(key) {
 const result = document.getElementById("result");
 let globalReservations = [];
 let cloudHistory = {};
-let currentView = "cleaning";
+let currentView = "cleaning"; // "cleaning" | "occupancy" | "snapshots" | "laundry"
 let showHistoryMode = false;
 let selectedHouse = "achada";
 let showOccupancyStats = false;
 let showPastStatsMode = false;
 let selectedSnapshotDate = null;
+
+// Estados para Stock de Lavandaria
+let showLaundryHistory = false;
+let showAddDropOffForm = false;
+let showAddPickUpForm = false;
+let showRoomConfigModal = false;
 
 // Proteção para nunca gravar na cloud se o histórico não carregou
 let historyLoadedOk = false;
@@ -683,6 +775,7 @@ function buildThemePopupHTML() {
 function renderNavigation() {
     const isCleaning = currentView === "cleaning";
     const isOccupancy = currentView === "occupancy";
+    const isLaundry = currentView === "laundry";
     const isSnapshots = currentView === "snapshots";
     const themeEmoji = getThemeEmoji(currentTheme);
 
@@ -711,9 +804,10 @@ function renderNavigation() {
                 </div>
             </div>
             <div style="margin-bottom: 24px;">
-                <div style="display: inline-flex; background: rgba(255,255,255,0.04); padding: 5px; border-radius: 16px; border: 1px solid rgba(245,158,11,0.2); gap: 4px;">
+                <div style="display: inline-flex; background: rgba(255,255,255,0.04); padding: 5px; border-radius: 16px; border: 1px solid rgba(245,158,11,0.2); gap: 4px; flex-wrap: wrap;">
                     <button onclick="window.switchMainView('cleaning')" class="segment-btn ${isCleaning?'active-cleaning':''}">🧹 Limpezas</button>
                     <button onclick="window.switchMainView('occupancy')" class="segment-btn ${isOccupancy?'active-occupancy':''}">📊 Disponibilidade</button>
+                    <button onclick="window.switchMainView('laundry')" class="segment-btn ${isLaundry?'active-laundry':''}">🧺 Stock Lavandaria</button>
                 </div>
             </div>`;
     } else {
@@ -727,6 +821,7 @@ function renderNavigation() {
             <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
                 <button onclick="window.switchMainView('cleaning')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #007bff; background-color: ${isCleaning?'#007bff':'#ffffff'}; color: ${isCleaning?'#ffffff':'#007bff'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">🧹 Plano de Limpezas</button>
                 <button onclick="window.switchMainView('occupancy')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #28a745; background-color: ${isOccupancy?'#28a745':'#ffffff'}; color: ${isOccupancy?'#ffffff':'#28a745'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">📊 Disponibilidade da Casa</button>
+                <button onclick="window.switchMainView('laundry')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #0284c7; background-color: ${isLaundry?'#0284c7':'#ffffff'}; color: ${isLaundry?'#ffffff':'#0284c7'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">🧺 Stock Lavandaria</button>
             </div>`;
     }
 
@@ -737,6 +832,7 @@ function renderCurrentView() {
     if (currentView === "cleaning") showCleaningPlan();
     else if (currentView === "occupancy") showOccupancyPlan();
     else if (currentView === "snapshots") showSnapshotsPlan();
+    else if (currentView === "laundry") showLaundryStockView();
 }
 
 window.toggleSnapshots = function() {
@@ -775,6 +871,9 @@ window.togglePastStats = function() { showPastStatsMode = !showPastStatsMode; sh
 window.selectHouse = function(house) { selectedHouse = house; showOccupancyPlan(); };
 window.selectSnapshot = function(dateKey) { selectedSnapshotDate = dateKey; showSnapshotsPlan(); };
 
+// ══════════════════════════════════════════════════
+// PERSISTÊNCIA NA CLOUD & LOCALSTORAGE
+// ══════════════════════════════════════════════════
 async function fetchCloudHistory() {
     try {
         const res = await fetchWithTimeout(`${WORKER_BASE_URL}?action=getHistory`, {}, 8000);
@@ -784,14 +883,17 @@ async function fetchCloudHistory() {
         historyLoadedOk = true;
     }
     catch (e) {
-        console.warn("Aviso: Histórico não carregou.", e);
-        cloudHistory = {};
+        console.warn("Aviso: Histórico não carregou da cloud. A usar armazenamento local.", e);
+        try {
+            cloudHistory = JSON.parse(localStorage.getItem("al_cloud_history_backup") || "{}");
+        } catch(err) { cloudHistory = {}; }
         historyLoadedOk = false;
     }
 }
 
 async function saveToCloudHistory(newEntries) {
     try {
+        localStorage.setItem("al_cloud_history_backup", JSON.stringify(newEntries));
         await fetchWithTimeout(`${WORKER_BASE_URL}?action=saveHistory`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -886,17 +988,9 @@ function getGarbageTasks(date) {
     return tasks;
 }
 
-// Algoritmo de determinação da data ideal de limpeza.
-// Regras:
-//  1. Se houver turnaround no mesmo dia (saída e entrada do mesmo quarto),
-//     OBRIGATORIAMENTE limpa nesse dia, mesmo que seja domingo ou data bloqueada.
-//  2. Caso contrário, limpa o mais próximo possível do checkout:
-//     - Se checkout for domingo → começa a procurar na segunda-feira seguinte.
-//     - Avança dia a dia até encontrar um dia que não seja domingo nem data bloqueada.
 function getCleaningInfo(reservation, allReservations) {
     const checkout = reservation.checkOut;
 
-    // Próxima reserva no mesmo quarto
     const nextR = allReservations
         .filter(r => r.room === reservation.room && r.checkIn >= checkout && r !== reservation)
         .sort((a, b) => a.checkIn - b.checkIn)[0];
@@ -906,20 +1000,15 @@ function getCleaningInfo(reservation, allReservations) {
     let isForcedSunday = false;
 
     if (sameDayTurnaround) {
-        // Turnaround obrigatório: tem de limpar no dia de checkout, independentemente de tudo
         bestDay = checkout;
         if (isSunday(checkout)) isForcedSunday = true;
     } else {
-        // Começa no próprio dia de checkout (ou segunda se for domingo)
         let candidate = isSunday(checkout) ? addDays(checkout, 1) : checkout;
-
-        // Avança enquanto o dia for bloqueado ou domingo (segurança: máx 14 dias)
         let safety = 0;
         while ((isSunday(candidate) || isBlockedDate(candidate)) && safety < 14) {
             candidate = addDays(candidate, 1);
             safety++;
         }
-
         bestDay = candidate;
     }
 
@@ -1102,8 +1191,6 @@ function showSnapshotsPlan() {
 
 function buildBlockedDatesPanelHTML() {
     const hasBlocked = blockedDates.length > 0;
-
-    // Filtra datas passadas para mostrar separadas
     const today = new Date(); today.setHours(0,0,0,0);
     const futureDates = blockedDates.filter(dk => parseDateKey(dk) >= today);
     const pastDates = blockedDates.filter(dk => parseDateKey(dk) < today);
@@ -1162,7 +1249,7 @@ function showCleaningPlan() {
 
     if (showHistoryMode) {
         Object.keys(cloudHistory).forEach(dk => {
-            if (dk !== "_snapshots" && dk !== "_plan") {
+            if (dk !== "_snapshots" && dk !== "_plan" && dk !== "_reviews" && dk !== "_laundry" && /^\d{4}-\d{2}-\d{2}$/.test(dk)) {
                 const val = cloudHistory[dk];
                 const d = parseDateKey(dk);
                 if (d < today) {
@@ -1171,8 +1258,9 @@ function showCleaningPlan() {
                     if (Array.isArray(val)) { roomsList = val; }
                     else if (val && Array.isArray(val.rooms)) { roomsList = val.rooms; }
                     roomsList.forEach(r => {
-                        if (r && r.room && !grouped[dk].rooms.some(existing => existing.room === r.room)) {
-                            grouped[dk].rooms.push({ room: r.room, sunday: !!r.sunday, urgent: !!r.urgent, hasCheckout: r.hasCheckout, hasCheckin: r.hasCheckin });
+                        const roomName = typeof r === 'string' ? r : (r && r.room ? r.room : null);
+                        if (roomName && !grouped[dk].rooms.some(existing => existing.room === roomName)) {
+                            grouped[dk].rooms.push({ room: roomName, sunday: !!r.sunday, urgent: !!r.urgent, hasCheckout: r.hasCheckout, hasCheckin: r.hasCheckin });
                         }
                     });
                 }
@@ -1238,7 +1326,6 @@ function showCleaningPlan() {
     let sortedKeys=Object.keys(grouped).sort(); if (showHistoryMode) sortedKeys.reverse();
     let html=renderNavigation();
 
-    // ── Barra de botões de controlo ──
     const blockedBtnLabel = showBlockedDatesPanel
         ? '🚫 Fechar Dias Bloqueados'
         : `🚫 Dias Bloqueados${blockedDates.length > 0 ? ` (${blockedDates.length})` : ''}`;
@@ -1255,11 +1342,9 @@ function showCleaningPlan() {
         </button>
     </div>`;
 
-    // ── Painel de dias bloqueados ──
     if (showBlockedDatesPanel) {
         html += buildBlockedDatesPanelHTML();
     } else if (blockedDates.length > 0 && !showHistoryMode) {
-        // Aviso discreto quando há dias bloqueados mas o painel está fechado
         const futureBlocked = blockedDates.filter(dk => parseDateKey(dk) >= today);
         if (futureBlocked.length > 0) {
             const labels = futureBlocked.map(dk => parseDateKey(dk).toLocaleDateString("pt-PT", { day: "numeric", month: "short" })).join(", ");
@@ -1281,7 +1366,6 @@ function showCleaningPlan() {
         let title=day.date.toLocaleDateString("pt-PT",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
         if (day.rooms && day.rooms.some(r=>r.sunday)) title="🔴 "+title;
 
-        // Indica se o dia está bloqueado (mas tem limpezas obrigatórias - turnarounds)
         const dayIsBlocked = isBlockedDate(day.date);
         if (dayIsBlocked && !showHistoryMode) {
             title = "⚠️ " + title;
@@ -1291,7 +1375,6 @@ function showCleaningPlan() {
         let dEs=day.date.toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long",year:"numeric"}); dEs=dEs.charAt(0).toUpperCase()+dEs.slice(1); let cEs=[`🧹 Limpiezas - ${dEs}:`];
         let rh="";
 
-        // Aviso de dia bloqueado com limpezas forçadas
         if (dayIsBlocked && hasRooms && !showHistoryMode) {
             rh += `<div style="margin-bottom: 8px; font-size: 13px; color: #dc3545; font-weight: 600;">⚠️ Dia bloqueado — limpezas abaixo são obrigatórias (turnaround)</div>`;
         }
@@ -1334,6 +1417,10 @@ function showCleaningPlan() {
                 rh += `${em} ${clean.room}${tH}<br>`;
             });
         }
+
+        cEs.push("");
+        cEs.push("Dirección de mi casa: Impasse Romeiras 6");
+        cEs.push("Dirección de la casa Funchal: Beco da Achada 3");
 
         const ePt=encodeURIComponent(cPt.join("\n")), eEs=encodeURIComponent(cEs.join("\n"));
         html+=`<div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
@@ -1431,4 +1518,675 @@ function showOccupancyPlan() {
     result.innerHTML=html;
 }
 
+// ══════════════════════════════════════════════════
+// MÓDULO DE GESTÃO DE STOCK DE ROUPA NA LAVANDARIA
+// ══════════════════════════════════════════════════
+
+function getLaundryData() {
+    if (!cloudHistory["_laundry"] || typeof cloudHistory["_laundry"] !== 'object') {
+        try {
+            const local = JSON.parse(localStorage.getItem("al_laundry_data") || "null");
+            if (local && typeof local === 'object') {
+                cloudHistory["_laundry"] = local;
+            } else {
+                cloudHistory["_laundry"] = { dropOffs: [], pickUps: [] };
+            }
+        } catch(e) {
+            cloudHistory["_laundry"] = { dropOffs: [], pickUps: [] };
+        }
+    }
+    if (!Array.isArray(cloudHistory["_laundry"].dropOffs)) cloudHistory["_laundry"].dropOffs = [];
+    if (!Array.isArray(cloudHistory["_laundry"].pickUps)) cloudHistory["_laundry"].pickUps = [];
+    return cloudHistory["_laundry"];
+}
+
+function saveLaundryData() {
+    try {
+        localStorage.setItem("al_laundry_data", JSON.stringify(cloudHistory["_laundry"]));
+    } catch(e) {}
+    if (historyLoadedOk) {
+        saveToCloudHistory(cloudHistory);
+    }
+}
+
+// Reúne todas as limpezas de forma cronológica única
+function getAllCleaningsList() {
+    const list = [];
+    const seen = new Set();
+
+    // 1. A partir do plano persistido na cloud
+    const plan = cloudHistory["_plan"] || {};
+    Object.keys(plan).forEach(k => {
+        const entry = plan[k];
+        if (entry && entry.cleaningKey && entry.room) {
+            const uid = `${entry.cleaningKey}|${entry.room}`;
+            if (!seen.has(uid)) {
+                seen.add(uid);
+                list.push({ dateKey: entry.cleaningKey, room: entry.room });
+            }
+        }
+    });
+
+    // 2. A partir do histórico legado por datas (YYYY-MM-DD)
+    Object.keys(cloudHistory).forEach(dk => {
+        if (dk !== "_snapshots" && dk !== "_plan" && dk !== "_reviews" && dk !== "_laundry" && /^\d{4}-\d{2}-\d{2}$/.test(dk)) {
+            const val = cloudHistory[dk];
+            let roomsList = [];
+            if (Array.isArray(val)) roomsList = val;
+            else if (val && Array.isArray(val.rooms)) roomsList = val.rooms;
+            roomsList.forEach(r => {
+                const roomName = typeof r === 'string' ? r : (r && r.room ? r.room : null);
+                if (roomName) {
+                    const uid = `${dk}|${roomName}`;
+                    if (!seen.has(uid)) {
+                        seen.add(uid);
+                        list.push({ dateKey: dk, room: roomName });
+                    }
+                }
+            });
+        }
+    });
+
+    // 3. Fallback a partir das reservas se o plano ainda não tiver limpezas
+    if (list.length === 0) {
+        globalReservations.forEach(res => {
+            const info = getCleaningInfo(res, globalReservations);
+            const dk = formatDateKey(info.date);
+            const uid = `${dk}|${res.room}`;
+            if (!seen.has(uid)) {
+                seen.add(uid);
+                list.push({ dateKey: dk, room: res.room });
+            }
+        });
+    }
+
+    list.sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+    return list;
+}
+
+// Calcula as peças de roupa para uma lista de limpezas
+function calculateLinenItems(cleanings) {
+    const counts = {
+        edredonCasal: 0,
+        edredonSolteiro: 0,
+        lencolCasal: 0,
+        lencolSolteiro: 0,
+        capaAlmofada: 0,
+        toalhaGrande: 0,
+        toalhaPequena: 0
+    };
+    cleanings.forEach(c => {
+        const r = ROOM_LINEN[c.room] || { edredonCasal: 1, edredonSolteiro: 0, lencolCasal: 1, lencolSolteiro: 0, capaAlmofada: 2, toalhaGrande: 2, toalhaPequena: 2 };
+        counts.edredonCasal += r.edredonCasal || 0;
+        counts.edredonSolteiro += r.edredonSolteiro || 0;
+        counts.lencolCasal += r.lencolCasal || 0;
+        counts.lencolSolteiro += r.lencolSolteiro || 0;
+        counts.capaAlmofada += r.capaAlmofada || 0;
+        counts.toalhaGrande += r.toalhaGrande || 0;
+        counts.toalhaPequena += r.toalhaPequena || 0;
+    });
+    const totalPieces = Object.values(counts).reduce((a, b) => a + b, 0);
+    return { counts, totalPieces };
+}
+
+// Determina os lotes levados à lavandaria e a roupa acumulada pendente
+function getLaundryBatchesAndPending(previewDateKey = null) {
+    const lData = getLaundryData();
+    const dropOffs = [...lData.dropOffs].sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+    const allCleanings = getAllCleaningsList();
+
+    const batches = [];
+    let lastDateKey = null;
+
+    dropOffs.forEach((drop, idx) => {
+        const batchCleanings = allCleanings.filter(c => {
+            if (lastDateKey) {
+                return c.dateKey > lastDateKey && c.dateKey <= drop.dateKey;
+            } else {
+                return c.dateKey <= drop.dateKey;
+            }
+        });
+        lastDateKey = drop.dateKey;
+        const linen = calculateLinenItems(batchCleanings);
+        batches.push({
+            dropOff: drop,
+            startDateKey: idx === 0 ? (batchCleanings[0] ? batchCleanings[0].dateKey : null) : dropOffs[idx - 1].dateKey,
+            endDateKey: drop.dateKey,
+            cleanings: batchCleanings,
+            linen: linen
+        });
+    });
+
+    const todayStr = formatDateKey(new Date());
+    const limitDateKey = previewDateKey || todayStr;
+
+    const pendingCleanings = allCleanings.filter(c => {
+        if (lastDateKey) {
+            return c.dateKey > lastDateKey && c.dateKey <= limitDateKey;
+        } else {
+            return c.dateKey <= limitDateKey;
+        }
+    });
+    const pendingLinen = calculateLinenItems(pendingCleanings);
+
+    // Stock total atualmente na lavandaria (lotes entregues que ainda não foram retirados)
+    const stockInLaundry = {
+        edredonCasal: 0,
+        edredonSolteiro: 0,
+        lencolCasal: 0,
+        lencolSolteiro: 0,
+        capaAlmofada: 0,
+        toalhaGrande: 0,
+        toalhaPequena: 0
+    };
+    let uncollectedBatchCount = 0;
+    batches.forEach(b => {
+        if (!b.dropOff.collected) {
+            uncollectedBatchCount++;
+            Object.keys(stockInLaundry).forEach(k => {
+                stockInLaundry[k] += b.linen.counts[k] || 0;
+            });
+        }
+    });
+    const totalStockPieces = Object.values(stockInLaundry).reduce((a, b) => a + b, 0);
+
+    return {
+        batches,
+        pendingCleanings,
+        pendingLinen,
+        stockInLaundry,
+        totalStockPieces,
+        uncollectedBatchCount,
+        lastDropOffDateKey: lastDateKey
+    };
+}
+
+window.toggleLaundryHistory = function() {
+    showLaundryHistory = !showLaundryHistory;
+    showAddDropOffForm = false;
+    showAddPickUpForm = false;
+    showLaundryStockView();
+};
+
+window.toggleAddDropOffForm = function() {
+    showAddDropOffForm = !showAddDropOffForm;
+    showAddPickUpForm = false;
+    showLaundryStockView();
+};
+
+window.toggleAddPickUpForm = function() {
+    showAddPickUpForm = !showAddPickUpForm;
+    showAddDropOffForm = false;
+    showLaundryStockView();
+};
+
+window.toggleRoomConfigModal = function() {
+    showRoomConfigModal = !showRoomConfigModal;
+    showLaundryStockView();
+};
+
+window.onDropOffDateChange = function() {
+    const input = document.getElementById('al-dropoff-date-input');
+    const previewDiv = document.getElementById('al-dropoff-preview');
+    if (!input || !previewDiv) return;
+    const dk = input.value;
+    if (!dk) return;
+
+    const data = getLaundryBatchesAndPending(dk);
+    const cleanings = data.pendingCleanings;
+    const linen = data.pendingLinen;
+
+    let previewHtml = `<div style="margin-top: 10px; padding: 12px; border-radius: 8px; background: rgba(2,132,199,0.08); border: 1px solid rgba(2,132,199,0.2);">`;
+    previewHtml += `<div style="font-size: 13px; font-weight: 700; color: #0284c7; margin-bottom: 6px;">📋 Pré-visualização para esta data (${dk}):</div>`;
+    previewHtml += `<div style="font-size: 13px; margin-bottom: 4px;">• <strong>${cleanings.length}</strong> limpezas incluídas desde a última ida.</div>`;
+
+    if (cleanings.length > 0) {
+        const roomCounts = {};
+        cleanings.forEach(c => { roomCounts[c.room] = (roomCounts[c.room] || 0) + 1; });
+        const roomsStr = Object.keys(roomCounts).map(r => `${r}${roomCounts[r]>1?` (${roomCounts[r]}x)`:''}`).join(', ');
+        previewHtml += `<div style="font-size: 12px; color: #666; margin-bottom: 8px;">Quartos: ${roomsStr}</div>`;
+        previewHtml += `<div style="font-size: 13px; font-weight: 600;">Total de peças a levar: <span style="color: #0284c7; font-size: 15px; font-weight: bold;">${linen.totalPieces}</span> peças</div>`;
+        previewHtml += `<div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;">`;
+        LINEN_ITEMS_DEF.forEach(it => {
+            const count = linen.counts[it.key];
+            if (count > 0) {
+                previewHtml += `<span style="font-size: 12px; background: white; padding: 3px 8px; border-radius: 12px; border: 1px solid #ddd;">${it.emoji} ${it.short}: <b>${count}</b></span>`;
+            }
+        });
+        previewHtml += `</div>`;
+    } else {
+        previewHtml += `<div style="font-size: 12px; color: #dc3545;">⚠️ Nenhuma limpeza registada no período até esta data.</div>`;
+    }
+    previewHtml += `</div>`;
+    previewDiv.innerHTML = previewHtml;
+};
+
+window.submitLaundryDropOff = function() {
+    const input = document.getElementById('al-dropoff-date-input');
+    const dk = input ? input.value : formatDateKey(new Date());
+    if (!dk) { alert("Por favor seleciona uma data válida."); return; }
+
+    const lData = getLaundryData();
+    const newDropOff = {
+        id: "drop_" + Date.now(),
+        type: "drop_off",
+        dateKey: dk,
+        collected: false,
+        collectedDateKey: null,
+        createdAt: new Date().toISOString()
+    };
+
+    lData.dropOffs.push(newDropOff);
+    saveLaundryData();
+    showAddDropOffForm = false;
+    showLaundryStockView();
+};
+
+window.submitLaundryPickUp = function(targetDropOffId = null) {
+    const lData = getLaundryData();
+    const todayStr = formatDateKey(new Date());
+    const dateInput = document.getElementById('al-pickup-date-input');
+    const pickDateKey = dateInput ? dateInput.value : todayStr;
+
+    if (targetDropOffId) {
+        // Levantamento de um lote específico
+        const drop = lData.dropOffs.find(d => d.id === targetDropOffId);
+        if (drop) {
+            drop.collected = true;
+            drop.collectedDateKey = todayStr;
+            lData.pickUps.push({
+                id: "pick_" + Date.now(),
+                type: "pick_up",
+                dateKey: todayStr,
+                targetDropOffId: targetDropOffId,
+                createdAt: new Date().toISOString()
+            });
+            saveLaundryData();
+            showLaundryStockView();
+            return;
+        }
+    }
+
+    // Levantamento via formulário geral
+    const checkboxes = document.querySelectorAll('.al-pickup-batch-cb:checked');
+    let collectedCount = 0;
+
+    if (checkboxes.length > 0) {
+        checkboxes.forEach(cb => {
+            const drop = lData.dropOffs.find(d => d.id === cb.value);
+            if (drop) {
+                drop.collected = true;
+                drop.collectedDateKey = pickDateKey;
+                collectedCount++;
+            }
+        });
+    } else {
+        lData.dropOffs.forEach(drop => {
+            if (!drop.collected && drop.dateKey <= pickDateKey) {
+                drop.collected = true;
+                drop.collectedDateKey = pickDateKey;
+                collectedCount++;
+            }
+        });
+    }
+
+    if (collectedCount === 0) {
+        alert("Não foram encontrados lotes para levantar nesta data.");
+        return;
+    }
+
+    lData.pickUps.push({
+        id: "pick_" + Date.now(),
+        type: "pick_up",
+        dateKey: pickDateKey,
+        collectedCount: collectedCount,
+        createdAt: new Date().toISOString()
+    });
+
+    saveLaundryData();
+    showAddPickUpForm = false;
+    showLaundryStockView();
+};
+
+window.removeLaundryEvent = function(eventId, eventType) {
+    if (!confirm("Tens a certeza que queres remover este registo do histórico de lavandaria?")) return;
+
+    const lData = getLaundryData();
+    if (eventType === "drop_off") {
+        lData.dropOffs = lData.dropOffs.filter(d => d.id !== eventId);
+    } else if (eventType === "pick_up") {
+        const pick = lData.pickUps.find(p => p.id === eventId);
+        if (pick && pick.targetDropOffId) {
+            const drop = lData.dropOffs.find(d => d.id === pick.targetDropOffId);
+            if (drop) {
+                drop.collected = false;
+                drop.collectedDateKey = null;
+            }
+        }
+        lData.pickUps = lData.pickUps.filter(p => p.id !== eventId);
+    }
+
+    saveLaundryData();
+    showLaundryStockView();
+};
+
+function buildRoomConfigGuideHTML() {
+    let rowsHtml = '';
+    Object.keys(ROOM_LINEN).forEach(roomName => {
+        const cfg = ROOM_LINEN[roomName];
+        let desc = [];
+        if (cfg.edredonCasal) desc.push(`<b>${cfg.edredonCasal}</b> Edredão Casal`);
+        if (cfg.edredonSolteiro) desc.push(`<b>${cfg.edredonSolteiro}</b> Edredão Solteiro`);
+        if (cfg.lencolCasal) desc.push(`<b>${cfg.lencolCasal}</b> Lençol Casal`);
+        if (cfg.lencolSolteiro) desc.push(`<b>${cfg.lencolSolteiro}</b> Lençol Solteiro`);
+        if (cfg.capaAlmofada) desc.push(`<b>${cfg.capaAlmofada}</b> Capas Almofada`);
+        if (cfg.toalhaGrande) desc.push(`<b>${cfg.toalhaGrande}</b> Toalhas Grandes`);
+        if (cfg.toalhaPequena) desc.push(`<b>${cfg.toalhaPequena}</b> Toalhas Pequenas`);
+
+        rowsHtml += `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 13px;">
+                <span style="font-weight: bold; min-width: 110px;">🏠 ${roomName}</span>
+                <span style="opacity: 0.9; text-align: right;">${desc.join(', ')}</span>
+            </div>
+        `;
+    });
+
+    return `
+        <div style="border: 1px solid #ddd; border-radius: 12px; padding: 16px; margin-bottom: 20px; background-color: #f8f9fa; border-left: 4px solid #0284c7;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <strong style="color: #0284c7; font-size: 15px;">📋 Composição de Roupa por Quarto</strong>
+                <button onclick="window.toggleRoomConfigModal()" style="background: none; border: none; font-size: 13px; color: #666; cursor: pointer;">✕ Fechar</button>
+            </div>
+            <div>${rowsHtml}</div>
+        </div>
+    `;
+}
+
+function showLaundryStockView() {
+    let html = renderNavigation();
+    const todayStr = formatDateKey(new Date());
+    const data = getLaundryBatchesAndPending();
+    const lData = getLaundryData();
+
+    // ── Botões de Ação Principais ──
+    html += `
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 18px;">
+            <h1 style="margin: 0; font-size: 26px;">🧺 Stock na Lavandaria</h1>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button onclick="window.toggleAddDropOffForm()" style="padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #0284c7, #0369a1); color: white; font-weight: bold; box-shadow: 0 3px 8px rgba(2,132,199,0.25);">
+                    ➕ Fui à Lavandaria (Levar)
+                </button>
+                <button onclick="window.toggleAddPickUpForm()" style="padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #059669, #047857); color: white; font-weight: bold; box-shadow: 0 3px 8px rgba(5,150,105,0.25);">
+                    📦 Retirar da Lavandaria
+                </button>
+                <button onclick="window.toggleLaundryHistory()" style="padding: 10px 14px; font-size: 14px; cursor: pointer; border-radius: 8px; border: 1px solid #6c757d; background-color: ${showLaundryHistory?'#6c757d':'#ffffff'}; color: ${showLaundryHistory?'#ffffff':'#6c757d'}; font-weight: bold;">
+                    ${showLaundryHistory ? "🧺 Ver Stock Atual" : "📜 Ver Histórico"}
+                </button>
+            </div>
+        </div>
+    `;
+
+    // ── Formulário: Adicionar Ida à Lavandaria (Drop-off) ──
+    if (showAddDropOffForm) {
+        html += `
+            <div style="border: 2px solid #0284c7; border-radius: 14px; padding: 18px; margin-bottom: 22px; background: rgba(2,132,199,0.04);">
+                <div style="font-size: 16px; font-weight: bold; color: #0284c7; margin-bottom: 8px;">
+                    ➕ Registar Ida à Lavandaria (Levar Roupa)
+                </div>
+                <div style="font-size: 13px; color: #555; margin-bottom: 12px;">
+                    Ao adicionar este dia, assume-se que foi levada toda a roupa suja acumulada desde a última ida até esta data.
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <label style="font-size: 14px; font-weight: 600;">Data da Ida:</label>
+                    <input type="date" id="al-dropoff-date-input" value="${todayStr}" onchange="window.onDropOffDateChange()"
+                        style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; cursor: pointer;">
+                    <button onclick="window.submitLaundryDropOff()" style="padding: 8px 18px; font-size: 14px; cursor: pointer; border-radius: 8px; border: none; background-color: #0284c7; color: white; font-weight: bold;">
+                        ✓ Confirmar Entrega
+                    </button>
+                    <button onclick="window.toggleAddDropOffForm()" style="padding: 8px 14px; font-size: 14px; cursor: pointer; border-radius: 8px; border: 1px solid #ccc; background-color: #f8f9fa; color: #666;">
+                        Cancelar
+                    </button>
+                </div>
+                <div id="al-dropoff-preview"></div>
+            </div>
+        `;
+    }
+
+    // ── Formulário: Retirar da Lavandaria (Pick-up) ──
+    if (showAddPickUpForm) {
+        const uncollected = data.batches.filter(b => !b.dropOff.collected);
+        let batchesCheckboxes = '';
+        if (uncollected.length > 0) {
+            batchesCheckboxes = uncollected.map(b => {
+                const d = parseDateKey(b.dropOff.dateKey);
+                const label = d.toLocaleDateString("pt-PT", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+                return `
+                    <label style="display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: white; border-radius: 8px; border: 1px solid #ddd; font-size: 13px; cursor: pointer;">
+                        <input type="checkbox" class="al-pickup-batch-cb" value="${b.dropOff.id}" checked>
+                        <span>📦 Lote de <strong>${label}</strong> (${b.linen.totalPieces} peças)</span>
+                    </label>
+                `;
+            }).join('');
+        }
+
+        html += `
+            <div style="border: 2px solid #059669; border-radius: 14px; padding: 18px; margin-bottom: 22px; background: rgba(5,150,105,0.04);">
+                <div style="font-size: 16px; font-weight: bold; color: #059669; margin-bottom: 8px;">
+                    📦 Registar Retirada da Lavandaria (Levantar Roupa)
+                </div>
+                ${uncollected.length === 0 ? `
+                    <p style="color: #666; font-size: 14px;">Não há lotes pendentes na lavandaria de momento. Toda a roupa entregue já foi retirada! ✨</p>
+                    <button onclick="window.toggleAddPickUpForm()" style="padding: 6px 12px; font-size: 13px; cursor: pointer; border-radius: 6px; border: 1px solid #ccc; background: white;">Fechar</button>
+                ` : `
+                    <div style="font-size: 13px; color: #555; margin-bottom: 12px;">
+                        Escolhe os lotes que estás a levantar e a data da retirada:
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px;">
+                        ${batchesCheckboxes}
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <label style="font-size: 14px; font-weight: 600;">Data do Levantamento:</label>
+                        <input type="date" id="al-pickup-date-input" value="${todayStr}"
+                            style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; cursor: pointer;">
+                        <button onclick="window.submitLaundryPickUp()" style="padding: 8px 18px; font-size: 14px; cursor: pointer; border-radius: 8px; border: none; background-color: #059669; color: white; font-weight: bold;">
+                            ✓ Confirmar Levantamento
+                        </button>
+                        <button onclick="window.toggleAddPickUpForm()" style="padding: 8px 14px; font-size: 14px; cursor: pointer; border-radius: 8px; border: 1px solid #ccc; background-color: #f8f9fa; color: #666;">
+                            Cancelar
+                        </button>
+                    </div>
+                `}
+            </div>
+        `;
+    }
+
+    // ── Guia de Composição por Quarto (colapsável) ──
+    if (showRoomConfigModal) {
+        html += buildRoomConfigGuideHTML();
+    } else {
+        html += `
+            <div style="margin-bottom: 14px; display: flex; justify-content: flex-end;">
+                <button onclick="window.toggleRoomConfigModal()" style="background: none; border: none; color: #0284c7; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: underline;">
+                    📋 Ver composição de roupa de cada quarto
+                </button>
+            </div>
+        `;
+    }
+
+    // ══════════════════════════════════════════════════
+    // MODO HISTÓRICO
+    // ══════════════════════════════════════════════════
+    if (showLaundryHistory) {
+        html += `<h2>📜 Histórico de Movimentos de Lavandaria</h2>`;
+        const dropOffs = [...lData.dropOffs].sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+
+        if (dropOffs.length === 0) {
+            html += `<p style="color: #666;">Ainda não há registos de idas à lavandaria no histórico.</p>`;
+        } else {
+            html += `<div style="display: flex; flex-direction: column; gap: 14px; margin-top: 15px;">`;
+            dropOffs.forEach(drop => {
+                const batch = data.batches.find(b => b.dropOff.id === drop.id);
+                const d = parseDateKey(drop.dateKey);
+                const label = d.toLocaleDateString("pt-PT", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+                const linen = batch ? batch.linen : { totalPieces: 0, counts: {} };
+                const cleaningsCount = batch ? batch.cleanings.length : 0;
+
+                let statusBadge = drop.collected
+                    ? `<span style="background: rgba(5,150,105,0.12); color: #059669; border: 1px solid rgba(5,150,105,0.3); padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold;">✅ Retirado ${drop.collectedDateKey ? `a ${drop.collectedDateKey}` : ''}</span>`
+                    : `<span style="background: rgba(2,132,199,0.12); color: #0284c7; border: 1px solid rgba(2,132,199,0.3); padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold;">⏳ Na Lavandaria</span>`;
+
+                let chipsHtml = '';
+                LINEN_ITEMS_DEF.forEach(it => {
+                    const count = linen.counts[it.key];
+                    if (count > 0) {
+                        chipsHtml += `<span style="display: inline-flex; align-items: center; gap: 4px; background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; padding: 2px 8px; font-size: 12px;">${it.emoji} ${it.short}: <b>${count}</b></span>`;
+                    }
+                });
+
+                html += `
+                    <div style="border: 1px solid #ddd; border-radius: 12px; padding: 14px 16px; background-color: #f8f9fa; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+                            <div>
+                                <strong style="font-size: 16px;">🚚 Ida de ${label}</strong>
+                                <span style="font-size: 13px; color: #666; margin-left: 8px;">(${cleaningsCount} limpezas)</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                ${statusBadge}
+                                <button onclick="window.removeLaundryEvent('${drop.id}', 'drop_off')" title="Remover este dia histórico"
+                                    style="padding: 4px 10px; font-size: 12px; cursor: pointer; border-radius: 6px; border: 1px solid #dc3545; background-color: transparent; color: #dc3545; font-weight: bold;">
+                                    🗑️ Remover
+                                </button>
+                            </div>
+                        </div>
+                        <div style="font-size: 13px; margin-bottom: 8px;">
+                            Total levado: <strong>${linen.totalPieces}</strong> peças
+                        </div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px;">${chipsHtml}</div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        }
+        result.innerHTML = html;
+        return;
+    }
+
+    // ══════════════════════════════════════════════════
+    // MODO ESTADO ATUAL (STOCK NA LAVANDARIA)
+    // ══════════════════════════════════════════════════
+
+    // 1. Bloco de Stock Atual na Lavandaria
+    html += `
+        <div style="border: 1px solid #ddd; border-radius: 16px; padding: 20px; margin-bottom: 25px; background-color: #f8f9fa; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-left: 6px solid #0284c7;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    <h2 style="margin: 0; color: #0284c7; font-size: 20px;">🧺 Roupa Atualmente na Lavandaria</h2>
+                    <div style="font-size: 13px; opacity: 0.7; margin-top: 2px;">Peças entregues que aguardam levantamento (${data.uncollectedBatchCount} lote${data.uncollectedBatchCount!==1?'s':''})</div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 28px; font-weight: 900; color: #0284c7;">${data.totalStockPieces} <span style="font-size: 15px; font-weight: 600; opacity: 0.8;">peças</span></div>
+                </div>
+            </div>
+
+            <div class="laundry-grid">
+                ${LINEN_ITEMS_DEF.map(it => {
+                    const count = data.stockInLaundry[it.key] || 0;
+                    return `
+                        <div class="laundry-item-card">
+                            <span style="font-size: 20px;">${it.emoji}</span>
+                            <div class="laundry-item-val">${count}</div>
+                            <div class="laundry-item-lbl">${it.short}</div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        </div>
+    `;
+
+    // 2. Lotes a Aguardar Levantamento
+    const uncollectedBatches = data.batches.filter(b => !b.dropOff.collected);
+    if (uncollectedBatches.length > 0) {
+        html += `<h3 style="margin-top: 20px; margin-bottom: 12px;">📦 Lotes Entregues a Aguardar Levantamento</h3>`;
+        html += `<div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px;">`;
+
+        uncollectedBatches.forEach(b => {
+            const d = parseDateKey(b.dropOff.dateKey);
+            const label = d.toLocaleDateString("pt-PT", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+            const roomsStr = b.cleanings.map(c => c.room).join(', ') || 'Nenhum quarto';
+
+            let itemsBadges = '';
+            LINEN_ITEMS_DEF.forEach(it => {
+                const count = b.linen.counts[it.key];
+                if (count > 0) {
+                    itemsBadges += `<span style="display: inline-flex; align-items: center; gap: 4px; background: white; border: 1px solid rgba(0,0,0,0.12); border-radius: 8px; padding: 3px 8px; font-size: 12px;">${it.emoji} ${it.short}: <b>${count}</b></span>`;
+                }
+            });
+
+            html += `
+                <div style="border: 1px solid #ddd; border-radius: 12px; padding: 14px 16px; background-color: #f8f9fa;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+                        <div>
+                            <strong style="font-size: 15px;">🚚 Entregue a ${label}</strong>
+                            <div style="font-size: 12px; color: #666; margin-top: 2px;">Limpezas incluídas (${b.cleanings.length}): ${roomsStr}</div>
+                        </div>
+                        <button onclick="window.submitLaundryPickUp('${b.dropOff.id}')" style="padding: 6px 14px; font-size: 13px; cursor: pointer; border-radius: 6px; border: 1px solid #059669; background-color: #059669; color: white; font-weight: bold;">
+                            ✓ Marcar como Retirado
+                        </button>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;">${itemsBadges}</div>
+                </div>
+            `;
+        });
+        html += `</div>`;
+    }
+
+    // 3. Roupa Suja Acumulada (Pendente por levar à lavandaria)
+    html += `
+        <div style="border: 1px solid #ddd; border-radius: 16px; padding: 20px; margin-top: 20px; background-color: #f8f9fa; border-left: 6px solid #f59e0b;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+                <div>
+                    <h2 style="margin: 0; color: #f59e0b; font-size: 20px;">👕 Roupa Suja Acumulada (Por Levar)</h2>
+                    <div style="font-size: 13px; opacity: 0.7; margin-top: 2px;">
+                        Gerada pelas limpezas desde ${data.lastDropOffDateKey ? `a última ida (${data.lastDropOffDateKey})` : 'o início'} até hoje
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 28px; font-weight: 900; color: #f59e0b;">${data.pendingLinen.totalPieces} <span style="font-size: 15px; font-weight: 600; opacity: 0.8;">peças</span></div>
+                </div>
+            </div>
+
+            ${data.pendingCleanings.length === 0 ? `
+                <p style="color: #666; font-size: 14px; margin: 8px 0;">Não há roupa suja pendente de momento. Toda a roupa anterior já foi levada à lavandaria! ✨</p>
+            ` : `
+                <div style="font-size: 13px; margin-bottom: 10px;">
+                    <strong>${data.pendingCleanings.length}</strong> limpezas efetuadas: <span style="color: #555;">${data.pendingCleanings.map(c => c.room).join(', ')}</span>
+                </div>
+                <div class="laundry-grid">
+                    ${LINEN_ITEMS_DEF.map(it => {
+                        const count = data.pendingLinen.counts[it.key] || 0;
+                        return `
+                            <div class="laundry-item-card">
+                                <span style="font-size: 20px;">${it.emoji}</span>
+                                <div class="laundry-item-val" style="color: #f59e0b;">${count}</div>
+                                <div class="laundry-item-lbl">${it.short}</div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+                <div style="margin-top: 16px;">
+                    <button onclick="window.submitLaundryDropOff()" style="padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; font-weight: bold; box-shadow: 0 3px 8px rgba(245,158,11,0.25);">
+                        🧺 Registar Ida à Lavandaria com esta Roupa Hoje
+                    </button>
+                </div>
+            `}
+        </div>
+    `;
+
+    result.innerHTML = html;
+    if (showAddDropOffForm) {
+        window.onDropOffDateChange();
+    }
+}
+
 loadCalendars();
+
