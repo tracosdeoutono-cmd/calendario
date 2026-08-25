@@ -631,6 +631,65 @@
             background: rgba(255,255,255,0.04);
             border: 1px dashed rgba(255,255,255,0.3);
         }
+
+        /* ══════════════════════════════════════════ */
+        /* MENU FLUTUANTE RETRÁTIL (BOTÕES DESLIZANTES) */
+        /* ══════════════════════════════════════════ */
+        .floating-menu-container {
+            position: absolute;
+            top: 0px;
+            right: 0px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 100;
+        }
+        .menu-trigger-btn {
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            outline: none;
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: block;
+        }
+        .menu-trigger-btn:hover {
+            transform: scale(1.08);
+        }
+        .menu-trigger-btn:active {
+            transform: scale(0.95);
+        }
+        .menu-trigger-img {
+            height: 42px;
+            width: 42px;
+            object-fit: cover;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+            display: block;
+        }
+        .floating-sub-items {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+            margin-top: 12px;
+            transition: opacity 0.3s cubic-bezier(0.34, 1.3, 0.64, 1), transform 0.35s cubic-bezier(0.34, 1.3, 0.64, 1), max-height 0.35s ease, margin-top 0.3s ease;
+            transform-origin: top center;
+        }
+        .floating-sub-items.menu-collapsed {
+            opacity: 0;
+            transform: translateY(-16px) scale(0.8);
+            pointer-events: none;
+            max-height: 0;
+            margin-top: 0;
+            overflow: hidden;
+        }
+        .floating-sub-items.menu-expanded {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+            max-height: 350px;
+        }
     `;
     document.head.appendChild(style);
 })();
@@ -1020,8 +1079,27 @@ window.rerollRandomTheme = function(event) {
     renderCurrentView();
 };
 
+let showFloatingSubMenu = false;
+
+window.toggleFloatingSubMenu = function(event) {
+    if (event) event.stopPropagation();
+    showFloatingSubMenu = !showFloatingSubMenu;
+    const sub = document.getElementById('al-floating-sub-items');
+    if (sub) {
+        if (showFloatingSubMenu) {
+            sub.classList.remove('menu-collapsed');
+            sub.classList.add('menu-expanded');
+        } else {
+            sub.classList.remove('menu-expanded');
+            sub.classList.add('menu-collapsed');
+            const popup = document.getElementById('al-theme-popup');
+            if (popup) popup.style.display = 'none';
+        }
+    }
+};
+
 window.toggleThemePopup = function(event) {
-    event.stopPropagation();
+    if (event) event.stopPropagation();
     const popup = document.getElementById('al-theme-popup');
     if (popup) {
         const isOpen = popup.style.display === 'block';
@@ -1034,6 +1112,14 @@ document.addEventListener('click', function(e) {
     if (popup && popup.style.display === 'block') {
         if (!e.target.closest('.theme-popup-wrapper')) {
             popup.style.display = 'none';
+        }
+    }
+    if (showFloatingSubMenu && !e.target.closest('.floating-menu-container')) {
+        showFloatingSubMenu = false;
+        const sub = document.getElementById('al-floating-sub-items');
+        if (sub) {
+            sub.classList.remove('menu-expanded');
+            sub.classList.add('menu-collapsed');
         }
     }
 });
@@ -1054,17 +1140,19 @@ function renderNavigation() {
     const themeEmoji = getThemeEmoji(currentTheme);
 
     const floatingMenu = `
-        <div style="position: absolute; top: 0px; right: 0px; display: flex; flex-direction: column; gap: 12px; align-items: center; z-index: 100;">
-            <a href="" target="_blank" style="display: block; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
-                <img src="icone2.jpeg" alt="Airbnb" title="Ver no Airbnb" style="height: 42px; width: 42px; object-fit: cover; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-            </a>
-            <div class="theme-popup-wrapper">
-                <button onclick="window.toggleThemePopup(event)" class="clock-btn" title="Mudar Estilo">${themeEmoji}</button>
-                ${buildThemePopupHTML()}
+        <div class="floating-menu-container">
+            <button onclick="window.toggleFloatingSubMenu(event)" class="menu-trigger-btn" title="Definições e Ferramentas">
+                <img src="icone2.jpeg" alt="Menu" class="menu-trigger-img">
+            </button>
+            <div id="al-floating-sub-items" class="floating-sub-items ${showFloatingSubMenu ? 'menu-expanded' : 'menu-collapsed'}">
+                <div class="theme-popup-wrapper">
+                    <button onclick="window.toggleThemePopup(event)" class="clock-btn" title="Mudar Estilo">${themeEmoji}</button>
+                    ${buildThemePopupHTML()}
+                </div>
+                ${currentTheme === 'aleatorio' ? `<button onclick="window.rerollRandomTheme(event)" class="clock-btn" title="Sortear Outro Estilo! (Atual: ${currentRandomPresetName})" style="background: linear-gradient(135deg, #ec4899, #8b5cf6); color: white; border: none;">🎲</button>` : ''}
+                <button onclick="window.toggleSnapshots()" class="clock-btn ${isSnapshots?'active':''}" title="${isSnapshots?'Voltar ao Início':'Ver Previsões'}" style="${isSnapshots?'background-color:#e2e6ea;':''}">🕒</button>
+                <button onclick="window.toggleSettings()" class="clock-btn ${isSettings?'active':''}" title="${isSettings?'Voltar ao Início':'Definições e Dispositivos'}" style="${isSettings?'background-color:#e2e6ea;':''}">⚙️</button>
             </div>
-            ${currentTheme === 'aleatorio' ? `<button onclick="window.rerollRandomTheme(event)" class="clock-btn" title="Sortear Outro Estilo! (Atual: ${currentRandomPresetName})" style="background: linear-gradient(135deg, #ec4899, #8b5cf6); color: white; border: none;">🎲</button>` : ''}
-            <button onclick="window.toggleSnapshots()" class="clock-btn ${isSnapshots?'active':''}" title="${isSnapshots?'Voltar ao Início':'Ver Previsões'}" style="${isSnapshots?'background-color:#e2e6ea;':''}">🕒</button>
-            <button onclick="window.toggleSettings()" class="clock-btn ${isSettings?'active':''}" title="${isSettings?'Voltar ao Início':'Definições e Dispositivos'}" style="${isSettings?'background-color:#e2e6ea;':''}">⚙️</button>
         </div>
     `;
 
