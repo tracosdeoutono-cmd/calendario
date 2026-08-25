@@ -1671,6 +1671,8 @@ function showCleaningPlan() {
                 cEs.push(`${em} ${clean.room}${tEs}`);
                 rh += `${em} ${clean.room}${tH}<br>`;
             });
+        }
+
         const settings = getAppSettings();
         if (settings.includeAddresses) {
             cPt.push("");
