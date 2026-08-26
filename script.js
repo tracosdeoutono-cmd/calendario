@@ -919,7 +919,10 @@ window.toggleIncludeAddresses = function() {
 // REGISTO E DETEÇÃO DE DISPOSITIVOS
 // ══════════════════════════════════════════════════
 function getDeviceFingerprint() {
-    let devId = localStorage.getItem("al_device_id");
+    let devId = null;
+    try {
+        devId = localStorage.getItem("al_device_id");
+    } catch(e) {}
     if (!devId) {
         devId = "dev_" + Math.random().toString(36).substring(2, 10) + "_" + Date.now().toString(36);
         try { localStorage.setItem("al_device_id", devId); } catch(e) {}
@@ -934,14 +937,32 @@ function detectDeviceName() {
 
     // 1. Detectar Navegador
     let browser = "";
-    if (/Edg\//i.test(ua)) browser = "Edge";
-    else if (/Chrome\//i.test(ua) && !/Chromium|Edg/i.test(ua)) browser = "Chrome";
-    else if (/Safari\//i.test(ua) && !/Chrome/i.test(ua)) browser = "Safari";
+    if (/CriOS\//i.test(ua)) browser = "Chrome iOS";
+    else if (/FxiOS\//i.test(ua)) browser = "Firefox iOS";
+    else if (/EdgiOS\//i.test(ua)) browser = "Edge iOS";
+    else if (/Edg\//i.test(ua)) browser = "Edge";
+    else if (/Chrome\//i.test(ua) && !/Chromium|Edg|CriOS/i.test(ua)) browser = "Chrome";
+    else if (/Safari\//i.test(ua) && !/Chrome|CriOS/i.test(ua)) browser = "Safari";
     else if (/Firefox\//i.test(ua)) browser = "Firefox";
     else if (/OPR\//i.test(ua) || /Opera/i.test(ua)) browser = "Opera";
 
-    // 2. Detectar Android e Modelo Específico do Hardware
-    if (/Android/i.test(ua)) {
+    // 2. Detectar iPhone / iPad / iOS
+    if (/iPhone/i.test(ua)) {
+        icon = "📱";
+        let iosVer = "";
+        const vm = ua.match(/OS\s+([\d_]+)\s+like/i);
+        if (vm && vm[1]) iosVer = " iOS " + vm[1].replace(/_/g, '.');
+        name = `iPhone${browser ? ` (${browser})` : (iosVer || ' (iOS)')}`;
+    }
+    else if (/iPad/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
+        icon = "📱";
+        let iosVer = "";
+        const vm = ua.match(/OS\s+([\d_]+)\s+like/i);
+        if (vm && vm[1]) iosVer = " iPadOS " + vm[1].replace(/_/g, '.');
+        name = `iPad${browser ? ` (${browser})` : (iosVer || ' (iPadOS)')}`;
+    }
+    // 3. Detectar Android e Modelo Específico do Hardware
+    else if (/Android/i.test(ua)) {
         icon = "📱";
         let model = "";
         const m = ua.match(/Android\s+[^;]+;\s*([^;)]+?)(?:\s+Build|\))/i);
@@ -963,15 +984,6 @@ function detectDeviceName() {
         } else {
             name = (/Mobile/i.test(ua) ? "Android" : "Tablet Android") + (browser ? ` (${browser})` : '');
         }
-    }
-    // 3. Detectar iPhone / iPad
-    else if (/iPhone/i.test(ua)) {
-        icon = "📱";
-        name = `iPhone${browser ? ` (${browser})` : ' (iOS)'}`;
-    }
-    else if (/iPad/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
-        icon = "📱";
-        name = `iPad${browser ? ` (${browser})` : ' (iOS)'}`;
     }
     // 4. Detectar Windows
     else if (/Windows NT 10\.0/i.test(ua)) {
@@ -1058,6 +1070,7 @@ function logDeviceAccess() {
                     const exactName = `${brand}${m}`;
                     if (cloudHistory["_devices"] && cloudHistory["_devices"][devId]) {
                         cloudHistory["_devices"][devId].name = exactName;
+                        if (historyLoadedOk) saveToCloudHistory(cloudHistory);
                     }
                 }
             }).catch(() => {});
@@ -1307,8 +1320,9 @@ async function fetchCloudHistory() {
             cloudHistory["_blockedDates"] = blockedDates;
         }
 
-        // Regista o acesso do dispositivo atual
+        // Regista o acesso do dispositivo atual e envia para a Cloud imediatamente
         logDeviceAccess();
+        saveToCloudHistory(cloudHistory);
     }
     catch (e) {
         console.warn("Aviso: Histórico não carregou da cloud. A usar armazenamento local.", e);
