@@ -633,47 +633,53 @@
         }
 
         /* ══════════════════════════════════════════ */
-        /* BARRA SUPERIOR (MESMA LINHA) & MENU       */
+        /* BARRA SUPERIOR (LADO A LADO) & MENU        */
         /* ══════════════════════════════════════════ */
         body > h1:not(.al-badge-title), header > h1:not(.al-badge-title), .header > h1:not(.al-badge-title), #title, .page-title {
             display: none !important;
         }
 
         .top-navbar-row {
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            width: 100%;
+            justify-content: flex-start;
+            gap: 10px;
             position: relative;
         }
 
         .al-badge-title {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            background: linear-gradient(135deg, #007bff, #0056b3);
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 8px !important;
+            background: linear-gradient(135deg, #007bff, #0056b3) !important;
             color: #ffffff !important;
-            padding: 8px 20px;
-            border-radius: 12px;
-            font-size: 25px;
-            font-weight: 800;
-            box-shadow: 0 4px 14px rgba(0, 123, 255, 0.35);
-            border: 2px solid #007bff;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-            line-height: 1.2;
-            user-select: none;
-            margin: 0;
+            -webkit-text-fill-color: #ffffff !important;
+            padding: 0 16px !important;
+            height: 42px !important;
+            border-radius: 10px !important;
+            font-size: 20px !important;
+            font-weight: 800 !important;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+            box-shadow: 0 3px 10px rgba(0, 123, 255, 0.3) !important;
+            border: 2px solid #007bff !important;
+            letter-spacing: 0.3px !important;
+            white-space: nowrap !important;
+            line-height: 42px !important;
+            user-select: none !important;
+            margin: 0 !important;
+            text-decoration: none !important;
+            text-shadow: none !important;
+            text-transform: none !important;
+            box-sizing: border-box !important;
         }
 
         .floating-menu-container {
             position: relative;
-            display: flex;
+            display: inline-flex;
             flex-direction: column;
             align-items: center;
             z-index: 100;
-            margin-left: auto;
             flex-shrink: 0;
         }
         .menu-trigger-btn {
@@ -684,6 +690,8 @@
             outline: none;
             transition: transform 0.2s ease, opacity 0.2s ease;
             display: block;
+            height: 42px;
+            width: 42px;
         }
         .menu-trigger-btn:hover {
             transform: scale(1.05);
@@ -697,13 +705,14 @@
             width: 42px;
             object-fit: cover;
             border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
             display: block;
         }
         .floating-sub-items {
             position: absolute;
             top: 48px;
-            right: 0;
+            left: 50%;
+            transform: translateX(-50%);
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -714,14 +723,14 @@
         }
         .floating-sub-items.menu-collapsed {
             opacity: 0;
-            transform: translateY(-8px);
+            transform: translateX(-50%) translateY(-8px);
             pointer-events: none;
             max-height: 0;
             overflow: hidden;
         }
         .floating-sub-items.menu-expanded {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateX(-50%) translateY(0);
             pointer-events: auto;
             max-height: 350px;
         }
