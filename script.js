@@ -643,6 +643,7 @@
             display: flex !important;
             align-items: center !important;
             justify-content: space-between !important;
+            gap: 16px !important;
             width: 100% !important;
             margin-bottom: 20px !important;
             position: relative !important;
@@ -653,27 +654,39 @@
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
-            gap: 10px !important;
+            text-align: center !important;
+            gap: 8px !important;
             background: linear-gradient(135deg, #007bff, #0056b3) !important;
             color: #ffffff !important;
             -webkit-text-fill-color: #ffffff !important;
-            padding: 0 20px !important;
-            height: 48px !important;
-            border-radius: 12px !important;
-            font-size: 24px !important;
+            padding: 0 14px !important;
+            height: 44px !important;
+            border-radius: 10px !important;
+            font-size: 20px !important;
             font-weight: 800 !important;
             font-family: 'Plus Jakarta Sans', sans-serif !important;
             box-shadow: 0 4px 14px rgba(0, 123, 255, 0.35) !important;
             border: 2px solid #007bff !important;
-            letter-spacing: 0.5px !important;
+            letter-spacing: 0.3px !important;
             white-space: nowrap !important;
-            line-height: 48px !important;
+            line-height: 1 !important;
             user-select: none !important;
             margin: 0 !important;
+            flex-shrink: 0 !important;
+            cursor: pointer !important;
+            outline: none !important;
+            transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease !important;
             text-decoration: none !important;
             text-shadow: none !important;
             text-transform: none !important;
             box-sizing: border-box !important;
+        }
+        .al-badge-title:hover {
+            transform: translateY(-1px) scale(1.02) !important;
+            filter: brightness(1.06) !important;
+        }
+        .al-badge-title:active {
+            transform: translateY(1px) scale(0.98) !important;
         }
 
         /* Estilos Adaptados por Tema para o Título Casas do Martim */
@@ -683,7 +696,7 @@
             color: #fff8f0 !important;
             -webkit-text-fill-color: #fff8f0 !important;
             font-family: 'Outfit', sans-serif !important;
-            font-size: 24px !important;
+            font-size: 20px !important;
             box-shadow: 0 4px 20px rgba(245,158,11,0.3) !important;
         }
 
@@ -694,7 +707,7 @@
             color: #00ff41 !important;
             -webkit-text-fill-color: #00ff41 !important;
             font-family: 'VT323', monospace !important;
-            font-size: 28px !important;
+            font-size: 23px !important;
             text-shadow: 0 0 10px rgba(0,255,65,0.6) !important;
             box-shadow: 0 0 15px rgba(0,255,65,0.25) !important;
         }
@@ -706,7 +719,7 @@
             color: #2c1810 !important;
             -webkit-text-fill-color: #2c1810 !important;
             font-family: 'Caveat', cursive !important;
-            font-size: 27px !important;
+            font-size: 23px !important;
             box-shadow: 3px 3px 0px rgba(44,24,16,0.15) !important;
         }
 
@@ -717,7 +730,7 @@
             color: #ff0050 !important;
             -webkit-text-fill-color: #ff0050 !important;
             font-family: 'Fredoka', sans-serif !important;
-            font-size: 23px !important;
+            font-size: 19px !important;
             box-shadow: 4px 4px 0px #ff0050 !important;
         }
 
@@ -728,7 +741,7 @@
             color: #be185d !important;
             -webkit-text-fill-color: #be185d !important;
             font-family: 'Quicksand', sans-serif !important;
-            font-size: 23px !important;
+            font-size: 19px !important;
             box-shadow: 0 4px 15px rgba(244,114,182,0.25) !important;
         }
 
@@ -739,7 +752,7 @@
             color: #0369a1 !important;
             -webkit-text-fill-color: #0369a1 !important;
             font-family: 'Kalam', cursive, sans-serif !important;
-            font-size: 24px !important;
+            font-size: 20px !important;
             font-weight: 700 !important;
             box-shadow: 0 6px 20px rgba(2, 132, 199, 0.25) !important;
             backdrop-filter: blur(10px) !important;
@@ -752,7 +765,7 @@
             color: #1a1a1a !important;
             -webkit-text-fill-color: #1a1a1a !important;
             font-family: 'Playfair Display', serif !important;
-            font-size: 22px !important;
+            font-size: 18px !important;
             font-variant: small-caps !important;
             box-shadow: none !important;
         }
@@ -764,7 +777,7 @@
             color: #ffffff !important;
             -webkit-text-fill-color: #ffffff !important;
             font-family: 'Patrick Hand', cursive !important;
-            font-size: 27px !important;
+            font-size: 23px !important;
             text-shadow: 0 0 6px rgba(255,255,255,0.25) !important;
             box-shadow: none !important;
         }
@@ -773,10 +786,13 @@
             position: relative !important;
             display: flex !important;
             flex-direction: column !important;
-            align-items: flex-end !important;
+            align-items: center !important;
+            justify-content: center !important;
             z-index: 100 !important;
             margin-left: auto !important;
             flex-shrink: 0 !important;
+            width: 44px !important;
+            height: 44px !important;
         }
         .menu-trigger-btn {
             background: none;
@@ -786,8 +802,8 @@
             outline: none;
             transition: transform 0.2s ease, opacity 0.2s ease;
             display: block;
-            height: 48px;
-            width: 48px;
+            height: 44px;
+            width: 44px;
         }
         .menu-trigger-btn:hover {
             transform: scale(1.05);
@@ -797,18 +813,19 @@
             transform: scale(0.96);
         }
         .menu-trigger-img {
-            height: 48px;
-            width: 48px;
+            height: 44px;
+            width: 44px;
             object-fit: cover;
-            border-radius: 12px;
+            border-radius: 10px;
             box-shadow: 0 4px 14px rgba(0,0,0,0.18);
             display: block;
         }
         .floating-sub-items {
             position: absolute !important;
-            top: 56px !important;
-            right: 0 !important;
-            left: auto !important;
+            top: 50px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            right: auto !important;
             display: flex !important;
             flex-direction: column !important;
             gap: 10px !important;
@@ -819,14 +836,14 @@
         }
         .floating-sub-items.menu-collapsed {
             opacity: 0 !important;
-            transform: translateY(-8px) !important;
+            transform: translateX(-50%) translateY(-8px) !important;
             pointer-events: none !important;
             max-height: 0 !important;
             overflow: hidden !important;
         }
         .floating-sub-items.menu-expanded {
             opacity: 1 !important;
-            transform: translateY(0) !important;
+            transform: translateX(-50%) translateY(0) !important;
             pointer-events: auto !important;
             max-height: 350px !important;
         }
@@ -1164,6 +1181,9 @@ function detectDeviceName() {
 function logDeviceAccess() {
     try {
         const devId = getDeviceFingerprint();
+        let customLocalName = "";
+        try { customLocalName = localStorage.getItem("al_custom_device_name") || ""; } catch(e) {}
+
         const detected = detectDeviceName();
 
         if (!cloudHistory["_devices"] || typeof cloudHistory["_devices"] !== 'object') {
@@ -1173,11 +1193,14 @@ function logDeviceAccess() {
         const now = new Date();
         const todayStr = formatDateKey(now);
         const existing = cloudHistory["_devices"][devId] || {};
+        const savedCustomName = existing.customName || customLocalName || "";
+        const finalDisplayName = savedCustomName || existing.name || detected.name;
 
         cloudHistory["_devices"][devId] = {
             id: devId,
-            name: detected.name,
-            icon: detected.icon,
+            name: finalDisplayName,
+            customName: savedCustomName || undefined,
+            icon: existing.icon || detected.icon,
             platform: navigator.platform || "",
             screen: `${window.innerWidth}x${window.innerHeight}`,
             firstSeen: existing.firstSeen || now.toISOString(),
@@ -1195,20 +1218,20 @@ function logDeviceAccess() {
         if (!isRecent) {
             cloudHistory["_access_logs"].push({
                 deviceId: devId,
-                deviceName: detected.name,
+                deviceName: finalDisplayName,
                 icon: detected.icon,
                 timestamp: now.toISOString(),
                 dateKey: todayStr,
                 timeStr: now.toLocaleTimeString("pt-PT", { hour: '2-digit', minute: '2-digit' })
             });
 
-            if (cloudHistory["_access_logs"].length > 150) {
-                cloudHistory["_access_logs"] = cloudHistory["_access_logs"].slice(-150);
+            if (cloudHistory["_access_logs"].length > 200) {
+                cloudHistory["_access_logs"] = cloudHistory["_access_logs"].slice(-200);
             }
         }
 
-        // Se o dispositivo suportar Client Hints de alta precisão (Chrome/Edge em Android ou PC), atualiza com o modelo exato
-        if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+        // Se o dispositivo suportar Client Hints de alta precisão (Chrome/Edge em Android ou PC), atualiza o nome técnico se não tiver nome personalizado
+        if (!savedCustomName && navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
             navigator.userAgentData.getHighEntropyValues(['model', 'platform']).then(uaData => {
                 if (uaData && uaData.model && uaData.model.trim() !== "") {
                     let brand = "";
@@ -1218,7 +1241,7 @@ function logDeviceAccess() {
                     else if (/^Redmi|^POCO/i.test(m)) brand = "Xiaomi ";
 
                     const exactName = `${brand}${m}`;
-                    if (cloudHistory["_devices"] && cloudHistory["_devices"][devId]) {
+                    if (cloudHistory["_devices"] && cloudHistory["_devices"][devId] && !cloudHistory["_devices"][devId].customName) {
                         cloudHistory["_devices"][devId].name = exactName;
                         if (historyLoadedOk) saveToCloudHistory(cloudHistory);
                     }
@@ -1229,6 +1252,40 @@ function logDeviceAccess() {
         console.warn("Erro ao registar dispositivo:", e);
     }
 }
+
+window.renameDevice = function(devId) {
+    const devices = cloudHistory["_devices"] || {};
+    const dev = devices[devId] || {};
+    const currentName = dev.customName || dev.name || "Dispositivo";
+    const newName = prompt("Nome real / identificador para este dispositivo (ex: iPhone do Martim, Telemóvel da Maria, PC Recepção):", currentName);
+    if (newName === null) return;
+    const trimmed = newName.trim();
+    if (!trimmed) return;
+
+    if (!cloudHistory["_devices"]) cloudHistory["_devices"] = {};
+    if (!cloudHistory["_devices"][devId]) {
+        cloudHistory["_devices"][devId] = { id: devId };
+    }
+
+    cloudHistory["_devices"][devId].name = trimmed;
+    cloudHistory["_devices"][devId].customName = trimmed;
+
+    if (devId === getDeviceFingerprint()) {
+        try { localStorage.setItem("al_custom_device_name", trimmed); } catch(e) {}
+    }
+
+    // Atualiza também nos registos de acesso para coerência visual
+    if (Array.isArray(cloudHistory["_access_logs"])) {
+        cloudHistory["_access_logs"].forEach(l => {
+            if (l.deviceId === devId) {
+                l.deviceName = trimmed;
+            }
+        });
+    }
+
+    if (historyLoadedOk) saveToCloudHistory(cloudHistory);
+    renderCurrentView();
+};
 
 // TEMA INICIAL
 let currentTheme = localStorage.getItem("al_theme") || "white";
@@ -1267,12 +1324,27 @@ window.rerollRandomTheme = function(event) {
 };
 
 let showFloatingSubMenu = false;
+let showNavButtons = false;
+
+window.toggleNavButtons = function(event) {
+    if (event) event.stopPropagation();
+    showNavButtons = !showNavButtons;
+    const headerSec = document.getElementById('al-collapsible-header');
+    if (headerSec) {
+        if (showNavButtons) {
+            headerSec.classList.remove('header-collapsed');
+            headerSec.classList.add('header-expanded');
+        } else {
+            headerSec.classList.remove('header-expanded');
+            headerSec.classList.add('header-collapsed');
+        }
+    }
+};
 
 window.toggleFloatingSubMenu = function(event) {
     if (event) event.stopPropagation();
     showFloatingSubMenu = !showFloatingSubMenu;
     const sub = document.getElementById('al-floating-sub-items');
-    const headerSec = document.getElementById('al-collapsible-header');
     if (sub) {
         if (showFloatingSubMenu) {
             sub.classList.remove('menu-collapsed');
@@ -1282,15 +1354,6 @@ window.toggleFloatingSubMenu = function(event) {
             sub.classList.add('menu-collapsed');
             const popup = document.getElementById('al-theme-popup');
             if (popup) popup.style.display = 'none';
-        }
-    }
-    if (headerSec) {
-        if (showFloatingSubMenu) {
-            headerSec.classList.remove('header-collapsed');
-            headerSec.classList.add('header-expanded');
-        } else {
-            headerSec.classList.remove('header-expanded');
-            headerSec.classList.add('header-collapsed');
         }
     }
 };
@@ -1311,17 +1374,12 @@ document.addEventListener('click', function(e) {
             popup.style.display = 'none';
         }
     }
-    if (showFloatingSubMenu && !e.target.closest('.floating-menu-container') && !e.target.closest('#al-collapsible-header')) {
+    if (showFloatingSubMenu && !e.target.closest('.floating-menu-container')) {
         showFloatingSubMenu = false;
         const sub = document.getElementById('al-floating-sub-items');
-        const headerSec = document.getElementById('al-collapsible-header');
         if (sub) {
             sub.classList.remove('menu-expanded');
             sub.classList.add('menu-collapsed');
-        }
-        if (headerSec) {
-            headerSec.classList.remove('header-expanded');
-            headerSec.classList.add('header-collapsed');
         }
     }
 });
@@ -1360,8 +1418,8 @@ function renderNavigation() {
 
     // Linha de topo: [ 🏡 Casas do Martim ] à esquerda e [ Ícone Quadrado ] à direita
     const topBar = `
-        <div class="top-navbar-row" style="margin-bottom: ${showFloatingSubMenu ? '14px' : '20px'};">
-            <div class="al-badge-title">
+        <div class="top-navbar-row" style="margin-bottom: 20px;">
+            <div onclick="window.toggleNavButtons(event)" class="al-badge-title" role="button" tabindex="0" title="Ver / Ocultar Menu de Limpezas e Casas">
                 🏡 Casas do Martim
             </div>
             ${floatingMenu}
@@ -1390,7 +1448,7 @@ function renderNavigation() {
 
     return `
         ${topBar}
-        <div id="al-collapsible-header" class="collapsible-header-section ${showFloatingSubMenu ? 'header-expanded' : 'header-collapsed'}">
+        <div id="al-collapsible-header" class="collapsible-header-section ${showNavButtons ? 'header-expanded' : 'header-collapsed'}">
             ${navButtonsHtml}
         </div>
     `;
@@ -2895,19 +2953,24 @@ function showSettingsView() {
             const lastDate = dev.lastSeen ? new Date(dev.lastSeen).toLocaleDateString("pt-PT", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "Recentemente";
 
             html += `
-                <div class="device-card">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span style="font-size: 24px;">${dev.icon || '📱'}</span>
+                <div class="device-card" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border: 1px solid #ddd; border-radius: 12px; background: #fff; margin-bottom: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 26px;">${dev.icon || '📱'}</span>
                         <div>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <strong style="font-size: 15px;">${dev.name || 'Dispositivo'}</strong>
+                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                <strong style="font-size: 15px; color: #111;">${dev.name || 'Dispositivo'}</strong>
                                 ${isCurrent ? `<span style="background: rgba(16,185,129,0.15); color: #059669; border: 1px solid rgba(16,185,129,0.3); padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold;">👉 Este Dispositivo</span>` : ''}
+                                ${dev.customName ? `<span style="background: rgba(2,132,199,0.1); color: #0284c7; border: 1px solid rgba(2,132,199,0.25); padding: 2px 6px; border-radius: 8px; font-size: 10px; font-weight: bold;">Nome Guardado na Cloud</span>` : ''}
                             </div>
                             <div style="font-size: 12px; opacity: 0.7; margin-top: 2px;">
                                 Último acesso: ${lastDate} • Visitas: <strong>${dev.visitsCount || 1}</strong> ${dev.screen ? `• Ecrã: ${dev.screen}` : ''}
                             </div>
                         </div>
                     </div>
+                    <button onclick="window.renameDevice('${devId}')" title="Mudar o nome real deste dispositivo na Cloud"
+                        style="padding: 6px 12px; font-size: 12px; cursor: pointer; border-radius: 8px; border: 1px solid #007bff; background-color: rgba(0,123,255,0.08); color: #007bff; font-weight: bold; white-space: nowrap;">
+                        ✏️ Mudar Nome
+                    </button>
                 </div>
             `;
         });
