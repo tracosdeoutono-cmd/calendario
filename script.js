@@ -1208,16 +1208,23 @@ function renderNavigation() {
         </div>
     `;
 
-    let headerHtml = "";
+    // Título SEMPRE no topo com o símbolo e quadrado azul estético ligeiramente maior
+    const alwaysVisibleTitle = `
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: ${showFloatingSubMenu ? '14px' : '22px'}; padding-right: 60px;">
+            <div style="min-width: 0;">
+                <h1 style="margin: 0; display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, #007bff, #0056b3); color: #ffffff; padding: 8px 20px; border-radius: 12px; font-size: 25px; font-weight: 800; box-shadow: 0 4px 14px rgba(0, 123, 255, 0.35); border: 2px solid #007bff; letter-spacing: 0.5px;">
+                    🏡 Casas do Martim
+                </h1>
+                ${currentTheme === 'outono' ? `<div style="font-size: 13px; color: #a3998e; font-weight: 500; margin-top: 6px;">Gestão de Alojamento Local</div>` : ''}
+                ${currentTheme === 'aleatorio' ? `<div style="font-size: 13px; font-weight: bold; margin-top: 6px; opacity: 0.9;">✨ Estilo: ${currentRandomPresetName}</div>` : ''}
+            </div>
+        </div>
+    `;
+
+    let navButtonsHtml = "";
 
     if (currentTheme === "outono") {
-        headerHtml = `
-            <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; padding-right: 60px;">
-                <div style="min-width: 0;">
-                    <h1 style="margin: 0; display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #007bff, #0056b3); color: #ffffff; padding: 6px 16px; border-radius: 10px; font-size: 22px; font-weight: 800; box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3); border: 2px solid #007bff; letter-spacing: 0.5px;">🏡 Casas do Martim</h1>
-                    <div style="font-size: 13px; color: #a3998e; font-weight: 500; margin-top: 6px;">Gestão de Alojamento Local</div>
-                </div>
-            </div>
+        navButtonsHtml = `
             <div style="margin-bottom: 24px;">
                 <div style="display: inline-flex; background: rgba(255,255,255,0.04); padding: 5px; border-radius: 16px; border: 1px solid rgba(245,158,11,0.2); gap: 4px; flex-wrap: wrap;">
                     <button onclick="window.switchMainView('cleaning')" class="segment-btn ${isCleaning?'active-cleaning':''}">🧹 Limpezas</button>
@@ -1226,13 +1233,7 @@ function renderNavigation() {
                 </div>
             </div>`;
     } else {
-        headerHtml = `
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-right: 60px;">
-                <div style="flex: 1; min-width: 0;">
-                    <h1 style="margin: 0; display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #007bff, #0056b3); color: #ffffff; padding: 6px 16px; border-radius: 10px; font-size: 22px; font-weight: 800; box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3); border: 2px solid #007bff; letter-spacing: 0.5px;">🏡 Casas do Martim</h1>
-                    ${currentTheme === 'aleatorio' ? `<div style="font-size: 13px; font-weight: bold; margin-top: 6px; opacity: 0.9;">✨ Estilo: ${currentRandomPresetName}</div>` : ''}
-                </div>
-            </div>
+        navButtonsHtml = `
             <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
                 <button onclick="window.switchMainView('cleaning')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #007bff; background-color: ${isCleaning?'#007bff':'#ffffff'}; color: ${isCleaning?'#ffffff':'#007bff'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">🧹 Plano de Limpezas</button>
                 <button onclick="window.switchMainView('occupancy')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #28a745; background-color: ${isOccupancy?'#28a745':'#ffffff'}; color: ${isOccupancy?'#ffffff':'#28a745'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">📊 Disponibilidade da Casa</button>
@@ -1242,8 +1243,9 @@ function renderNavigation() {
 
     return `
         ${floatingMenu}
+        ${alwaysVisibleTitle}
         <div id="al-collapsible-header" class="collapsible-header-section ${showFloatingSubMenu ? 'header-expanded' : 'header-collapsed'}">
-            ${headerHtml}
+            ${navButtonsHtml}
         </div>
     `;
 }
