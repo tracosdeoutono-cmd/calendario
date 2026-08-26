@@ -690,6 +690,63 @@
             pointer-events: auto;
             max-height: 350px;
         }
+
+        /* ══════════════════════════════════════════ */
+        /* ANIMAÇÕES ENGRAÇADAS E CABEÇALHO RETRÁTIL  */
+        /* ══════════════════════════════════════════ */
+        @keyframes funnySpringBounce {
+            0% {
+                opacity: 0;
+                transform: translateY(-35px) scale(0.65) rotate(-4deg);
+            }
+            45% {
+                opacity: 0.95;
+                transform: translateY(14px) scale(1.08, 0.92) rotate(3deg);
+            }
+            65% {
+                transform: translateY(-7px) scale(0.96, 1.04) rotate(-1.5deg);
+            }
+            80% {
+                transform: translateY(3px) scale(1.02, 0.98) rotate(0.8deg);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1, 1) rotate(0deg);
+            }
+        }
+
+        @keyframes funnyWiggleIcon {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            20% { transform: rotate(-14deg) scale(1.15); }
+            40% { transform: rotate(12deg) scale(1.12); }
+            60% { transform: rotate(-8deg) scale(1.06); }
+            80% { transform: rotate(4deg) scale(1.02); }
+        }
+
+        .collapsible-header-section {
+            transition: max-height 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s ease, margin-bottom 0.35s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            overflow: hidden;
+            transform-origin: top left;
+        }
+        .collapsible-header-section.header-collapsed {
+            max-height: 0 !important;
+            opacity: 0 !important;
+            margin-bottom: 0 !important;
+            pointer-events: none !important;
+            transform: translateY(-20px) scale(0.85);
+        }
+        .collapsible-header-section.header-expanded {
+            max-height: 350px;
+            opacity: 1;
+            margin-bottom: 20px;
+            pointer-events: auto;
+            animation: funnySpringBounce 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        .menu-trigger-btn:hover .menu-trigger-img,
+        .menu-trigger-btn:active .menu-trigger-img {
+            animation: funnyWiggleIcon 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
     `;
     document.head.appendChild(style);
 })();
@@ -1085,6 +1142,7 @@ window.toggleFloatingSubMenu = function(event) {
     if (event) event.stopPropagation();
     showFloatingSubMenu = !showFloatingSubMenu;
     const sub = document.getElementById('al-floating-sub-items');
+    const headerSec = document.getElementById('al-collapsible-header');
     if (sub) {
         if (showFloatingSubMenu) {
             sub.classList.remove('menu-collapsed');
@@ -1094,6 +1152,15 @@ window.toggleFloatingSubMenu = function(event) {
             sub.classList.add('menu-collapsed');
             const popup = document.getElementById('al-theme-popup');
             if (popup) popup.style.display = 'none';
+        }
+    }
+    if (headerSec) {
+        if (showFloatingSubMenu) {
+            headerSec.classList.remove('header-collapsed');
+            headerSec.classList.add('header-expanded');
+        } else {
+            headerSec.classList.remove('header-expanded');
+            headerSec.classList.add('header-collapsed');
         }
     }
 };
@@ -1114,12 +1181,17 @@ document.addEventListener('click', function(e) {
             popup.style.display = 'none';
         }
     }
-    if (showFloatingSubMenu && !e.target.closest('.floating-menu-container')) {
+    if (showFloatingSubMenu && !e.target.closest('.floating-menu-container') && !e.target.closest('#al-collapsible-header')) {
         showFloatingSubMenu = false;
         const sub = document.getElementById('al-floating-sub-items');
+        const headerSec = document.getElementById('al-collapsible-header');
         if (sub) {
             sub.classList.remove('menu-expanded');
             sub.classList.add('menu-collapsed');
+        }
+        if (headerSec) {
+            headerSec.classList.remove('header-expanded');
+            headerSec.classList.add('header-collapsed');
         }
     }
 });
@@ -1156,10 +1228,10 @@ function renderNavigation() {
         </div>
     `;
 
-    let html = floatingMenu;
+    let headerHtml = "";
 
     if (currentTheme === "outono") {
-        html += `
+        headerHtml = `
             <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px; padding-right: 60px;">
                 <div style="min-width: 0;">
                     <h1 style="font-size: 26px; font-weight: 800; background: linear-gradient(135deg, #fff8f0 30%, #f59e0b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0;">🍂 Traços de Outono</h1>
@@ -1174,7 +1246,7 @@ function renderNavigation() {
                 </div>
             </div>`;
     } else {
-        html += `
+        headerHtml = `
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-right: 60px;">
                 <div style="flex: 1; min-width: 0;">
                     <h1 style="margin: 0;">Traços de Outono</h1>
@@ -1188,7 +1260,12 @@ function renderNavigation() {
             </div>`;
     }
 
-    return html;
+    return `
+        ${floatingMenu}
+        <div id="al-collapsible-header" class="collapsible-header-section ${showFloatingSubMenu ? 'header-expanded' : 'header-collapsed'}">
+            ${headerHtml}
+        </div>
+    `;
 }
 
 function renderCurrentView() {
