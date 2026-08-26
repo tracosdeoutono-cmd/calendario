@@ -1199,10 +1199,10 @@ function renderNavigation() {
 
     if (currentTheme === "outono") {
         headerHtml = `
-            <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px; padding-right: 60px;">
+            <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; padding-right: 60px;">
                 <div style="min-width: 0;">
-                    <h1 style="font-size: 26px; font-weight: 800; background: linear-gradient(135deg, #fff8f0 30%, #f59e0b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0;">🍂 Traços de Outono</h1>
-                    <div style="font-size: 13px; color: #a3998e; font-weight: 500;">Gestão de Alojamento Local</div>
+                    <h1 style="margin: 0; display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #007bff, #0056b3); color: #ffffff; padding: 6px 16px; border-radius: 10px; font-size: 22px; font-weight: 800; box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3); border: 2px solid #007bff; letter-spacing: 0.5px;">🏡 Casas do Martim</h1>
+                    <div style="font-size: 13px; color: #a3998e; font-weight: 500; margin-top: 6px;">Gestão de Alojamento Local</div>
                 </div>
             </div>
             <div style="margin-bottom: 24px;">
@@ -1216,8 +1216,8 @@ function renderNavigation() {
         headerHtml = `
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-right: 60px;">
                 <div style="flex: 1; min-width: 0;">
-                    <h1 style="margin: 0;">Traços de Outono</h1>
-                    ${currentTheme === 'aleatorio' ? `<div style="font-size: 13px; font-weight: bold; margin-top: 4px; opacity: 0.9;">✨ Estilo: ${currentRandomPresetName}</div>` : ''}
+                    <h1 style="margin: 0; display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #007bff, #0056b3); color: #ffffff; padding: 6px 16px; border-radius: 10px; font-size: 22px; font-weight: 800; box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3); border: 2px solid #007bff; letter-spacing: 0.5px;">🏡 Casas do Martim</h1>
+                    ${currentTheme === 'aleatorio' ? `<div style="font-size: 13px; font-weight: bold; margin-top: 6px; opacity: 0.9;">✨ Estilo: ${currentRandomPresetName}</div>` : ''}
                 </div>
             </div>
             <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
