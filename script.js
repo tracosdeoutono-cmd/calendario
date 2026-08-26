@@ -3259,6 +3259,66 @@ window.onWorkHoursInput = function(val) {
     }
 };
 
+function buildPendingWorkTextPT(pendingList, totalHours, totalAmount) {
+    if (pendingList.length === 0) return "Sem horas de trabalho acumuladas.";
+
+    const lines = [];
+    lines.push("💶 *Horas de Trabalho Acumuladas — Casas do Martim*");
+    lines.push("");
+
+    const sorted = [...pendingList].sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+
+    sorted.forEach(item => {
+        const d = parseDateKey(item.dateKey);
+        const dayLabel = d.toLocaleDateString("pt-PT", { weekday: "long", day: "numeric", month: "long" });
+        const capitalizedDay = dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1);
+        const hStr = item.hours.toString().replace('.', ',');
+        const valStr = (item.amount || (item.hours * 11)).toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+        const noteStr = item.note ? ` (${item.note})` : '';
+
+        lines.push(`📅 ${capitalizedDay}: ${hStr}h = ${valStr}${noteStr}`);
+    });
+
+    const hTotalStr = (Math.round(totalHours * 100) / 100).toString().replace('.', ',');
+    const valTotalStr = totalAmount.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+
+    lines.push("");
+    lines.push(`⏱️ *Total de Horas:* ${hTotalStr} h (11,00 € / hora)`);
+    lines.push(`💰 *TOTAL A PAGAR:* ${valTotalStr}`);
+
+    return lines.join("\n");
+}
+
+function buildPendingWorkTextES(pendingList, totalHours, totalAmount) {
+    if (pendingList.length === 0) return "Sin horas de trabajo acumuladas.";
+
+    const lines = [];
+    lines.push("💶 *Horas de Trabajo Acumuladas — Casas do Martim*");
+    lines.push("");
+
+    const sorted = [...pendingList].sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+
+    sorted.forEach(item => {
+        const d = parseDateKey(item.dateKey);
+        const dayLabel = d.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" });
+        const capitalizedDay = dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1);
+        const hStr = item.hours.toString().replace('.', ',');
+        const valStr = (item.amount || (item.hours * 11)).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' });
+        const noteStr = item.note ? ` (${item.note})` : '';
+
+        lines.push(`📅 ${capitalizedDay}: ${hStr}h = ${valStr}${noteStr}`);
+    });
+
+    const hTotalStr = (Math.round(totalHours * 100) / 100).toString().replace('.', ',');
+    const valTotalStr = totalAmount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' });
+
+    lines.push("");
+    lines.push(`⏱️ *Total de Horas:* ${hTotalStr} h (11,00 € / hora)`);
+    lines.push(`💰 *TOTAL A PAGAR:* ${valTotalStr}`);
+
+    return lines.join("\n");
+}
+
 function showPaymentsView() {
     let html = renderNavigation();
     const pData = getPayrollData();
@@ -3272,8 +3332,28 @@ function showPaymentsView() {
     const formattedPendingAmount = totalPendingAmount.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
     const formattedPendingHours = (Math.round(totalPendingHours * 100) / 100).toString().replace('.', ',');
 
-    const totalSettledAmount = settlementsList.reduce((sum, s) => sum + (parseFloat(s.totalAmount) || 0), 0);
-    const formattedSettledAmount = totalSettledAmount.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+    // Cálculo da Média Mensal
+    const monthlyTotals = {};
+    settlementsList.forEach(s => {
+        const m = (s.settledDate || "").substring(0, 7);
+        if (m) {
+            monthlyTotals[m] = (monthlyTotals[m] || 0) + (parseFloat(s.totalAmount) || 0);
+        }
+    });
+    pendingList.forEach(w => {
+        const m = (w.dateKey || "").substring(0, 7);
+        if (m) {
+            monthlyTotals[m] = (monthlyTotals[m] || 0) + (parseFloat(w.amount) || 0);
+        }
+    });
+
+    const activeMonthsCount = Object.keys(monthlyTotals).length;
+    const totalAllEarnings = Object.values(monthlyTotals).reduce((sum, v) => sum + v, 0);
+    const monthlyAverage = activeMonthsCount > 0 ? (totalAllEarnings / activeMonthsCount) : 0;
+    const formattedMonthlyAverage = monthlyAverage.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+
+    const textPT = buildPendingWorkTextPT(pendingList, totalPendingHours, totalPendingAmount);
+    const textES = buildPendingWorkTextES(pendingList, totalPendingHours, totalPendingAmount);
 
     const todayStr = formatDateKey(new Date());
 
@@ -3306,13 +3386,13 @@ function showPaymentsView() {
 
             <div style="background: rgba(255,255,255,0.7); border: 1px solid rgba(0,0,0,0.1); border-radius: 16px; padding: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
                 <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #6d28d9;">
-                    📜 Já Liquidado no Histórico
+                    📊 Média Mensal
                 </div>
                 <div style="font-size: 30px; font-weight: 900; color: #6d28d9; margin: 6px 0 2px 0;">
-                    ${formattedSettledAmount}
+                    ${formattedMonthlyAverage} <span style="font-size: 16px; font-weight: 600; opacity: 0.7;">/ mês</span>
                 </div>
                 <div style="font-size: 13px; opacity: 0.8;">
-                    <strong>${settlementsList.length}</strong> pagamento${settlementsList.length !== 1 ? 's' : ''} liquidado${settlementsList.length !== 1 ? 's' : ''}
+                    Calculada com base em <strong>${activeMonthsCount || 1}</strong> ${activeMonthsCount === 1 ? 'mês' : 'meses'} registado${activeMonthsCount === 1 ? '' : 's'}
                 </div>
             </div>
         </div>
@@ -3370,17 +3450,27 @@ function showPaymentsView() {
                 <div id="al-work-calc-preview" style="font-size: 13px; font-weight: 600; color: #7c3aed; margin-top: 10px; min-height: 18px;"></div>
             </div>
 
-            <!-- Botão de Ação Rápida: Já Paguei Tudo -->
+            <!-- Barra de Ações: Já Paguei Tudo & Copiar PT/ES -->
             ${pendingList.length > 0 ? `
-                <div style="margin-bottom: 22px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; background: rgba(16,185,129,0.06); border: 1.5px dashed #10b981; border-radius: 14px; padding: 14px 18px;">
+                <div style="margin-bottom: 22px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; background: rgba(16,185,129,0.06); border: 1.5px dashed #10b981; border-radius: 14px; padding: 16px 18px;">
                     <div>
-                        <strong style="font-size: 15px; color: #059669;">💰 Desejas fazer o acerto de contas?</strong>
-                        <div style="font-size: 12px; color: #555;">Clica para marcar todas as ${formattedPendingHours} horas (${formattedPendingAmount}) como pagas e arquivar no histórico.</div>
+                        <strong style="font-size: 15px; color: #059669;">💰 Desejas enviar ou liquidar as contas?</strong>
+                        <div style="font-size: 12px; color: #555;">Copia a mensagem com todos os dias e o total a pagar (${formattedPendingAmount}) ou marca tudo como liquidado.</div>
                     </div>
-                    <button onclick="window.settleAllPayments()"
-                        style="padding: 12px 24px; font-size: 15px; cursor: pointer; border-radius: 12px; border: none; background: linear-gradient(135deg, #10b981, #059669); color: white; font-weight: bold; box-shadow: 0 4px 15px rgba(16,185,129,0.35);">
-                        ✓ Já Paguei Tudo (${formattedPendingAmount})
-                    </button>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                        <button onclick="window.copyFromData(this, '${encodeURIComponent(textPT)}')"
+                            style="padding: 10px 16px; font-size: 13px; cursor: pointer; border-radius: 10px; border: 1.5px solid #007bff; background: linear-gradient(135deg, #007bff, #0056b3); color: white; font-weight: bold; box-shadow: 0 2px 8px rgba(0,123,255,0.25);">
+                            🇵🇹 Copiar PT (${formattedPendingAmount})
+                        </button>
+                        <button onclick="window.copyFromData(this, '${encodeURIComponent(textES)}')"
+                            style="padding: 10px 16px; font-size: 13px; cursor: pointer; border-radius: 10px; border: 1.5px solid #e11d48; background: linear-gradient(135deg, #e11d48, #be123c); color: white; font-weight: bold; box-shadow: 0 2px 8px rgba(225,29,72,0.25);">
+                            🇪🇸 Copiar ES (${formattedPendingAmount})
+                        </button>
+                        <button onclick="window.settleAllPayments()"
+                            style="padding: 10px 18px; font-size: 13px; cursor: pointer; border-radius: 10px; border: none; background: linear-gradient(135deg, #10b981, #059669); color: white; font-weight: bold; box-shadow: 0 3px 10px rgba(16,185,129,0.3);">
+                            ✓ Já Paguei Tudo (${formattedPendingAmount})
+                        </button>
+                    </div>
                 </div>
             ` : ''}
 
