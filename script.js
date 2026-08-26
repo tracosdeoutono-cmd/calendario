@@ -633,16 +633,48 @@
         }
 
         /* ══════════════════════════════════════════ */
-        /* MENU FLUTUANTE RETRÁTIL (BOTÕES DESLIZANTES) */
+        /* BARRA SUPERIOR (MESMA LINHA) & MENU       */
         /* ══════════════════════════════════════════ */
+        body > h1:not(.al-badge-title), header > h1:not(.al-badge-title), .header > h1:not(.al-badge-title), #title, .page-title {
+            display: none !important;
+        }
+
+        .top-navbar-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            width: 100%;
+            position: relative;
+        }
+
+        .al-badge-title {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: #ffffff !important;
+            padding: 8px 20px;
+            border-radius: 12px;
+            font-size: 25px;
+            font-weight: 800;
+            box-shadow: 0 4px 14px rgba(0, 123, 255, 0.35);
+            border: 2px solid #007bff;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            line-height: 1.2;
+            user-select: none;
+            margin: 0;
+        }
+
         .floating-menu-container {
-            position: absolute;
-            top: 0px;
-            right: 0px;
+            position: relative;
             display: flex;
             flex-direction: column;
             align-items: center;
             z-index: 100;
+            margin-left: auto;
+            flex-shrink: 0;
         }
         .menu-trigger-btn {
             background: none;
@@ -669,20 +701,22 @@
             display: block;
         }
         .floating-sub-items {
+            position: absolute;
+            top: 48px;
+            right: 0;
             display: flex;
             flex-direction: column;
             gap: 10px;
             align-items: center;
-            margin-top: 10px;
-            transition: opacity 0.25s ease, transform 0.25s ease, max-height 0.25s ease, margin-top 0.25s ease;
+            transition: opacity 0.25s ease, transform 0.25s ease, max-height 0.25s ease;
             transform-origin: top center;
+            z-index: 101;
         }
         .floating-sub-items.menu-collapsed {
             opacity: 0;
             transform: translateY(-8px);
             pointer-events: none;
             max-height: 0;
-            margin-top: 0;
             overflow: hidden;
         }
         .floating-sub-items.menu-expanded {
@@ -716,6 +750,14 @@
         }
     `;
     document.head.appendChild(style);
+
+    try {
+        document.querySelectorAll('body > h1:not(.al-badge-title), header h1, #title, .page-title').forEach(el => {
+            if (!el.closest('#result')) {
+                el.style.display = 'none';
+            }
+        });
+    } catch(e) {}
 })();
 
 const WORKER_BASE_URL = "https://al.tracosdeoutono.workers.dev";
@@ -1208,16 +1250,13 @@ function renderNavigation() {
         </div>
     `;
 
-    // Título SEMPRE no topo com o símbolo e quadrado azul estético ligeiramente maior
-    const alwaysVisibleTitle = `
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: ${showFloatingSubMenu ? '14px' : '22px'}; padding-right: 60px;">
-            <div style="min-width: 0;">
-                <h1 style="margin: 0; display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, #007bff, #0056b3); color: #ffffff; padding: 8px 20px; border-radius: 12px; font-size: 25px; font-weight: 800; box-shadow: 0 4px 14px rgba(0, 123, 255, 0.35); border: 2px solid #007bff; letter-spacing: 0.5px;">
-                    🏡 Casas do Martim
-                </h1>
-                ${currentTheme === 'outono' ? `<div style="font-size: 13px; color: #a3998e; font-weight: 500; margin-top: 6px;">Gestão de Alojamento Local</div>` : ''}
-                ${currentTheme === 'aleatorio' ? `<div style="font-size: 13px; font-weight: bold; margin-top: 6px; opacity: 0.9;">✨ Estilo: ${currentRandomPresetName}</div>` : ''}
-            </div>
+    // Linha de topo única: [ 🏡 Casas do Martim ] à esquerda e [ Ícone Quadrado ] à direita na MESMA linha
+    const topBar = `
+        <div class="top-navbar-row" style="margin-bottom: ${showFloatingSubMenu ? '14px' : '20px'};">
+            <h1 class="al-badge-title">
+                🏡 Casas do Martim
+            </h1>
+            ${floatingMenu}
         </div>
     `;
 
@@ -1242,8 +1281,7 @@ function renderNavigation() {
     }
 
     return `
-        ${floatingMenu}
-        ${alwaysVisibleTitle}
+        ${topBar}
         <div id="al-collapsible-header" class="collapsible-header-section ${showFloatingSubMenu ? 'header-expanded' : 'header-collapsed'}">
             ${navButtonsHtml}
         </div>
