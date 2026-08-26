@@ -650,35 +650,36 @@
             padding: 0;
             cursor: pointer;
             outline: none;
-            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: transform 0.2s ease, opacity 0.2s ease;
             display: block;
         }
         .menu-trigger-btn:hover {
-            transform: scale(1.08);
+            transform: scale(1.05);
+            opacity: 0.92;
         }
         .menu-trigger-btn:active {
-            transform: scale(0.95);
+            transform: scale(0.96);
         }
         .menu-trigger-img {
             height: 42px;
             width: 42px;
             object-fit: cover;
             border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             display: block;
         }
         .floating-sub-items {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
             align-items: center;
-            margin-top: 12px;
-            transition: opacity 0.3s cubic-bezier(0.34, 1.3, 0.64, 1), transform 0.35s cubic-bezier(0.34, 1.3, 0.64, 1), max-height 0.35s ease, margin-top 0.3s ease;
+            margin-top: 10px;
+            transition: opacity 0.25s ease, transform 0.25s ease, max-height 0.25s ease, margin-top 0.25s ease;
             transform-origin: top center;
         }
         .floating-sub-items.menu-collapsed {
             opacity: 0;
-            transform: translateY(-16px) scale(0.8);
+            transform: translateY(-8px);
             pointer-events: none;
             max-height: 0;
             margin-top: 0;
@@ -686,45 +687,16 @@
         }
         .floating-sub-items.menu-expanded {
             opacity: 1;
-            transform: translateY(0) scale(1);
+            transform: translateY(0);
             pointer-events: auto;
             max-height: 350px;
         }
 
         /* ══════════════════════════════════════════ */
-        /* ANIMAÇÕES ENGRAÇADAS E CABEÇALHO RETRÁTIL  */
+        /* CABEÇALHO RETRÁTIL (TRANSIÇÃO SUAVE)       */
         /* ══════════════════════════════════════════ */
-        @keyframes funnySpringBounce {
-            0% {
-                opacity: 0;
-                transform: translateY(-35px) scale(0.65) rotate(-4deg);
-            }
-            45% {
-                opacity: 0.95;
-                transform: translateY(14px) scale(1.08, 0.92) rotate(3deg);
-            }
-            65% {
-                transform: translateY(-7px) scale(0.96, 1.04) rotate(-1.5deg);
-            }
-            80% {
-                transform: translateY(3px) scale(1.02, 0.98) rotate(0.8deg);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0) scale(1, 1) rotate(0deg);
-            }
-        }
-
-        @keyframes funnyWiggleIcon {
-            0%, 100% { transform: rotate(0deg) scale(1); }
-            20% { transform: rotate(-14deg) scale(1.15); }
-            40% { transform: rotate(12deg) scale(1.12); }
-            60% { transform: rotate(-8deg) scale(1.06); }
-            80% { transform: rotate(4deg) scale(1.02); }
-        }
-
         .collapsible-header-section {
-            transition: max-height 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s ease, margin-bottom 0.35s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: max-height 0.3s ease, opacity 0.25s ease, transform 0.25s ease, margin-bottom 0.25s ease;
             overflow: hidden;
             transform-origin: top left;
         }
@@ -733,19 +705,14 @@
             opacity: 0 !important;
             margin-bottom: 0 !important;
             pointer-events: none !important;
-            transform: translateY(-20px) scale(0.85);
+            transform: translateY(-10px);
         }
         .collapsible-header-section.header-expanded {
             max-height: 350px;
             opacity: 1;
             margin-bottom: 20px;
             pointer-events: auto;
-            animation: funnySpringBounce 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
-
-        .menu-trigger-btn:hover .menu-trigger-img,
-        .menu-trigger-btn:active .menu-trigger-img {
-            animation: funnyWiggleIcon 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform: translateY(0);
         }
     `;
     document.head.appendChild(style);
