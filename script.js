@@ -640,32 +640,34 @@
         }
 
         .top-navbar-row {
-            display: inline-flex;
-            align-items: center;
-            justify-content: flex-start;
-            gap: 10px;
-            position: relative;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            width: 100% !important;
+            margin-bottom: 20px !important;
+            position: relative !important;
+            box-sizing: border-box !important;
         }
 
         .al-badge-title {
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
-            gap: 8px !important;
+            gap: 10px !important;
             background: linear-gradient(135deg, #007bff, #0056b3) !important;
             color: #ffffff !important;
             -webkit-text-fill-color: #ffffff !important;
-            padding: 0 16px !important;
-            height: 42px !important;
-            border-radius: 10px !important;
-            font-size: 20px !important;
+            padding: 0 20px !important;
+            height: 48px !important;
+            border-radius: 12px !important;
+            font-size: 24px !important;
             font-weight: 800 !important;
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-            box-shadow: 0 3px 10px rgba(0, 123, 255, 0.3) !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            box-shadow: 0 4px 14px rgba(0, 123, 255, 0.35) !important;
             border: 2px solid #007bff !important;
-            letter-spacing: 0.3px !important;
+            letter-spacing: 0.5px !important;
             white-space: nowrap !important;
-            line-height: 42px !important;
+            line-height: 48px !important;
             user-select: none !important;
             margin: 0 !important;
             text-decoration: none !important;
@@ -674,13 +676,107 @@
             box-sizing: border-box !important;
         }
 
+        /* Estilos Adaptados por Tema para o Título Casas do Martim */
+        body[data-theme="outono"] .al-badge-title {
+            background: linear-gradient(135deg, rgba(245,158,11,0.25), rgba(234,88,12,0.35)) !important;
+            border: 2px solid rgba(245,158,11,0.5) !important;
+            color: #fff8f0 !important;
+            -webkit-text-fill-color: #fff8f0 !important;
+            font-family: 'Outfit', sans-serif !important;
+            font-size: 24px !important;
+            box-shadow: 0 4px 20px rgba(245,158,11,0.3) !important;
+        }
+
+        body[data-theme="cyber"] .al-badge-title {
+            background: rgba(0,255,65,0.12) !important;
+            border: 2px solid #00ff41 !important;
+            border-radius: 0px !important;
+            color: #00ff41 !important;
+            -webkit-text-fill-color: #00ff41 !important;
+            font-family: 'VT323', monospace !important;
+            font-size: 28px !important;
+            text-shadow: 0 0 10px rgba(0,255,65,0.6) !important;
+            box-shadow: 0 0 15px rgba(0,255,65,0.25) !important;
+        }
+
+        body[data-theme="cappuccino"] .al-badge-title {
+            background: #fffde7 !important;
+            border: 2px dashed #e88d67 !important;
+            border-radius: 6px !important;
+            color: #2c1810 !important;
+            -webkit-text-fill-color: #2c1810 !important;
+            font-family: 'Caveat', cursive !important;
+            font-size: 27px !important;
+            box-shadow: 3px 3px 0px rgba(44,24,16,0.15) !important;
+        }
+
+        body[data-theme="carnival"] .al-badge-title {
+            background: #fff7cc !important;
+            border: 3px solid #ff0050 !important;
+            border-radius: 30px !important;
+            color: #ff0050 !important;
+            -webkit-text-fill-color: #ff0050 !important;
+            font-family: 'Fredoka', sans-serif !important;
+            font-size: 23px !important;
+            box-shadow: 4px 4px 0px #ff0050 !important;
+        }
+
+        body[data-theme="sakura"] .al-badge-title {
+            background: rgba(255,255,255,0.9) !important;
+            border: 2px solid #f9a8d4 !important;
+            border-radius: 14px !important;
+            color: #be185d !important;
+            -webkit-text-fill-color: #be185d !important;
+            font-family: 'Quicksand', sans-serif !important;
+            font-size: 23px !important;
+            box-shadow: 0 4px 15px rgba(244,114,182,0.25) !important;
+        }
+
+        body[data-theme="aquarela"] .al-badge-title {
+            background: linear-gradient(135deg, rgba(2, 132, 199, 0.22) 0%, rgba(124, 58, 237, 0.2) 50%, rgba(225, 29, 72, 0.2) 100%) !important;
+            border: 2px solid #0284c7 !important;
+            border-radius: 16px !important;
+            color: #0369a1 !important;
+            -webkit-text-fill-color: #0369a1 !important;
+            font-family: 'Kalam', cursive, sans-serif !important;
+            font-size: 24px !important;
+            font-weight: 700 !important;
+            box-shadow: 0 6px 20px rgba(2, 132, 199, 0.25) !important;
+            backdrop-filter: blur(10px) !important;
+        }
+
+        body[data-theme="jornal"] .al-badge-title {
+            background: #ffffff !important;
+            border: 2px solid #1a1a1a !important;
+            border-radius: 0px !important;
+            color: #1a1a1a !important;
+            -webkit-text-fill-color: #1a1a1a !important;
+            font-family: 'Playfair Display', serif !important;
+            font-size: 22px !important;
+            font-variant: small-caps !important;
+            box-shadow: none !important;
+        }
+
+        body[data-theme="quadro"] .al-badge-title {
+            background: rgba(255,255,255,0.06) !important;
+            border: 2px dashed rgba(255,255,255,0.5) !important;
+            border-radius: 6px !important;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+            font-family: 'Patrick Hand', cursive !important;
+            font-size: 27px !important;
+            text-shadow: 0 0 6px rgba(255,255,255,0.25) !important;
+            box-shadow: none !important;
+        }
+
         .floating-menu-container {
-            position: relative;
-            display: inline-flex;
-            flex-direction: column;
-            align-items: center;
-            z-index: 100;
-            flex-shrink: 0;
+            position: relative !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: flex-end !important;
+            z-index: 100 !important;
+            margin-left: auto !important;
+            flex-shrink: 0 !important;
         }
         .menu-trigger-btn {
             background: none;
@@ -690,8 +786,8 @@
             outline: none;
             transition: transform 0.2s ease, opacity 0.2s ease;
             display: block;
-            height: 42px;
-            width: 42px;
+            height: 48px;
+            width: 48px;
         }
         .menu-trigger-btn:hover {
             transform: scale(1.05);
@@ -701,44 +797,47 @@
             transform: scale(0.96);
         }
         .menu-trigger-img {
-            height: 42px;
-            width: 42px;
+            height: 48px;
+            width: 48px;
             object-fit: cover;
-            border-radius: 10px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+            border-radius: 12px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.18);
             display: block;
         }
         .floating-sub-items {
-            position: absolute;
-            top: 48px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            align-items: center;
-            transition: opacity 0.25s ease, transform 0.25s ease, max-height 0.25s ease;
-            transform-origin: top center;
-            z-index: 101;
+            position: absolute !important;
+            top: 56px !important;
+            right: 0 !important;
+            left: auto !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 10px !important;
+            align-items: center !important;
+            transition: opacity 0.25s ease, transform 0.25s ease, max-height 0.25s ease !important;
+            transform-origin: top center !important;
+            z-index: 101 !important;
         }
         .floating-sub-items.menu-collapsed {
-            opacity: 0;
-            transform: translateX(-50%) translateY(-8px);
-            pointer-events: none;
-            max-height: 0;
-            overflow: hidden;
+            opacity: 0 !important;
+            transform: translateY(-8px) !important;
+            pointer-events: none !important;
+            max-height: 0 !important;
+            overflow: hidden !important;
         }
         .floating-sub-items.menu-expanded {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-            pointer-events: auto;
-            max-height: 350px;
+            opacity: 1 !important;
+            transform: translateY(0) !important;
+            pointer-events: auto !important;
+            max-height: 350px !important;
         }
 
         /* ══════════════════════════════════════════ */
         /* CABEÇALHO RETRÁTIL (TRANSIÇÃO SUAVE)       */
         /* ══════════════════════════════════════════ */
         .collapsible-header-section {
+            display: block !important;
+            width: 100% !important;
+            clear: both !important;
             transition: max-height 0.3s ease, opacity 0.25s ease, transform 0.25s ease, margin-bottom 0.25s ease;
             overflow: hidden;
             transform-origin: top left;
@@ -1259,12 +1358,12 @@ function renderNavigation() {
         </div>
     `;
 
-    // Linha de topo única: [ 🏡 Casas do Martim ] à esquerda e [ Ícone Quadrado ] à direita na MESMA linha
+    // Linha de topo: [ 🏡 Casas do Martim ] à esquerda e [ Ícone Quadrado ] à direita
     const topBar = `
         <div class="top-navbar-row" style="margin-bottom: ${showFloatingSubMenu ? '14px' : '20px'};">
-            <h1 class="al-badge-title">
+            <div class="al-badge-title">
                 🏡 Casas do Martim
-            </h1>
+            </div>
             ${floatingMenu}
         </div>
     `;
@@ -1273,7 +1372,7 @@ function renderNavigation() {
 
     if (currentTheme === "outono") {
         navButtonsHtml = `
-            <div style="margin-bottom: 24px;">
+            <div style="margin-bottom: 24px; width: 100%; display: block; clear: both;">
                 <div style="display: inline-flex; background: rgba(255,255,255,0.04); padding: 5px; border-radius: 16px; border: 1px solid rgba(245,158,11,0.2); gap: 4px; flex-wrap: wrap;">
                     <button onclick="window.switchMainView('cleaning')" class="segment-btn ${isCleaning?'active-cleaning':''}">🧹 Limpezas</button>
                     <button onclick="window.switchMainView('occupancy')" class="segment-btn ${isOccupancy?'active-occupancy':''}">📊 Disponibilidade</button>
@@ -1282,7 +1381,7 @@ function renderNavigation() {
             </div>`;
     } else {
         navButtonsHtml = `
-            <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+            <div style="margin-bottom: 20px; width: 100%; display: flex; gap: 10px; flex-wrap: wrap; clear: both;">
                 <button onclick="window.switchMainView('cleaning')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #007bff; background-color: ${isCleaning?'#007bff':'#ffffff'}; color: ${isCleaning?'#ffffff':'#007bff'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">🧹 Plano de Limpezas</button>
                 <button onclick="window.switchMainView('occupancy')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #28a745; background-color: ${isOccupancy?'#28a745':'#ffffff'}; color: ${isOccupancy?'#ffffff':'#28a745'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">📊 Disponibilidade da Casa</button>
                 <button onclick="window.switchMainView('laundry')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #0284c7; background-color: ${isLaundry?'#0284c7':'#ffffff'}; color: ${isLaundry?'#ffffff':'#0284c7'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">🧺 Stock Lavandaria</button>
@@ -1361,13 +1460,14 @@ async function fetchCloudHistory() {
         if (typeof cloudHistory !== 'object' || cloudHistory === null || Array.isArray(cloudHistory)) cloudHistory = {};
         historyLoadedOk = true;
 
-        // Sincroniza dias bloqueados vindos da cloud
+        // Sincroniza e une dias bloqueados da cloud + local para nunca esquecer nenhum dia bloqueado
+        let mergedBlocked = new Set(blockedDates);
         if (Array.isArray(cloudHistory["_blockedDates"])) {
-            blockedDates = cloudHistory["_blockedDates"];
-            try { localStorage.setItem("al_blocked_dates", JSON.stringify(blockedDates)); } catch(e) {}
-        } else if (blockedDates.length > 0) {
-            cloudHistory["_blockedDates"] = blockedDates;
+            cloudHistory["_blockedDates"].forEach(d => mergedBlocked.add(d));
         }
+        blockedDates = Array.from(mergedBlocked).sort();
+        cloudHistory["_blockedDates"] = blockedDates;
+        try { localStorage.setItem("al_blocked_dates", JSON.stringify(blockedDates)); } catch(e) {}
 
         // Regista o acesso do dispositivo atual e envia para a Cloud imediatamente
         logDeviceAccess();
@@ -1378,7 +1478,9 @@ async function fetchCloudHistory() {
         try {
             cloudHistory = JSON.parse(localStorage.getItem("al_cloud_history_backup") || "{}");
             if (Array.isArray(cloudHistory["_blockedDates"])) {
-                blockedDates = cloudHistory["_blockedDates"];
+                let mergedBlocked = new Set(blockedDates);
+                cloudHistory["_blockedDates"].forEach(d => mergedBlocked.add(d));
+                blockedDates = Array.from(mergedBlocked).sort();
             }
         } catch(err) { cloudHistory = {}; }
         historyLoadedOk = false;
@@ -1703,13 +1805,13 @@ function buildBlockedDatesPanelHTML() {
         }).join('');
     }
     if (pastDates.length > 0) {
-        chipsHtml += `<div style="margin-top: 10px; margin-bottom: 8px; font-size: 12px; font-weight: 700; opacity: 0.4; text-transform: uppercase; letter-spacing: 1px;">Passadas</div>`;
+        chipsHtml += `<div style="margin-top: 12px; margin-bottom: 8px; font-size: 12px; font-weight: 700; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px;">Passadas (Guardadas para sempre no histórico)</div>`;
         chipsHtml += pastDates.map(dk => {
             const d = parseDateKey(dk);
-            const label = d.toLocaleDateString("pt-PT", { weekday: "short", day: "numeric", month: "short" });
-            return `<div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(108,117,125,0.08); border: 1px solid rgba(108,117,125,0.2); border-radius: 20px; padding: 5px 12px; font-size: 14px; opacity: 0.6;">
+            const label = d.toLocaleDateString("pt-PT", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+            return `<div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(108,117,125,0.08); border: 1px solid rgba(108,117,125,0.25); border-radius: 20px; padding: 5px 12px; font-size: 13px; opacity: 0.75;">
                 <span>📅 ${label}</span>
-                <button onclick="window.removeBlockedDate('${dk}')" title="Remover" style="background: none; border: none; cursor: pointer; font-size: 16px; line-height: 1; padding: 0; color: #6c757d; font-weight: bold;">×</button>
+                <button onclick="window.removeBlockedDate('${dk}')" title="Remover do histórico" style="background: none; border: none; cursor: pointer; font-size: 16px; line-height: 1; padding: 0; color: #6c757d; font-weight: bold;">×</button>
             </div>`;
         }).join('');
     }
@@ -1821,10 +1923,11 @@ function showCleaningPlan() {
     let sortedKeys=Object.keys(grouped).sort(); if (showHistoryMode) sortedKeys.reverse();
     let html=renderNavigation();
 
+    const futureBlocked = blockedDates.filter(dk => parseDateKey(dk) >= today);
     const blockedBtnLabel = showBlockedDatesPanel
         ? '🚫 Fechar Dias Bloqueados'
-        : `🚫 Dias Bloqueados${blockedDates.length > 0 ? ` (${blockedDates.length})` : ''}`;
-    const blockedBtnStyle = showBlockedDatesPanel || blockedDates.length > 0
+        : `🚫 Dias Bloqueados${futureBlocked.length > 0 ? ` (${futureBlocked.length} ativos)` : ''}`;
+    const blockedBtnStyle = showBlockedDatesPanel || futureBlocked.length > 0
         ? 'border: 1px solid #dc3545; background-color: #dc3545; color: white;'
         : 'border: 1px solid #6c757d; background-color: #6c757d; color: white;';
 
@@ -1839,14 +1942,11 @@ function showCleaningPlan() {
 
     if (showBlockedDatesPanel) {
         html += buildBlockedDatesPanelHTML();
-    } else if (blockedDates.length > 0 && !showHistoryMode) {
-        const futureBlocked = blockedDates.filter(dk => parseDateKey(dk) >= today);
-        if (futureBlocked.length > 0) {
-            const labels = futureBlocked.map(dk => parseDateKey(dk).toLocaleDateString("pt-PT", { day: "numeric", month: "short" })).join(", ");
-            html += `<div style="padding: 8px 14px; border-radius: 8px; background: rgba(220,53,69,0.08); border: 1px solid rgba(220,53,69,0.2); font-size: 13px; margin-bottom: 16px; color: #dc3545;">
-                🚫 <strong>Dias bloqueados ativos:</strong> ${labels}
-            </div>`;
-        }
+    } else if (futureBlocked.length > 0 && !showHistoryMode) {
+        const labels = futureBlocked.map(dk => parseDateKey(dk).toLocaleDateString("pt-PT", { day: "numeric", month: "short" })).join(", ");
+        html += `<div style="padding: 8px 14px; border-radius: 8px; background: rgba(220,53,69,0.08); border: 1px solid rgba(220,53,69,0.2); font-size: 13px; margin-bottom: 16px; color: #dc3545;">
+            🚫 <strong>Dias bloqueados ativos:</strong> ${labels}
+        </div>`;
     }
 
     html+=`<h1>${showHistoryMode?"📜 Histórico de Limpezas (Cloud)":"🧹 Plano de Limpezas"}</h1>`;
@@ -1862,7 +1962,8 @@ function showCleaningPlan() {
         if (day.rooms && day.rooms.some(r=>r.sunday)) title="🔴 "+title;
 
         const dayIsBlocked = isBlockedDate(day.date);
-        if (dayIsBlocked && !showHistoryMode) {
+        const isTodayOrFuture = day.date >= today;
+        if (dayIsBlocked && isTodayOrFuture && !showHistoryMode) {
             title = "⚠️ " + title;
         }
 
@@ -1870,7 +1971,7 @@ function showCleaningPlan() {
         let dEs=day.date.toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long",year:"numeric"}); dEs=dEs.charAt(0).toUpperCase()+dEs.slice(1); let cEs=[`🧹 Limpiezas - ${dEs}:`];
         let rh="";
 
-        if (dayIsBlocked && hasRooms && !showHistoryMode) {
+        if (dayIsBlocked && isTodayOrFuture && hasRooms && !showHistoryMode) {
             rh += `<div style="margin-bottom: 8px; font-size: 13px; color: #dc3545; font-weight: 600;">⚠️ Dia bloqueado — limpezas abaixo são obrigatórias (turnaround)</div>`;
         }
 
