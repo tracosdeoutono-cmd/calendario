@@ -1103,6 +1103,113 @@ function getDeviceFingerprint() {
     return devId;
 }
 
+function getWebGLRenderer() {
+    try {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (gl) {
+            const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+            if (debugInfo) {
+                return gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) || "";
+            }
+        }
+    } catch(e) {}
+    return "";
+}
+
+function detectDetailedIPhoneModel() {
+    const ua = navigator.userAgent || "";
+    const w = Math.min(window.screen.width, window.screen.height);
+    const h = Math.max(window.screen.width, window.screen.height);
+    const dpr = window.devicePixelRatio || 1;
+    const gpu = getWebGLRenderer().toUpperCase();
+
+    // 1. iPhone 16 Pro Max (440 x 956 @3x)
+    if (w === 440 && h === 956) return "iPhone 16 Pro Max";
+    // 2. iPhone 16 Pro (402 x 874 @3x)
+    if (w === 402 && h === 874) return "iPhone 16 Pro";
+
+    // 3. 430 x 932 @3x (iPhone 16 Plus / 15 Plus / 15 Pro Max)
+    if (w === 430 && h === 932) {
+        if (gpu.includes("A18")) return "iPhone 16 Plus";
+        if (gpu.includes("A17")) return "iPhone 15 Pro Max";
+        if (gpu.includes("A16")) return "iPhone 15 Plus";
+        return "iPhone 15 / 16 Plus / Pro Max";
+    }
+
+    // 4. 428 x 926 @3x (iPhone 14 Pro Max / 14 Plus / 13 Pro Max / 12 Pro Max)
+    if (w === 428 && h === 926) {
+        if (gpu.includes("A16")) return "iPhone 14 Pro Max";
+        if (gpu.includes("A15")) return "iPhone 14 Plus / 13 Pro Max";
+        if (gpu.includes("A14")) return "iPhone 12 Pro Max";
+        return "iPhone 14 Plus / 13 Pro Max / 12 Pro Max";
+    }
+
+    // 5. 393 x 852 @3x (iPhone 16 / 15 Pro / 15 / 14 Pro)
+    if (w === 393 && h === 852) {
+        if (gpu.includes("A18")) return "iPhone 16";
+        if (gpu.includes("A17")) return "iPhone 15 Pro";
+        if (gpu.includes("A16")) return "iPhone 15 / 14 Pro";
+        return "iPhone 15 / 15 Pro / 16 / 14 Pro";
+    }
+
+    // 6. 390 x 844 @3x (iPhone 14 / 13 Pro / 13 / 12 Pro / 12)
+    if (w === 390 && h === 844) {
+        if (gpu.includes("A15")) return "iPhone 14 / 13 / 13 Pro";
+        if (gpu.includes("A14")) return "iPhone 12 / 12 Pro";
+        return "iPhone 14 / 13 / 12";
+    }
+
+    // 7. 375 x 812 @3x (iPhone 13 mini / 12 mini / 11 Pro / XS / X)
+    if (w === 375 && h === 812) {
+        if (dpr >= 3) {
+            if (gpu.includes("A15")) return "iPhone 13 mini";
+            if (gpu.includes("A14")) return "iPhone 12 mini";
+            if (gpu.includes("A13")) return "iPhone 11 Pro";
+            if (gpu.includes("A12")) return "iPhone XS";
+            if (gpu.includes("A11")) return "iPhone X";
+            return "iPhone 13 mini / 12 mini / 11 Pro / X";
+        }
+    }
+
+    // 8. 414 x 896 (iPhone 11 Pro Max / XS Max / 11 / XR)
+    if (w === 414 && h === 896) {
+        if (dpr >= 3) {
+            if (gpu.includes("A13")) return "iPhone 11 Pro Max";
+            return "iPhone 11 Pro Max / XS Max";
+        } else {
+            return "iPhone 11 / XR";
+        }
+    }
+
+    // 9. 414 x 736 @3x (iPhone 8 Plus / 7 Plus / 6s Plus)
+    if (w === 414 && h === 736) {
+        if (gpu.includes("A11")) return "iPhone 8 Plus";
+        if (gpu.includes("A10")) return "iPhone 7 Plus";
+        return "iPhone 8 Plus / 7 Plus / 6s Plus";
+    }
+
+    // 10. 375 x 667 @2x (iPhone SE 2/3 / 8 / 7 / 6s)
+    if (w === 375 && h === 667) {
+        if (gpu.includes("A15")) return "iPhone SE (3ª ger.)";
+        if (gpu.includes("A13")) return "iPhone SE (2ª ger.)";
+        if (gpu.includes("A11")) return "iPhone 8";
+        if (gpu.includes("A10")) return "iPhone 7";
+        return "iPhone SE / 8 / 7";
+    }
+
+    // 11. 320 x 568 @2x (iPhone SE 1 / 5s)
+    if (w === 320 && h === 568) {
+        return "iPhone SE (1ª ger.) / 5s";
+    }
+
+    // Fallback com versão de iOS
+    let iosVer = "";
+    const vm = ua.match(/OS\s+([\d_]+)\s+like/i);
+    if (vm && vm[1]) iosVer = " iOS " + vm[1].replace(/_/g, '.');
+    return `iPhone${iosVer ? ` (${iosVer})` : ''}`;
+}
+
 function detectDeviceName() {
     const ua = navigator.userAgent || "";
     let name = "Dispositivo";
@@ -1122,10 +1229,8 @@ function detectDeviceName() {
     // 2. Detectar iPhone / iPad / iOS
     if (/iPhone/i.test(ua)) {
         icon = "📱";
-        let iosVer = "";
-        const vm = ua.match(/OS\s+([\d_]+)\s+like/i);
-        if (vm && vm[1]) iosVer = " iOS " + vm[1].replace(/_/g, '.');
-        name = `iPhone${browser ? ` (${browser})` : (iosVer || ' (iOS)')}`;
+        const iphoneModel = detectDetailedIPhoneModel();
+        name = `${iphoneModel}${browser ? ` (${browser})` : ''}`;
     }
     else if (/iPad/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
         icon = "📱";
@@ -1187,9 +1292,6 @@ function detectDeviceName() {
 function logDeviceAccess() {
     try {
         const devId = getDeviceFingerprint();
-        let customLocalName = "";
-        try { customLocalName = localStorage.getItem("al_custom_device_name") || ""; } catch(e) {}
-
         const detected = detectDeviceName();
 
         if (!cloudHistory["_devices"] || typeof cloudHistory["_devices"] !== 'object') {
@@ -1199,14 +1301,11 @@ function logDeviceAccess() {
         const now = new Date();
         const todayStr = formatDateKey(now);
         const existing = cloudHistory["_devices"][devId] || {};
-        const savedCustomName = existing.customName || customLocalName || "";
-        const finalDisplayName = savedCustomName || existing.name || detected.name;
 
         cloudHistory["_devices"][devId] = {
             id: devId,
-            name: finalDisplayName,
-            customName: savedCustomName || undefined,
-            icon: existing.icon || detected.icon,
+            name: detected.name,
+            icon: detected.icon,
             platform: navigator.platform || "",
             screen: `${window.innerWidth}x${window.innerHeight}`,
             firstSeen: existing.firstSeen || now.toISOString(),
@@ -1224,7 +1323,7 @@ function logDeviceAccess() {
         if (!isRecent) {
             cloudHistory["_access_logs"].push({
                 deviceId: devId,
-                deviceName: finalDisplayName,
+                deviceName: detected.name,
                 icon: detected.icon,
                 timestamp: now.toISOString(),
                 dateKey: todayStr,
@@ -1236,8 +1335,8 @@ function logDeviceAccess() {
             }
         }
 
-        // Se o dispositivo suportar Client Hints de alta precisão (Chrome/Edge em Android ou PC), atualiza o nome técnico se não tiver nome personalizado
-        if (!savedCustomName && navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+        // Se o dispositivo suportar Client Hints de alta precisão (Chrome/Edge em Android ou PC), atualiza o modelo exato
+        if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
             navigator.userAgentData.getHighEntropyValues(['model', 'platform']).then(uaData => {
                 if (uaData && uaData.model && uaData.model.trim() !== "") {
                     let brand = "";
@@ -1247,7 +1346,7 @@ function logDeviceAccess() {
                     else if (/^Redmi|^POCO/i.test(m)) brand = "Xiaomi ";
 
                     const exactName = `${brand}${m}`;
-                    if (cloudHistory["_devices"] && cloudHistory["_devices"][devId] && !cloudHistory["_devices"][devId].customName) {
+                    if (cloudHistory["_devices"] && cloudHistory["_devices"][devId]) {
                         cloudHistory["_devices"][devId].name = exactName;
                         if (historyLoadedOk) saveToCloudHistory(cloudHistory);
                     }
@@ -1258,40 +1357,6 @@ function logDeviceAccess() {
         console.warn("Erro ao registar dispositivo:", e);
     }
 }
-
-window.renameDevice = function(devId) {
-    const devices = cloudHistory["_devices"] || {};
-    const dev = devices[devId] || {};
-    const currentName = dev.customName || dev.name || "Dispositivo";
-    const newName = prompt("Nome real / identificador para este dispositivo (ex: iPhone do Martim, Telemóvel da Maria, PC Recepção):", currentName);
-    if (newName === null) return;
-    const trimmed = newName.trim();
-    if (!trimmed) return;
-
-    if (!cloudHistory["_devices"]) cloudHistory["_devices"] = {};
-    if (!cloudHistory["_devices"][devId]) {
-        cloudHistory["_devices"][devId] = { id: devId };
-    }
-
-    cloudHistory["_devices"][devId].name = trimmed;
-    cloudHistory["_devices"][devId].customName = trimmed;
-
-    if (devId === getDeviceFingerprint()) {
-        try { localStorage.setItem("al_custom_device_name", trimmed); } catch(e) {}
-    }
-
-    // Atualiza também nos registos de acesso para coerência visual
-    if (Array.isArray(cloudHistory["_access_logs"])) {
-        cloudHistory["_access_logs"].forEach(l => {
-            if (l.deviceId === devId) {
-                l.deviceName = trimmed;
-            }
-        });
-    }
-
-    if (historyLoadedOk) saveToCloudHistory(cloudHistory);
-    renderCurrentView();
-};
 
 // TEMA INICIAL
 let currentTheme = localStorage.getItem("al_theme") || "white";
@@ -2931,6 +2996,12 @@ function showSettingsView() {
     const myDevId = getDeviceFingerprint();
     const devices = cloudHistory["_devices"] || {};
     const devKeys = Object.keys(devices);
+    const nowMs = Date.now();
+    const activeDevKeys = devKeys.filter(devId => {
+        const dev = devices[devId];
+        if (!dev || !dev.lastSeen) return false;
+        return (nowMs - new Date(dev.lastSeen).getTime()) <= 10 * 60 * 1000;
+    });
     const logs = Array.isArray(cloudHistory["_access_logs"]) ? [...cloudHistory["_access_logs"]] : [];
 
     html += `
@@ -2956,43 +3027,45 @@ function showSettingsView() {
             </div>
         </div>
 
-        <!-- Secção 2: Dispositivos Conectados -->
+        <!-- Secção 2: Dispositivos Conectados (Últimos 10 min) -->
         <div style="margin-top: 30px; margin-bottom: 25px;">
-            <h2 style="margin: 0 0 14px 0; font-size: 20px;">📱 Dispositivos Conectados (${devKeys.length})</h2>
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 6px;">
+                <h2 style="margin: 0; font-size: 20px;">🟢 Dispositivos Conectados Agora (${activeDevKeys.length})</h2>
+                <span style="font-size: 12px; font-weight: 600; color: #059669; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); padding: 3px 10px; border-radius: 12px;">Últimos 10 minutos</span>
+            </div>
             <div style="font-size: 13px; color: #666; margin-bottom: 15px;">
-                Dispositivos (telemóveis, tablets, computadores) que já abriram esta aplicação:
+                Aparelhos ativos na aplicação nos últimos 10 minutos:
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 8px;">
     `;
 
-    if (devKeys.length === 0) {
-        html += `<p style="color: #888; font-size: 14px;">Ainda não há dispositivos registados.</p>`;
+    if (activeDevKeys.length === 0) {
+        html += `<p style="color: #888; font-size: 14px;">Nenhum dispositivo esteve ativo nos últimos 10 minutos.</p>`;
     } else {
-        devKeys.forEach(devId => {
+        activeDevKeys.forEach(devId => {
             const dev = devices[devId];
             const isCurrent = devId === myDevId;
-            const lastDate = dev.lastSeen ? new Date(dev.lastSeen).toLocaleDateString("pt-PT", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "Recentemente";
+            const lastDate = dev.lastSeen ? new Date(dev.lastSeen).toLocaleDateString("pt-PT", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "Agora";
 
             html += `
-                <div class="device-card" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border: 1px solid #ddd; border-radius: 12px; background: #fff; margin-bottom: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
+                <div class="device-card" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border: 1px solid #ddd; border-radius: 12px; background: #fff; margin-bottom: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); ${isCurrent ? 'border-left: 5px solid #10b981;' : ''}">
                     <div style="display: flex; align-items: center; gap: 12px;">
                         <span style="font-size: 26px;">${dev.icon || '📱'}</span>
                         <div>
                             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                                 <strong style="font-size: 15px; color: #111;">${dev.name || 'Dispositivo'}</strong>
-                                ${isCurrent ? `<span style="background: rgba(16,185,129,0.15); color: #059669; border: 1px solid rgba(16,185,129,0.3); padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold;">👉 Este Dispositivo</span>` : ''}
-                                ${dev.customName ? `<span style="background: rgba(2,132,199,0.1); color: #0284c7; border: 1px solid rgba(2,132,199,0.25); padding: 2px 6px; border-radius: 8px; font-size: 10px; font-weight: bold;">Nome Guardado na Cloud</span>` : ''}
+                                ${isCurrent ? `<span style="background: rgba(16,185,129,0.15); color: #059669; border: 1px solid rgba(16,185,129,0.3); padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold;">👉 Este Telemóvel (Atual)</span>` : ''}
                             </div>
                             <div style="font-size: 12px; opacity: 0.7; margin-top: 2px;">
-                                Último acesso: ${lastDate} • Visitas: <strong>${dev.visitsCount || 1}</strong> ${dev.screen ? `• Ecrã: ${dev.screen}` : ''}
+                                Ativo às ${new Date(dev.lastSeen).toLocaleTimeString("pt-PT", { hour: '2-digit', minute: '2-digit' })} • Visitas: <strong>${dev.visitsCount || 1}</strong> ${dev.screen ? `• Ecrã: ${dev.screen}` : ''}
                             </div>
                         </div>
                     </div>
-                    <button onclick="window.renameDevice('${devId}')" title="Mudar o nome real deste dispositivo na Cloud"
-                        style="padding: 6px 12px; font-size: 12px; cursor: pointer; border-radius: 8px; border: 1px solid #007bff; background-color: rgba(0,123,255,0.08); color: #007bff; font-weight: bold; white-space: nowrap;">
-                        ✏️ Mudar Nome
-                    </button>
+                    <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 6px #10b981;"></span>
+                        <span style="font-size: 12px; font-weight: 700; color: #059669;">Online</span>
+                    </div>
                 </div>
             `;
         });
@@ -3037,13 +3110,13 @@ function showSettingsView() {
                 const devIcon = dev.icon || entry.icon || "📱";
 
                 logsListHtml += `
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 13px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 7px 10px; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 13px; border-radius: 8px; margin-bottom: 3px; ${isCurrent ? 'background: rgba(16,185,129,0.08); border-left: 4px solid #10b981;' : ''}">
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                             <span>${devIcon}</span>
-                            <strong>${devName}</strong>
-                            ${isCurrent ? `<span style="font-size: 11px; opacity: 0.6;">(atual)</span>` : ''}
+                            <strong style="color: #111;">${devName}</strong>
+                            ${isCurrent ? `<span style="background: rgba(16,185,129,0.18); color: #059669; border: 1px solid rgba(16,185,129,0.35); padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 800;">👉 Este Telemóvel (Atual)</span>` : ''}
                         </div>
-                        <div style="font-weight: 600; opacity: 0.8; font-family: monospace;">
+                        <div style="font-weight: 600; opacity: 0.85; font-family: monospace;">
                             🕒 ${entry.timeStr || new Date(entry.timestamp).toLocaleTimeString("pt-PT", { hour: '2-digit', minute: '2-digit' })}
                         </div>
                     </div>
