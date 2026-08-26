@@ -359,6 +359,7 @@
         body[data-theme="aquarela"] button[onclick*="switchMainView('cleaning')"] { background: linear-gradient(135deg, #2563eb, #7c3aed) !important; border: none !important; color: white !important; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3) !important; }
         body[data-theme="aquarela"] button[onclick*="switchMainView('occupancy')"] { background: linear-gradient(135deg, #059669, #10b981) !important; border: none !important; color: white !important; box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3) !important; }
         body[data-theme="aquarela"] button[onclick*="switchMainView('laundry')"] { background: linear-gradient(135deg, #0284c7, #06b6d4) !important; border: none !important; color: white !important; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3) !important; }
+        body[data-theme="aquarela"] button[onclick*="switchMainView('payments')"] { background: linear-gradient(135deg, #8b5cf6, #ec4899) !important; border: none !important; color: white !important; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3) !important; }
 
         body[data-theme="aquarela"] hr {
             border: none !important;
@@ -477,10 +478,11 @@
         .stat-val { font-size: 26px; font-weight: 800; color: #ffffff; margin-top: 4px; }
         .bar-bg { height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; margin-top: 10px; }
         .bar-fill { height: 100%; background: linear-gradient(90deg, #f59e0b, #ea580c); border-radius: 3px; }
-        .segment-btn { font-family: inherit; padding: 10px 20px; font-size: 14px; font-weight: 600; border-radius: 12px; cursor: pointer; border: none; background: transparent; color: #a3998e; transition: all 0.25s ease; }
-        .segment-btn.active-cleaning { background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-weight: 700; box-shadow: 0 4px 15px rgba(245,158,11,0.35); }
-        .segment-btn.active-occupancy { background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-weight: 700; box-shadow: 0 4px 15px rgba(16,185,129,0.35); }
-        .segment-btn.active-laundry { background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff; font-weight: 700; box-shadow: 0 4px 15px rgba(2,132,199,0.35); }
+        .segment-btn { font-family: inherit; padding: 10px 20px; font-size: 14px; font-weight: 600; border-radius: 12px; cursor: pointer; border: 1px solid rgba(245,158,11,0.2); background: rgba(255,255,255,0.04); color: #fff8f0; transition: all 0.25s ease; }
+        .segment-btn.active-cleaning { background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-weight: 700; box-shadow: 0 4px 15px rgba(245,158,11,0.35); border-color: #f59e0b; }
+        .segment-btn.active-occupancy { background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-weight: 700; box-shadow: 0 4px 15px rgba(16,185,129,0.35); border-color: #10b981; }
+        .segment-btn.active-laundry { background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff; font-weight: 700; box-shadow: 0 4px 15px rgba(2,132,199,0.35); border-color: #0284c7; }
+        .segment-btn.active-payments { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: #fff; font-weight: 700; box-shadow: 0 4px 15px rgba(139,92,246,0.35); border-color: #8b5cf6; }
         body[data-theme="outono"] .clock-btn.active { background: linear-gradient(135deg, #ea580c, #c2410c) !important; box-shadow: 0 0 15px rgba(234,88,12,0.5) !important; border-color: transparent !important; }
 
         /* ══════════════════════════════════════════ */
@@ -659,10 +661,10 @@
             background: linear-gradient(135deg, #007bff, #0056b3) !important;
             color: #ffffff !important;
             -webkit-text-fill-color: #ffffff !important;
-            padding: 0 14px !important;
-            height: 44px !important;
-            border-radius: 10px !important;
-            font-size: 20px !important;
+            padding: 0 18px !important;
+            height: 46px !important;
+            border-radius: 11px !important;
+            font-size: 22px !important;
             font-weight: 800 !important;
             font-family: 'Plus Jakarta Sans', sans-serif !important;
             box-shadow: 0 4px 14px rgba(0, 123, 255, 0.35) !important;
@@ -696,7 +698,7 @@
             color: #fff8f0 !important;
             -webkit-text-fill-color: #fff8f0 !important;
             font-family: 'Outfit', sans-serif !important;
-            font-size: 20px !important;
+            font-size: 22px !important;
             box-shadow: 0 4px 20px rgba(245,158,11,0.3) !important;
         }
 
@@ -707,7 +709,7 @@
             color: #00ff41 !important;
             -webkit-text-fill-color: #00ff41 !important;
             font-family: 'VT323', monospace !important;
-            font-size: 23px !important;
+            font-size: 25px !important;
             text-shadow: 0 0 10px rgba(0,255,65,0.6) !important;
             box-shadow: 0 0 15px rgba(0,255,65,0.25) !important;
         }
@@ -719,7 +721,7 @@
             color: #2c1810 !important;
             -webkit-text-fill-color: #2c1810 !important;
             font-family: 'Caveat', cursive !important;
-            font-size: 23px !important;
+            font-size: 25px !important;
             box-shadow: 3px 3px 0px rgba(44,24,16,0.15) !important;
         }
 
@@ -730,7 +732,7 @@
             color: #ff0050 !important;
             -webkit-text-fill-color: #ff0050 !important;
             font-family: 'Fredoka', sans-serif !important;
-            font-size: 19px !important;
+            font-size: 21px !important;
             box-shadow: 4px 4px 0px #ff0050 !important;
         }
 
@@ -741,7 +743,7 @@
             color: #be185d !important;
             -webkit-text-fill-color: #be185d !important;
             font-family: 'Quicksand', sans-serif !important;
-            font-size: 19px !important;
+            font-size: 21px !important;
             box-shadow: 0 4px 15px rgba(244,114,182,0.25) !important;
         }
 
@@ -752,7 +754,7 @@
             color: #0369a1 !important;
             -webkit-text-fill-color: #0369a1 !important;
             font-family: 'Kalam', cursive, sans-serif !important;
-            font-size: 20px !important;
+            font-size: 22px !important;
             font-weight: 700 !important;
             box-shadow: 0 6px 20px rgba(2, 132, 199, 0.25) !important;
             backdrop-filter: blur(10px) !important;
@@ -765,7 +767,7 @@
             color: #1a1a1a !important;
             -webkit-text-fill-color: #1a1a1a !important;
             font-family: 'Playfair Display', serif !important;
-            font-size: 18px !important;
+            font-size: 20px !important;
             font-variant: small-caps !important;
             box-shadow: none !important;
         }
@@ -777,7 +779,7 @@
             color: #ffffff !important;
             -webkit-text-fill-color: #ffffff !important;
             font-family: 'Patrick Hand', cursive !important;
-            font-size: 23px !important;
+            font-size: 25px !important;
             text-shadow: 0 0 6px rgba(255,255,255,0.25) !important;
             box-shadow: none !important;
         }
@@ -791,8 +793,8 @@
             z-index: 100 !important;
             margin-left: auto !important;
             flex-shrink: 0 !important;
-            width: 44px !important;
-            height: 44px !important;
+            width: 46px !important;
+            height: 46px !important;
         }
         .menu-trigger-btn {
             background: none;
@@ -802,8 +804,8 @@
             outline: none;
             transition: transform 0.2s ease, opacity 0.2s ease;
             display: block;
-            height: 44px;
-            width: 44px;
+            height: 46px;
+            width: 46px;
         }
         .menu-trigger-btn:hover {
             transform: scale(1.05);
@@ -813,16 +815,16 @@
             transform: scale(0.96);
         }
         .menu-trigger-img {
-            height: 44px;
-            width: 44px;
+            height: 46px;
+            width: 46px;
             object-fit: cover;
-            border-radius: 10px;
+            border-radius: 11px;
             box-shadow: 0 4px 14px rgba(0,0,0,0.18);
             display: block;
         }
         .floating-sub-items {
             position: absolute !important;
-            top: 50px !important;
+            top: 52px !important;
             left: 50% !important;
             transform: translateX(-50%) !important;
             right: auto !important;
@@ -994,7 +996,7 @@ function getThemeEmoji(key) {
 const result = document.getElementById("result");
 let globalReservations = [];
 let cloudHistory = {};
-let currentView = "cleaning"; // "cleaning" | "occupancy" | "snapshots" | "laundry"
+let currentView = "cleaning"; // "cleaning" | "occupancy" | "snapshots" | "laundry" | "settings" | "payments"
 let showHistoryMode = false;
 let selectedHouse = "achada";
 let showOccupancyStats = false;
@@ -1006,6 +1008,10 @@ let showLaundryHistory = false;
 let showAddDropOffForm = false;
 let showAddPickUpForm = false;
 let showRoomConfigModal = false;
+
+// Estados para Gestão de Pagamentos & Horas
+let showPaymentsHistory = false;
+let editingWorkId = null;
 
 // Proteção para nunca gravar na cloud se o histórico não carregou
 let historyLoadedOk = false;
@@ -1395,6 +1401,7 @@ function renderNavigation() {
     const isCleaning = currentView === "cleaning";
     const isOccupancy = currentView === "occupancy";
     const isLaundry = currentView === "laundry";
+    const isPayments = currentView === "payments";
     const isSnapshots = currentView === "snapshots";
     const isSettings = currentView === "settings";
     const themeEmoji = getThemeEmoji(currentTheme);
@@ -1430,12 +1437,11 @@ function renderNavigation() {
 
     if (currentTheme === "outono") {
         navButtonsHtml = `
-            <div style="margin-bottom: 24px; width: 100%; display: block; clear: both;">
-                <div style="display: inline-flex; background: rgba(255,255,255,0.04); padding: 5px; border-radius: 16px; border: 1px solid rgba(245,158,11,0.2); gap: 4px; flex-wrap: wrap;">
-                    <button onclick="window.switchMainView('cleaning')" class="segment-btn ${isCleaning?'active-cleaning':''}">🧹 Limpezas</button>
-                    <button onclick="window.switchMainView('occupancy')" class="segment-btn ${isOccupancy?'active-occupancy':''}">📊 Disponibilidade</button>
-                    <button onclick="window.switchMainView('laundry')" class="segment-btn ${isLaundry?'active-laundry':''}">🧺 Stock Lavandaria</button>
-                </div>
+            <div style="margin-bottom: 24px; width: 100%; display: flex; flex-direction: column; gap: 8px; clear: both;">
+                <button onclick="window.switchMainView('cleaning')" class="segment-btn ${isCleaning?'active-cleaning':''}">🧹 Limpezas</button>
+                <button onclick="window.switchMainView('occupancy')" class="segment-btn ${isOccupancy?'active-occupancy':''}">📊 Disponibilidade</button>
+                <button onclick="window.switchMainView('laundry')" class="segment-btn ${isLaundry?'active-laundry':''}">🧺 Stock Lavandaria</button>
+                <button onclick="window.switchMainView('payments')" class="segment-btn ${isPayments?'active-payments':''}">💶 Pagamentos</button>
             </div>`;
     } else {
         navButtonsHtml = `
@@ -1443,6 +1449,7 @@ function renderNavigation() {
                 <button onclick="window.switchMainView('cleaning')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #007bff; background-color: ${isCleaning?'#007bff':'#ffffff'}; color: ${isCleaning?'#ffffff':'#007bff'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">🧹 Plano de Limpezas</button>
                 <button onclick="window.switchMainView('occupancy')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #28a745; background-color: ${isOccupancy?'#28a745':'#ffffff'}; color: ${isOccupancy?'#ffffff':'#28a745'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">📊 Disponibilidade da Casa</button>
                 <button onclick="window.switchMainView('laundry')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #0284c7; background-color: ${isLaundry?'#0284c7':'#ffffff'}; color: ${isLaundry?'#ffffff':'#0284c7'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">🧺 Stock Lavandaria</button>
+                <button onclick="window.switchMainView('payments')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #8b5cf6; background-color: ${isPayments?'#8b5cf6':'#ffffff'}; color: ${isPayments?'#ffffff':'#8b5cf6'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">💶 Pagamentos</button>
             </div>`;
     }
 
@@ -1460,6 +1467,7 @@ function renderCurrentView() {
     else if (currentView === "snapshots") showSnapshotsPlan();
     else if (currentView === "laundry") showLaundryStockView();
     else if (currentView === "settings") showSettingsView();
+    else if (currentView === "payments") showPaymentsView();
 }
 
 window.toggleSnapshots = function() {
@@ -1527,6 +1535,16 @@ async function fetchCloudHistory() {
         cloudHistory["_blockedDates"] = blockedDates;
         try { localStorage.setItem("al_blocked_dates", JSON.stringify(blockedDates)); } catch(e) {}
 
+        // Sincroniza dados de pagamentos/horas da cloud
+        if (cloudHistory["_payroll"] && typeof cloudHistory["_payroll"] === 'object') {
+            try { localStorage.setItem("al_payroll_backup", JSON.stringify(cloudHistory["_payroll"])); } catch(e) {}
+        } else {
+            try {
+                const localPayroll = JSON.parse(localStorage.getItem("al_payroll_backup") || 'null');
+                if (localPayroll) cloudHistory["_payroll"] = localPayroll;
+            } catch(e) {}
+        }
+
         // Regista o acesso do dispositivo atual e envia para a Cloud imediatamente
         logDeviceAccess();
         saveToCloudHistory(cloudHistory);
@@ -1539,6 +1557,10 @@ async function fetchCloudHistory() {
                 let mergedBlocked = new Set(blockedDates);
                 cloudHistory["_blockedDates"].forEach(d => mergedBlocked.add(d));
                 blockedDates = Array.from(mergedBlocked).sort();
+            }
+            if (!cloudHistory["_payroll"]) {
+                const localPayroll = JSON.parse(localStorage.getItem("al_payroll_backup") || 'null');
+                if (localPayroll) cloudHistory["_payroll"] = localPayroll;
             }
         } catch(err) { cloudHistory = {}; }
         historyLoadedOk = false;
@@ -1986,11 +2008,11 @@ function showCleaningPlan() {
         ? '🚫 Fechar Dias Bloqueados'
         : `🚫 Dias Bloqueados${futureBlocked.length > 0 ? ` (${futureBlocked.length} ativos)` : ''}`;
     const blockedBtnStyle = showBlockedDatesPanel || futureBlocked.length > 0
-        ? 'border: 1px solid #dc3545; background-color: #dc3545; color: white;'
-        : 'border: 1px solid #6c757d; background-color: #6c757d; color: white;';
+        ? 'border: 2px solid #dc3545; background-color: #dc3545; color: white; box-shadow: 0 3px 8px rgba(220,53,69,0.3);'
+        : 'border: 2px solid #dc3545; background-color: rgba(220,53,69,0.06); color: #dc3545;';
 
     html += `<div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-        <button onclick="window.toggleHistoryView()" style="padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px; border: 1px solid #6c757d; background-color: #6c757d; color: white; font-weight: bold;">
+        <button onclick="window.toggleHistoryView()" style="padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px; border: 1.5px solid #10b981; background: linear-gradient(135deg, #10b981, #059669); color: white; font-weight: bold; box-shadow: 0 3px 8px rgba(16,185,129,0.25);">
             ${showHistoryMode ? "📅 Ver Próximas Limpezas" : "📜 Ver Dias Anteriores"}
         </button>
         <button onclick="window.toggleBlockedDatesPanel()" style="padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px; font-weight: bold; ${blockedBtnStyle}">
@@ -3040,6 +3062,485 @@ function showSettingsView() {
     }
 
     html += `</div>`;
+    result.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════
+// GESTÃO DE PAGAMENTOS & HORAS DE TRABALHO 💶
+// ══════════════════════════════════════════════════
+function getPayrollData() {
+    if (!cloudHistory["_payroll"] || typeof cloudHistory["_payroll"] !== 'object' || Array.isArray(cloudHistory["_payroll"])) {
+        try {
+            cloudHistory["_payroll"] = JSON.parse(localStorage.getItem("al_payroll_backup") || '{"ratePerHour":11,"pendingWork":[],"settlements":[]}');
+        } catch(e) {
+            cloudHistory["_payroll"] = { ratePerHour: 11, pendingWork: [], settlements: [] };
+        }
+    }
+    if (typeof cloudHistory["_payroll"].ratePerHour !== 'number') cloudHistory["_payroll"].ratePerHour = 11;
+    if (!Array.isArray(cloudHistory["_payroll"].pendingWork)) cloudHistory["_payroll"].pendingWork = [];
+    if (!Array.isArray(cloudHistory["_payroll"].settlements)) cloudHistory["_payroll"].settlements = [];
+    return cloudHistory["_payroll"];
+}
+
+window.addWorkEntry = function() {
+    const dateInput = document.getElementById('al-work-date-input');
+    const hoursInput = document.getElementById('al-work-hours-input');
+    const noteInput = document.getElementById('al-work-note-input');
+
+    if (!dateInput || !hoursInput) return;
+    const dk = dateInput.value;
+    if (!dk) {
+        alert("Por favor, seleciona a data do trabalho.");
+        return;
+    }
+
+    const rawHours = hoursInput.value.replace(',', '.').trim();
+    const hours = parseFloat(rawHours);
+    if (isNaN(hours) || hours <= 0) {
+        alert("Por favor, introduz um número de horas válido (ex: 2,5 ou 4).");
+        return;
+    }
+
+    const note = noteInput ? noteInput.value.trim() : "";
+    const pData = getPayrollData();
+    const rate = pData.ratePerHour || 11;
+    const amount = Math.round(hours * rate * 100) / 100;
+
+    const newEntry = {
+        id: "work_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
+        dateKey: dk,
+        hours: hours,
+        rate: rate,
+        amount: amount,
+        note: note,
+        createdAt: new Date().toISOString()
+    };
+
+    pData.pendingWork.push(newEntry);
+    pData.pendingWork.sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+
+    try { localStorage.setItem("al_payroll_backup", JSON.stringify(pData)); } catch(e) {}
+    if (historyLoadedOk) saveToCloudHistory(cloudHistory);
+
+    showPaymentsView();
+};
+
+window.startEditWork = function(workId) {
+    editingWorkId = workId;
+    showPaymentsView();
+};
+
+window.cancelEditWork = function() {
+    editingWorkId = null;
+    showPaymentsView();
+};
+
+window.saveWorkEntry = function(workId) {
+    const dateInput = document.getElementById(`al-edit-date-${workId}`);
+    const hoursInput = document.getElementById(`al-edit-hours-${workId}`);
+    const noteInput = document.getElementById(`al-edit-note-${workId}`);
+    if (!dateInput || !hoursInput) return;
+
+    const dk = dateInput.value;
+    const rawHours = hoursInput.value.replace(',', '.').trim();
+    const hours = parseFloat(rawHours);
+    if (!dk || isNaN(hours) || hours <= 0) {
+        alert("Por favor, introduz valores válidos.");
+        return;
+    }
+
+    const note = noteInput ? noteInput.value.trim() : "";
+    const pData = getPayrollData();
+    const item = pData.pendingWork.find(w => w.id === workId);
+    if (item) {
+        item.dateKey = dk;
+        item.hours = hours;
+        item.amount = Math.round(hours * (item.rate || pData.ratePerHour || 11) * 100) / 100;
+        item.note = note;
+        pData.pendingWork.sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+    }
+
+    editingWorkId = null;
+    try { localStorage.setItem("al_payroll_backup", JSON.stringify(pData)); } catch(e) {}
+    if (historyLoadedOk) saveToCloudHistory(cloudHistory);
+    showPaymentsView();
+};
+
+window.deleteWorkEntry = function(workId) {
+    if (!confirm("Tens a certeza de que queres apagar este registo de horas?")) return;
+    const pData = getPayrollData();
+    pData.pendingWork = pData.pendingWork.filter(w => w.id !== workId);
+    try { localStorage.setItem("al_payroll_backup", JSON.stringify(pData)); } catch(e) {}
+    if (historyLoadedOk) saveToCloudHistory(cloudHistory);
+    showPaymentsView();
+};
+
+window.settleAllPayments = function() {
+    const pData = getPayrollData();
+    if (pData.pendingWork.length === 0) {
+        alert("Não existem horas pendentes para liquidar.");
+        return;
+    }
+
+    const totalHours = pData.pendingWork.reduce((sum, w) => sum + (parseFloat(w.hours) || 0), 0);
+    const totalAmount = pData.pendingWork.reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
+    const formattedAmount = totalAmount.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+    const formattedHours = (Math.round(totalHours * 100) / 100).toString().replace('.', ',');
+
+    if (!confirm(`Confirmas a liquidação total de ${formattedAmount} correspondente a ${formattedHours} horas acumuladas?\n\nEste lote será arquivado no Histórico de Pagamentos com todos os dias detalhados.`)) {
+        return;
+    }
+
+    const now = new Date();
+    const newSettlement = {
+        id: "settle_" + Date.now(),
+        settledDate: formatDateKey(now),
+        settledTimestamp: now.toISOString(),
+        rate: pData.ratePerHour || 11,
+        totalHours: Math.round(totalHours * 100) / 100,
+        totalAmount: Math.round(totalAmount * 100) / 100,
+        items: [...pData.pendingWork]
+    };
+
+    pData.settlements.unshift(newSettlement);
+    pData.pendingWork = [];
+
+    try { localStorage.setItem("al_payroll_backup", JSON.stringify(pData)); } catch(e) {}
+    if (historyLoadedOk) saveToCloudHistory(cloudHistory);
+
+    showPaymentsHistory = true;
+    showPaymentsView();
+};
+
+window.reopenSettlement = function(settleId) {
+    if (!confirm("Queres reabrir este pagamento? Todos os dias deste pagamento voltarão para as horas pendentes a pagar.")) return;
+    const pData = getPayrollData();
+    const settle = pData.settlements.find(s => s.id === settleId);
+    if (!settle) return;
+
+    if (Array.isArray(settle.items)) {
+        pData.pendingWork.push(...settle.items);
+        pData.pendingWork.sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+    }
+    pData.settlements = pData.settlements.filter(s => s.id !== settleId);
+
+    try { localStorage.setItem("al_payroll_backup", JSON.stringify(pData)); } catch(e) {}
+    if (historyLoadedOk) saveToCloudHistory(cloudHistory);
+
+    showPaymentsHistory = false;
+    showPaymentsView();
+};
+
+window.deleteSettlement = function(settleId) {
+    if (!confirm("Tens a certeza de que queres apagar permanentemente este registo histórico de pagamento?")) return;
+    const pData = getPayrollData();
+    pData.settlements = pData.settlements.filter(s => s.id !== settleId);
+
+    try { localStorage.setItem("al_payroll_backup", JSON.stringify(pData)); } catch(e) {}
+    if (historyLoadedOk) saveToCloudHistory(cloudHistory);
+    showPaymentsView();
+};
+
+window.togglePaymentsTab = function(historyMode) {
+    showPaymentsHistory = !!historyMode;
+    showPaymentsView();
+};
+
+window.onWorkHoursInput = function(val) {
+    const preview = document.getElementById('al-work-calc-preview');
+    if (!preview) return;
+    const raw = (val || '').replace(',', '.').trim();
+    const h = parseFloat(raw);
+    if (!isNaN(h) && h > 0) {
+        const amt = (h * 11).toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+        preview.innerText = `💡 Previsão: ${val} h × 11,00 €/h = ${amt}`;
+    } else {
+        preview.innerText = '';
+    }
+};
+
+function showPaymentsView() {
+    let html = renderNavigation();
+    const pData = getPayrollData();
+    const rate = pData.ratePerHour || 11;
+    const pendingList = pData.pendingWork || [];
+    const settlementsList = pData.settlements || [];
+
+    const totalPendingHours = pendingList.reduce((sum, w) => sum + (parseFloat(w.hours) || 0), 0);
+    const totalPendingAmount = pendingList.reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
+
+    const formattedPendingAmount = totalPendingAmount.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+    const formattedPendingHours = (Math.round(totalPendingHours * 100) / 100).toString().replace('.', ',');
+
+    const totalSettledAmount = settlementsList.reduce((sum, s) => sum + (parseFloat(s.totalAmount) || 0), 0);
+    const formattedSettledAmount = totalSettledAmount.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+
+    const todayStr = formatDateKey(new Date());
+
+    html += `
+        <div style="margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 6px;">
+                <h1 style="margin: 0; font-size: 26px;">💶 Gestão de Pagamentos & Horas</h1>
+                <div style="background: rgba(139,92,246,0.1); border: 1.5px solid rgba(139,92,246,0.3); padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; color: #7c3aed;">
+                    Tarifa: <strong>11,00 € / hora</strong>
+                </div>
+            </div>
+            <div style="font-size: 13px; color: #666;">
+                Registo de horas de trabalho, cálculo automático de valores a pagar e histórico de liquidações.
+            </div>
+        </div>
+
+        <!-- Cartões de Resumo no Topo -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 24px;">
+            <div style="background: linear-gradient(135deg, rgba(239,68,68,0.08), rgba(245,158,11,0.08)); border: 2px solid ${totalPendingAmount > 0 ? '#ef4444' : '#10b981'}; border-radius: 16px; padding: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.04);">
+                <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: ${totalPendingAmount > 0 ? '#dc2626' : '#059669'};">
+                    ${totalPendingAmount > 0 ? '⚠️ Total a Dever (Pendente)' : '✅ Sem Valores a Dever'}
+                </div>
+                <div style="font-size: 30px; font-weight: 900; color: ${totalPendingAmount > 0 ? '#dc2626' : '#059669'}; margin: 6px 0 2px 0;">
+                    ${formattedPendingAmount}
+                </div>
+                <div style="font-size: 13px; opacity: 0.8;">
+                    <strong>${formattedPendingHours}</strong> horas de trabalho acumuladas
+                </div>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.7); border: 1px solid rgba(0,0,0,0.1); border-radius: 16px; padding: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+                <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #6d28d9;">
+                    📜 Já Liquidado no Histórico
+                </div>
+                <div style="font-size: 30px; font-weight: 900; color: #6d28d9; margin: 6px 0 2px 0;">
+                    ${formattedSettledAmount}
+                </div>
+                <div style="font-size: 13px; opacity: 0.8;">
+                    <strong>${settlementsList.length}</strong> pagamento${settlementsList.length !== 1 ? 's' : ''} liquidado${settlementsList.length !== 1 ? 's' : ''}
+                </div>
+            </div>
+        </div>
+
+        <!-- Separadores / Tabs -->
+        <div style="display: flex; gap: 10px; margin-bottom: 22px; border-bottom: 2px solid rgba(0,0,0,0.06); padding-bottom: 12px; flex-wrap: wrap;">
+            <button onclick="window.togglePaymentsTab(false)"
+                style="padding: 10px 20px; font-size: 14px; font-weight: bold; cursor: pointer; border-radius: 10px; border: none; transition: all 0.2s ease; ${!showPaymentsHistory ? 'background: #8b5cf6; color: white; box-shadow: 0 4px 12px rgba(139,92,246,0.35);' : 'background: rgba(0,0,0,0.05); color: #555;'}">
+                ⏳ Horas a Pagar (${pendingList.length})
+            </button>
+            <button onclick="window.togglePaymentsTab(true)"
+                style="padding: 10px 20px; font-size: 14px; font-weight: bold; cursor: pointer; border-radius: 10px; border: none; transition: all 0.2s ease; ${showPaymentsHistory ? 'background: #8b5cf6; color: white; box-shadow: 0 4px 12px rgba(139,92,246,0.35);' : 'background: rgba(0,0,0,0.05); color: #555;'}">
+                📜 Histórico de Pagamentos (${settlementsList.length})
+            </button>
+        </div>
+    `;
+
+    if (!showPaymentsHistory) {
+        // ═══════════════════════════════════════════════
+        // TAB 1: REGISTO DE HORAS & PENDENTES
+        // ═══════════════════════════════════════════════
+        html += `
+            <!-- Formulário de Adicionar Dia de Trabalho -->
+            <div style="border: 2px solid #8b5cf6; border-radius: 16px; padding: 20px; margin-bottom: 26px; background: rgba(139,92,246,0.03); box-shadow: 0 4px 15px rgba(139,92,246,0.06);">
+                <div style="font-size: 16px; font-weight: bold; color: #7c3aed; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                    <span>➕ Registar Dia de Trabalho</span>
+                    <span style="font-size: 12px; font-weight: normal; color: #666;">(11 € / hora)</span>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #444;">📅 Data do Trabalho:</label>
+                        <input type="date" id="al-work-date-input" value="${todayStr}"
+                            style="padding: 10px 14px; border: 1.5px solid #ccc; border-radius: 10px; font-size: 14px; cursor: pointer;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #444;">⏱️ Número de Horas (ex: 2,5 ou 4):</label>
+                        <input type="text" id="al-work-hours-input" placeholder="Ex: 2,5"
+                            oninput="window.onWorkHoursInput(this.value)"
+                            onkeydown="if(event.key==='Enter') window.addWorkEntry()"
+                            style="padding: 10px 14px; border: 1.5px solid #ccc; border-radius: 10px; font-size: 14px; width: 140px; font-weight: bold;">
+                    </div>
+                    <div style="flex-grow: 1; min-width: 180px;">
+                        <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #444;">📝 Notas / Descrição (opcional):</label>
+                        <input type="text" id="al-work-note-input" placeholder="Ex: Limpeza Achada 1 e Impasse"
+                            onkeydown="if(event.key==='Enter') window.addWorkEntry()"
+                            style="padding: 10px 14px; border: 1.5px solid #ccc; border-radius: 10px; font-size: 14px; width: 100%; box-sizing: border-box;">
+                    </div>
+                    <div>
+                        <button onclick="window.addWorkEntry()"
+                            style="padding: 10px 22px; font-size: 14px; cursor: pointer; border-radius: 10px; border: none; background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; font-weight: bold; box-shadow: 0 4px 14px rgba(139,92,246,0.35);">
+                            ➕ Adicionar
+                        </button>
+                    </div>
+                </div>
+                <div id="al-work-calc-preview" style="font-size: 13px; font-weight: 600; color: #7c3aed; margin-top: 10px; min-height: 18px;"></div>
+            </div>
+
+            <!-- Botão de Ação Rápida: Já Paguei Tudo -->
+            ${pendingList.length > 0 ? `
+                <div style="margin-bottom: 22px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; background: rgba(16,185,129,0.06); border: 1.5px dashed #10b981; border-radius: 14px; padding: 14px 18px;">
+                    <div>
+                        <strong style="font-size: 15px; color: #059669;">💰 Desejas fazer o acerto de contas?</strong>
+                        <div style="font-size: 12px; color: #555;">Clica para marcar todas as ${formattedPendingHours} horas (${formattedPendingAmount}) como pagas e arquivar no histórico.</div>
+                    </div>
+                    <button onclick="window.settleAllPayments()"
+                        style="padding: 12px 24px; font-size: 15px; cursor: pointer; border-radius: 12px; border: none; background: linear-gradient(135deg, #10b981, #059669); color: white; font-weight: bold; box-shadow: 0 4px 15px rgba(16,185,129,0.35);">
+                        ✓ Já Paguei Tudo (${formattedPendingAmount})
+                    </button>
+                </div>
+            ` : ''}
+
+            <!-- Lista de Dias de Trabalho Pendentes -->
+            <h2 style="font-size: 19px; margin: 0 0 14px 0; color: #333;">📋 Dias de Trabalho Acumulados (Por Pagar)</h2>
+        `;
+
+        if (pendingList.length === 0) {
+            html += `
+                <div style="text-align: center; padding: 40px 20px; border: 2px dashed rgba(0,0,0,0.1); border-radius: 16px; background: rgba(255,255,255,0.4); margin-bottom: 25px;">
+                    <span style="font-size: 42px;">✨</span>
+                    <div style="font-size: 16px; font-weight: bold; margin-top: 8px; color: #333;">Sem horas pendentes de pagamento!</div>
+                    <div style="font-size: 13px; color: #666; margin-top: 4px;">Podes registar novos dias de trabalho no formulário acima.</div>
+                </div>
+            `;
+        } else {
+            html += `<div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px;">`;
+            pendingList.forEach(item => {
+                const isEditing = editingWorkId === item.id;
+                const d = parseDateKey(item.dateKey);
+                const dayLabel = d.toLocaleDateString("pt-PT", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+                const capitalizedDay = dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1);
+                const formattedHours = item.hours.toString().replace('.', ',');
+                const formattedItemAmount = (item.amount || (item.hours * 11)).toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+
+                if (isEditing) {
+                    html += `
+                        <div style="border: 2px solid #8b5cf6; border-radius: 14px; padding: 14px 18px; background: #fff; box-shadow: 0 4px 15px rgba(139,92,246,0.15);">
+                            <div style="font-size: 14px; font-weight: bold; color: #7c3aed; margin-bottom: 10px;">✏️ Editar Registo de Trabalho</div>
+                            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px;">
+                                <input type="date" id="al-edit-date-${item.id}" value="${item.dateKey}"
+                                    style="padding: 8px 12px; border: 1.5px solid #ccc; border-radius: 8px; font-size: 13px;">
+                                <input type="text" id="al-edit-hours-${item.id}" value="${formattedHours}" placeholder="Horas"
+                                    style="padding: 8px 12px; border: 1.5px solid #ccc; border-radius: 8px; font-size: 13px; width: 100px; font-weight: bold;">
+                                <input type="text" id="al-edit-note-${item.id}" value="${item.note || ''}" placeholder="Notas (opcional)"
+                                    style="padding: 8px 12px; border: 1.5px solid #ccc; border-radius: 8px; font-size: 13px; flex-grow: 1;">
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button onclick="window.saveWorkEntry('${item.id}')"
+                                    style="padding: 6px 14px; font-size: 13px; cursor: pointer; border-radius: 6px; border: none; background: #10b981; color: white; font-weight: bold;">
+                                    💾 Guardar
+                                </button>
+                                <button onclick="window.cancelEditWork()"
+                                    style="padding: 6px 12px; font-size: 13px; cursor: pointer; border-radius: 6px; border: 1px solid #ccc; background: #f8f9fa; color: #555;">
+                                    Cancelar
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div style="border: 1px solid rgba(0,0,0,0.1); border-radius: 14px; padding: 14px 18px; background: rgba(255,255,255,0.85); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                    <strong style="font-size: 15px; color: #111;">📅 ${capitalizedDay}</strong>
+                                    <span style="background: rgba(139,92,246,0.12); color: #7c3aed; font-weight: 800; padding: 2px 10px; border-radius: 12px; font-size: 13px;">
+                                        ⏱️ ${formattedHours} h
+                                    </span>
+                                    <span style="font-size: 14px; font-weight: 800; color: #059669;">
+                                        = ${formattedItemAmount}
+                                    </span>
+                                </div>
+                                ${item.note ? `<div style="font-size: 12px; color: #666; margin-top: 4px; font-style: italic;">📝 ${item.note}</div>` : ''}
+                            </div>
+                            <div style="display: flex; gap: 6px;">
+                                <button onclick="window.startEditWork('${item.id}')" title="Corrigir valores deste dia"
+                                    style="padding: 6px 12px; font-size: 12px; cursor: pointer; border-radius: 8px; border: 1px solid #6c757d; background: transparent; color: #495057; font-weight: bold;">
+                                    ✏️ Corrigir
+                                </button>
+                                <button onclick="window.deleteWorkEntry('${item.id}')" title="Apagar este registo"
+                                    style="padding: 6px 12px; font-size: 12px; cursor: pointer; border-radius: 8px; border: 1px solid #dc3545; background: transparent; color: #dc3545; font-weight: bold;">
+                                    🗑️ Apagar
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            html += `</div>`;
+        }
+    } else {
+        // ═══════════════════════════════════════════════
+        // TAB 2: HISTÓRICO DE PAGAMENTOS LIQUIDADOS (GRUPOS)
+        // ═══════════════════════════════════════════════
+        html += `<h2 style="font-size: 19px; margin: 0 0 14px 0; color: #333;">📜 Histórico de Pagamentos Realizados</h2>`;
+
+        if (settlementsList.length === 0) {
+            html += `
+                <div style="text-align: center; padding: 40px 20px; border: 2px dashed rgba(0,0,0,0.1); border-radius: 16px; background: rgba(255,255,255,0.4); margin-bottom: 25px;">
+                    <span style="font-size: 42px;">📜</span>
+                    <div style="font-size: 16px; font-weight: bold; margin-top: 8px; color: #333;">Ainda não foram arquivados pagamentos totais.</div>
+                    <div style="font-size: 13px; color: #666; margin-top: 4px;">Quando clicares em "Já Paguei Tudo" nas horas a pagar, o grupo liquidado aparecerá aqui.</div>
+                </div>
+            `;
+        } else {
+            html += `<div style="display: flex; flex-direction: column; gap: 18px; margin-bottom: 25px;">`;
+            settlementsList.forEach(settle => {
+                const sDate = parseDateKey(settle.settledDate);
+                const sDateLabel = sDate.toLocaleDateString("pt-PT", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+                const sCapitalized = sDateLabel.charAt(0).toUpperCase() + sDateLabel.slice(1);
+                const formattedSettleAmount = settle.totalAmount.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+                const formattedSettleHours = settle.totalHours.toString().replace('.', ',');
+                const items = settle.items || [];
+
+                let itemsRowsHtml = '';
+                items.forEach(it => {
+                    const itDate = parseDateKey(it.dateKey);
+                    const itDateLabel = itDate.toLocaleDateString("pt-PT", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+                    const itHours = it.hours.toString().replace('.', ',');
+                    const itAmount = (it.amount || (it.hours * (settle.rate || 11))).toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+
+                    itemsRowsHtml += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 13px;">
+                            <div>
+                                <span>📅 ${itDateLabel}</span>
+                                ${it.note ? `<span style="color: #666; font-size: 12px; margin-left: 8px;">(${it.note})</span>` : ''}
+                            </div>
+                            <div style="display: flex; gap: 14px; align-items: center;">
+                                <span style="font-weight: 600; color: #7c3aed;">${itHours} h</span>
+                                <strong style="color: #059669;">${itAmount}</strong>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `
+                    <div style="border: 1.5px solid rgba(16,185,129,0.4); border-radius: 16px; padding: 18px; background: rgba(255,255,255,0.9); box-shadow: 0 4px 14px rgba(16,185,129,0.06); border-left: 6px solid #10b981;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="background: #10b981; color: white; padding: 2px 8px; border-radius: 8px; font-size: 12px; font-weight: bold;">PAGO</span>
+                                    <strong style="font-size: 16px; color: #111;">💰 Pagamento de ${sCapitalized}</strong>
+                                </div>
+                                <div style="font-size: 13px; color: #666; margin-top: 3px;">
+                                    Total pago: <strong style="color: #059669; font-size: 15px;">${formattedSettleAmount}</strong> • <strong>${formattedSettleHours}</strong> horas (${items.length} dia${items.length !== 1 ? 's' : ''})
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 6px;">
+                                <button onclick="window.reopenSettlement('${settle.id}')" title="Reabrir este pagamento e devolver os dias para as horas a pagar"
+                                    style="padding: 6px 12px; font-size: 12px; cursor: pointer; border-radius: 8px; border: 1px solid #7c3aed; background: rgba(124,58,237,0.08); color: #7c3aed; font-weight: bold;">
+                                    ↩️ Reabrir Horas
+                                </button>
+                                <button onclick="window.deleteSettlement('${settle.id}')" title="Remover este registo histórico"
+                                    style="padding: 6px 12px; font-size: 12px; cursor: pointer; border-radius: 8px; border: 1px solid #dc3545; background: transparent; color: #dc3545; font-weight: bold;">
+                                    🗑️ Apagar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div style="background: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.06); border-radius: 12px; padding: 12px 14px; margin-top: 10px;">
+                            <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: #555; margin-bottom: 6px; letter-spacing: 0.5px;">Dias incluídos neste pagamento:</div>
+                            ${itemsRowsHtml}
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        }
+    }
+
     result.innerHTML = html;
 }
 
