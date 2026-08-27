@@ -922,6 +922,21 @@ const ROOM_LINEN = {
     "Impasse 4":     { edredonCasal: 0, edredonSolteiro: 2, lencolCasal: 0, lencolSolteiro: 2, capaAlmofada: 2, toalhaGrande: 2, toalhaPequena: 3 }
 };
 
+const ROOM_BEDS_INFO = {
+    "Vizinho 1": { pt: "2 camas de solteiro coladas", es: "2 camas individuales juntas" },
+    "Vizinho 2": { pt: "1 cama de solteiro", es: "1 cama individual" },
+    "Vizinho 3": { pt: "1 cama de casal", es: "1 cama de matrimonio" },
+    "Achada 1":  { pt: "1 cama de casal", es: "1 cama de matrimonio" },
+    "Achada 2":  { pt: "1 cama de solteiro", es: "1 cama individual" },
+    "Achada 3":  { pt: "1 cama de casal", es: "1 cama de matrimonio" },
+    "Achada 4":  { pt: "1 cama de casal", es: "1 cama de matrimonio" },
+    "Achada 5":  { pt: "1 cama de casal", es: "1 cama de matrimonio" },
+    "Achada 6":  { pt: "3 camas de solteiro", es: "3 camas individuales" },
+    "Impasse 2": { pt: "1 cama de casal", es: "1 cama de matrimonio" },
+    "Impasse 3": { pt: "2 camas de solteiro", es: "2 camas individuales" },
+    "Impasse 4": { pt: "2 camas de solteiro", es: "2 camas individuales" }
+};
+
 const LINEN_ITEMS_DEF = [
     { key: "edredonCasal",    label: "Edredões Casal",     short: "Edredão Casal",    emoji: "🛏️" },
     { key: "edredonSolteiro", label: "Edredões Solteiro",  short: "Edredão Solteiro", emoji: "🛏️" },
@@ -1070,12 +1085,17 @@ window.removeBlockedDate = function(dk) {
 function getAppSettings() {
     if (!cloudHistory["_settings"] || typeof cloudHistory["_settings"] !== 'object') {
         let localInclude = localStorage.getItem("al_include_addresses");
+        let localShowBeds = localStorage.getItem("al_show_bed_types");
         cloudHistory["_settings"] = {
-            includeAddresses: localInclude !== null ? localInclude === 'true' : true
+            includeAddresses: localInclude !== null ? localInclude === 'true' : true,
+            showBedTypesOnScreen: localShowBeds !== null ? localShowBeds === 'true' : true
         };
     }
     if (cloudHistory["_settings"].includeAddresses === undefined) {
         cloudHistory["_settings"].includeAddresses = true;
+    }
+    if (cloudHistory["_settings"].showBedTypesOnScreen === undefined) {
+        cloudHistory["_settings"].showBedTypesOnScreen = true;
     }
     return cloudHistory["_settings"];
 }
@@ -1084,6 +1104,14 @@ window.toggleIncludeAddresses = function() {
     const settings = getAppSettings();
     settings.includeAddresses = !settings.includeAddresses;
     try { localStorage.setItem("al_include_addresses", String(settings.includeAddresses)); } catch(e) {}
+    if (historyLoadedOk) saveToCloudHistory(cloudHistory);
+    renderCurrentView();
+};
+
+window.toggleShowBedTypesOnScreen = function() {
+    const settings = getAppSettings();
+    settings.showBedTypesOnScreen = !settings.showBedTypesOnScreen;
+    try { localStorage.setItem("al_show_bed_types", String(settings.showBedTypesOnScreen)); } catch(e) {}
     if (historyLoadedOk) saveToCloudHistory(cloudHistory);
     renderCurrentView();
 };
@@ -2136,6 +2164,7 @@ function showCleaningPlan() {
             });
         }
 
+        const settings = getAppSettings();
         if (hasRooms) {
             day.rooms.sort((a,b)=>a.room.localeCompare(b.room)).forEach(clean => {
                 let hCo = clean.hasCheckout;
@@ -2153,13 +2182,23 @@ function showCleaningPlan() {
                     else if (hCi) { tPt=" (entrada hoje)"; tEs=" (entrada hoy)"; tH=" <b>(entrada hoje)</b>"; }
                 }
                 const em = (clean.urgent || (hCi && !showHistoryMode)) ? "⚠️" : "🧹";
-                cPt.push(`${em} ${clean.room}${tPt}`);
-                cEs.push(`${em} ${clean.room}${tEs}`);
-                rh += `${em} ${clean.room}${tH}<br>`;
+                const bedConfig = ROOM_BEDS_INFO[clean.room];
+                const bedPt = bedConfig ? ` (${bedConfig.pt})` : "";
+                const bedEs = bedConfig ? ` (${bedConfig.es})` : "";
+
+                // Ao copiar, inclui SEMPRE a configuração de camas em PT e ES
+                cPt.push(`${em} ${clean.room}${bedPt}${tPt}`);
+                cEs.push(`${em} ${clean.room}${bedEs}${tEs}`);
+
+                // No ecrã, mostra se a opção nas definições estiver ativada
+                const bedHtml = (settings.showBedTypesOnScreen && bedConfig)
+                    ? ` <span style="font-size: 13px; opacity: 0.8; font-weight: 600; color: #7c3aed;">(${bedConfig.pt})</span>`
+                    : "";
+
+                rh += `${em} ${clean.room}${bedHtml}${tH}<br>`;
             });
         }
 
-        const settings = getAppSettings();
         if (settings.includeAddresses) {
             cPt.push("");
             cPt.push("Endereço da minha casa: Impasse Romeiras 6");
@@ -2993,6 +3032,7 @@ function showSettingsView() {
     let html = renderNavigation();
     const settings = getAppSettings();
     const isIncludeOn = !!settings.includeAddresses;
+    const isShowBedsOn = settings.showBedTypesOnScreen !== false;
     const myDevId = getDeviceFingerprint();
     const devices = cloudHistory["_devices"] || {};
     const devKeys = Object.keys(devices);
@@ -3027,7 +3067,24 @@ function showSettingsView() {
             </div>
         </div>
 
-        <!-- Secção 2: Dispositivos Conectados (Últimos 10 min) -->
+        <!-- Secção 2: Mostrar Tipo de Camas no Ecrã -->
+        <div class="toggle-switch-container" style="margin-top: 14px;">
+            <div>
+                <div style="font-size: 16px; font-weight: bold; margin-bottom: 4px;">
+                    🛏️ Mostrar Tipo de Camas no Ecrã
+                </div>
+                <div style="font-size: 13px; opacity: 0.8; max-width: 550px; line-height: 1.4;">
+                    Quando <strong>Ligado</strong>, mostra à frente de cada quarto no plano de limpezas a informação das camas (ex: <em>1 cama de casal</em>, <em>2 camas de solteiro coladas</em>, etc.). <em>Ao copiar (PT/ES), esta informação é sempre incluída.</em>
+                </div>
+            </div>
+            <div>
+                <button onclick="window.toggleShowBedTypesOnScreen()" class="toggle-pill ${isShowBedsOn ? 'active' : 'inactive'}">
+                    ${isShowBedsOn ? '🟢 LIGADO' : '⚪ DESLIGADO'}
+                </button>
+            </div>
+        </div>
+
+        <!-- Secção 3: Dispositivos Conectados (Últimos 10 min) -->
         <div style="margin-top: 30px; margin-bottom: 25px;">
             <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 6px;">
                 <h2 style="margin: 0; font-size: 20px;">🟢 Dispositivos Conectados Agora (${activeDevKeys.length})</h2>
