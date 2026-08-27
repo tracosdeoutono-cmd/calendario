@@ -1605,8 +1605,22 @@ window.switchMainView = function(view) { currentView = view; if (currentView ===
 window.toggleHistoryView = function() { showHistoryMode = !showHistoryMode; showCleaningPlan(); };
 window.toggleOccupancyStats = function() { showOccupancyStats = !showOccupancyStats; if (!showOccupancyStats) showPastStatsMode = false; showOccupancyPlan(); };
 window.togglePastStats = function() { showPastStatsMode = !showPastStatsMode; showOccupancyPlan(); };
-window.selectHouse = function(house) { selectedHouse = house; showOccupancyPlan(); };
 window.selectSnapshot = function(dateKey) { selectedSnapshotDate = dateKey; showSnapshotsPlan(); };
+window.dismissReview = function(keyOrRoom) {
+    if (!cloudHistory["_reviews"] || typeof cloudHistory["_reviews"] !== 'object') return;
+    const reviews = cloudHistory["_reviews"];
+    let changed = false;
+    Object.keys(reviews).forEach(k => {
+        if (k === keyOrRoom || reviews[k]?.room === keyOrRoom || reviews[k]?.id === keyOrRoom) {
+            delete reviews[k];
+            changed = true;
+        }
+    });
+    if (changed) {
+        if (historyLoadedOk) saveToCloudHistory(cloudHistory);
+        renderCurrentView();
+    }
+};
 
 // ══════════════════════════════════════════════════
 // PERSISTÊNCIA NA CLOUD & LOCALSTORAGE
@@ -1858,16 +1872,44 @@ function syncCleaningPlan() {
         }
         const reviews = cloudHistory["_reviews"];
 
+        // Limpa revisões obsoletas, passadas ou inválidas
         Object.keys(reviews).forEach(k => {
             const rev = reviews[k];
-            if (!rev || !rev.targetDateKey) {
+            if (!rev || !rev.targetDateKey || !rev.room) {
                 delete reviews[k];
                 hasChanges = true;
                 return;
             }
-            if (rev.checkinKey && parseDateKey(rev.checkinKey) > parseDateKey(rev.cancelledOn || todayStr)) {
+            const targetDate = parseDateKey(rev.targetDateKey);
+            const cancelledDate = parseDateKey(rev.cancelledOn || todayStr);
+            const checkinDate = rev.checkinKey ? parseDateKey(rev.checkinKey) : null;
+            const checkoutDate = rev.originalCheckout ? parseDateKey(rev.originalCheckout) : null;
+
+            // 1. Se a data prevista de rever já passou, remove
+            if (targetDate < today) {
                 delete reviews[k];
                 hasChanges = true;
+                return;
+            }
+
+            // 2. Se o hóspede nunca chegou a entrar (checkin posterior ao cancelamento) ou já tinha saído (checkout anterior), remove
+            if (checkinDate && checkinDate > cancelledDate) {
+                delete reviews[k];
+                hasChanges = true;
+                return;
+            }
+            if (checkoutDate && checkoutDate < cancelledDate) {
+                delete reviews[k];
+                hasChanges = true;
+                return;
+            }
+
+            // 3. Se já houver nova reserva ativa a decorrer para esse quarto, não faz sentido manter aviso
+            const hasNewActive = globalReservations.some(r => r.room === rev.room && r.checkOut >= today);
+            if (hasNewActive) {
+                delete reviews[k];
+                hasChanges = true;
+                return;
             }
         });
 
@@ -1878,14 +1920,20 @@ function syncCleaningPlan() {
             if (cleanDate >= today) {
                 if (!activeCleanings[key]) {
                     const checkinDate = existing.checkinKey ? parseDateKey(existing.checkinKey) : null;
-                    const wasCurrentStay = checkinDate ? (checkinDate <= today) : (existing.checkoutKey === todayStr);
+                    const checkoutDate = existing.checkoutKey ? parseDateKey(existing.checkoutKey) : null;
 
-                    if (wasCurrentStay) {
+                    // CRITÉRIO FUNDAMENTAL: Só gera revisão se a estadia estava ATIVAMENTE a decorrer
+                    // (ou seja: checkin já feito <= hoje E saída prevista para >= hoje)
+                    // Se o check-in era no futuro (checkinDate > today), os hóspedes nunca entraram no quarto!
+                    const wasActivelyOccurringStay = checkinDate && checkoutDate && (checkinDate <= today) && (checkoutDate >= today);
+
+                    if (wasActivelyOccurringStay) {
                         let reviewDate = addDays(today, 1);
                         if (isSunday(reviewDate)) reviewDate = addDays(reviewDate, 1);
                         const reviewTargetKey = formatDateKey(reviewDate);
 
                         reviews[key] = {
+                            id: key,
                             room: existing.room,
                             checkinKey: existing.checkinKey || "",
                             targetDateKey: reviewTargetKey,
@@ -2080,11 +2128,19 @@ function showCleaningPlan() {
         const reviews = cloudHistory["_reviews"] || {};
         Object.keys(reviews).forEach(k => {
             const rev = reviews[k];
-            if (!rev || !rev.targetDateKey) return;
-            const d = parseDateKey(rev.targetDateKey);
-            if (d >= today) {
+            if (!rev || !rev.targetDateKey || !rev.room) return;
+            const targetDate = parseDateKey(rev.targetDateKey);
+            const cancelledDate = parseDateKey(rev.cancelledOn || todayStr);
+            const checkinDate = rev.checkinKey ? parseDateKey(rev.checkinKey) : null;
+            const checkoutDate = rev.originalCheckout ? parseDateKey(rev.originalCheckout) : null;
+
+            if (targetDate >= today) {
+                // Filtro estrito: só considera se o hóspede já tinha entrado no dia do cancelamento
+                if (checkinDate && checkinDate > cancelledDate) return;
+                if (checkoutDate && checkoutDate < cancelledDate) return;
+
                 const dk = rev.targetDateKey;
-                if (!grouped[dk]) grouped[dk] = { date: d, rooms: [], reviews: [] };
+                if (!grouped[dk]) grouped[dk] = { date: targetDate, rooms: [], reviews: [] };
                 if (!grouped[dk].reviews) grouped[dk].reviews = [];
                 if (!grouped[dk].reviews.some(r => r.room === rev.room)) {
                     grouped[dk].reviews.push(rev);
@@ -2160,7 +2216,15 @@ function showCleaningPlan() {
             day.reviews.forEach(rev => {
                 cPt.push(`🔍 Rever limpeza: ${rev.room} (estadia cancelada)`);
                 cEs.push(`🔍 Revisar limpieza: ${rev.room} (estancia cancelada)`);
-                rh += `<div style="margin-top: 4px; margin-bottom: 4px; font-size: 15px;">🔍 <b>Rever limpeza: ${rev.room}</b> <span style="font-size: 13px; color: #666;">(estadia cancelada)</span></div>`;
+                rh += `<div style="margin-top: 5px; margin-bottom: 5px; font-size: 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; background: rgba(245,158,11,0.08); border-left: 4px solid #f59e0b; padding: 6px 10px; border-radius: 6px;">
+                    <div>
+                        🔍 <b>Rever limpeza: ${rev.room}</b> <span style="font-size: 12px; color: #666;">(estadia cancelada após entrada)</span>
+                    </div>
+                    <button onclick="window.dismissReview('${rev.id || rev.room}')" title="Marcar como revisto / remover aviso"
+                        style="padding: 3px 8px; font-size: 11px; cursor: pointer; border-radius: 6px; border: 1px solid #10b981; background: #fff; color: #059669; font-weight: bold;">
+                        ✓ Rever Feito
+                    </button>
+                </div>`;
             });
         }
 
