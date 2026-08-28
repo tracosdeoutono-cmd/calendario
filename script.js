@@ -1605,6 +1605,7 @@ window.switchMainView = function(view) { currentView = view; if (currentView ===
 window.toggleHistoryView = function() { showHistoryMode = !showHistoryMode; showCleaningPlan(); };
 window.toggleOccupancyStats = function() { showOccupancyStats = !showOccupancyStats; if (!showOccupancyStats) showPastStatsMode = false; showOccupancyPlan(); };
 window.togglePastStats = function() { showPastStatsMode = !showPastStatsMode; showOccupancyPlan(); };
+window.selectHouse = function(house) { selectedHouse = house; showOccupancyPlan(); };
 window.selectSnapshot = function(dateKey) { selectedSnapshotDate = dateKey; showSnapshotsPlan(); };
 window.dismissReview = function(keyOrRoom) {
     if (!cloudHistory["_reviews"] || typeof cloudHistory["_reviews"] !== 'object') return;
