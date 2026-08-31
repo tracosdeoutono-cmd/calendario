@@ -3280,33 +3280,51 @@ function getPayrollData() {
 window.addWorkEntry = function() {
     const dateInput = document.getElementById('al-work-date-input');
     const hoursInput = document.getElementById('al-work-hours-input');
+    const moneyInput = document.getElementById('al-work-money-input');
     const noteInput = document.getElementById('al-work-note-input');
 
-    if (!dateInput || !hoursInput) return;
+    if (!dateInput) return;
     const dk = dateInput.value;
     if (!dk) {
-        alert("Por favor, seleciona a data do trabalho.");
+        alert("Por favor, seleciona a data do trabalho/registo.");
         return;
     }
 
-    const rawHours = hoursInput.value.replace(',', '.').trim();
-    const hours = parseFloat(rawHours);
-    if (isNaN(hours) || hours <= 0) {
-        alert("Por favor, introduz um número de horas válido (ex: 2,5 ou 4).");
+    const rawHours = hoursInput ? hoursInput.value.replace(',', '.').trim() : '';
+    const rawMoney = moneyInput ? moneyInput.value.replace(',', '.').trim() : '';
+
+    const hours = rawHours !== '' ? parseFloat(rawHours) : 0;
+    const money = rawMoney !== '' ? parseFloat(rawMoney) : 0;
+
+    const hasHours = rawHours !== '' && !isNaN(hours) && hours !== 0;
+    const hasMoney = rawMoney !== '' && !isNaN(money) && money !== 0;
+
+    if (rawHours !== '' && isNaN(hours)) {
+        alert("Por favor, introduz um número de horas válido (pode ser positivo ou negativo, ex: 2,5 ou -2).");
+        return;
+    }
+    if (rawMoney !== '' && isNaN(money)) {
+        alert("Por favor, introduz um valor em dinheiro válido (pode ser positivo ou negativo, ex: 20 ou -15).");
+        return;
+    }
+
+    if (!hasHours && !hasMoney) {
+        alert("Por favor, introduz o número de horas ou um valor em dinheiro (positivo ou negativo).");
         return;
     }
 
     const note = noteInput ? noteInput.value.trim() : "";
     const pData = getPayrollData();
     const rate = pData.ratePerHour || 11;
-    const amount = Math.round(hours * rate * 100) / 100;
+    const totalAmount = Math.round(((hours * rate) + money) * 100) / 100;
 
     const newEntry = {
         id: "work_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
         dateKey: dk,
-        hours: hours,
+        hours: hasHours ? hours : 0,
+        extraMoney: hasMoney ? money : 0,
         rate: rate,
-        amount: amount,
+        amount: totalAmount,
         note: note,
         createdAt: new Date().toISOString()
     };
@@ -3333,14 +3351,22 @@ window.cancelEditWork = function() {
 window.saveWorkEntry = function(workId) {
     const dateInput = document.getElementById(`al-edit-date-${workId}`);
     const hoursInput = document.getElementById(`al-edit-hours-${workId}`);
+    const moneyInput = document.getElementById(`al-edit-money-${workId}`);
     const noteInput = document.getElementById(`al-edit-note-${workId}`);
-    if (!dateInput || !hoursInput) return;
+    if (!dateInput) return;
 
     const dk = dateInput.value;
-    const rawHours = hoursInput.value.replace(',', '.').trim();
-    const hours = parseFloat(rawHours);
-    if (!dk || isNaN(hours) || hours <= 0) {
-        alert("Por favor, introduz valores válidos.");
+    const rawHours = hoursInput ? hoursInput.value.replace(',', '.').trim() : '';
+    const rawMoney = moneyInput ? moneyInput.value.replace(',', '.').trim() : '';
+
+    const hours = rawHours !== '' ? parseFloat(rawHours) : 0;
+    const money = rawMoney !== '' ? parseFloat(rawMoney) : 0;
+
+    const hasHours = rawHours !== '' && !isNaN(hours) && hours !== 0;
+    const hasMoney = rawMoney !== '' && !isNaN(money) && money !== 0;
+
+    if (!dk || (!hasHours && !hasMoney)) {
+        alert("Por favor, introduz valores válidos (número de horas ou valor em €).");
         return;
     }
 
@@ -3349,8 +3375,10 @@ window.saveWorkEntry = function(workId) {
     const item = pData.pendingWork.find(w => w.id === workId);
     if (item) {
         item.dateKey = dk;
-        item.hours = hours;
-        item.amount = Math.round(hours * (item.rate || pData.ratePerHour || 11) * 100) / 100;
+        item.hours = hasHours ? hours : 0;
+        item.extraMoney = hasMoney ? money : 0;
+        const rate = item.rate || pData.ratePerHour || 11;
+        item.amount = Math.round(((item.hours * rate) + item.extraMoney) * 100) / 100;
         item.note = note;
         pData.pendingWork.sort((a, b) => b.dateKey.localeCompare(a.dateKey));
     }
@@ -3441,18 +3469,91 @@ window.togglePaymentsTab = function(historyMode) {
     showPaymentsView();
 };
 
-window.onWorkHoursInput = function(val) {
+window.onWorkCalcInput = function() {
     const preview = document.getElementById('al-work-calc-preview');
+    const hoursInput = document.getElementById('al-work-hours-input');
+    const moneyInput = document.getElementById('al-work-money-input');
     if (!preview) return;
-    const raw = (val || '').replace(',', '.').trim();
-    const h = parseFloat(raw);
-    if (!isNaN(h) && h > 0) {
-        const amt = (h * 11).toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
-        preview.innerText = `💡 Previsão: ${val} h × 11,00 €/h = ${amt}`;
-    } else {
+
+    const rawHours = hoursInput ? hoursInput.value.replace(',', '.').trim() : '';
+    const rawMoney = moneyInput ? moneyInput.value.replace(',', '.').trim() : '';
+
+    const h = rawHours !== '' ? parseFloat(rawHours) : 0;
+    const m = rawMoney !== '' ? parseFloat(rawMoney) : 0;
+
+    const hasH = rawHours !== '' && !isNaN(h) && h !== 0;
+    const hasM = rawMoney !== '' && !isNaN(m) && m !== 0;
+
+    if (!hasH && !hasM) {
         preview.innerText = '';
+        return;
     }
+
+    const rate = 11;
+    const hoursPart = hasH ? (h * rate) : 0;
+    const total = hoursPart + (hasM ? m : 0);
+    const totalFmt = total.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+
+    let text = '💡 Previsão: ';
+    if (hasH && hasM) {
+        const hPartFmt = hoursPart.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+        const mFmt = (m >= 0 ? '+ ' : '- ') + Math.abs(m).toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+        text += `${rawHours} h (${hPartFmt}) ${mFmt} = ${totalFmt}`;
+    } else if (hasH) {
+        text += `${rawHours} h × 11,00 €/h = ${totalFmt}`;
+    } else if (hasM) {
+        text += `Valor em dinheiro = ${totalFmt}`;
+    }
+
+    preview.innerText = text;
 };
+window.onWorkHoursInput = window.onWorkCalcInput;
+
+function formatWorkItemLabelPT(item) {
+    const h = parseFloat(item.hours) || 0;
+    const m = parseFloat(item.extraMoney) || 0;
+    const amt = parseFloat(item.amount) !== undefined && !isNaN(parseFloat(item.amount))
+        ? parseFloat(item.amount)
+        : ((h * 11) + m);
+    const valStr = amt.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+
+    let detailStr = '';
+    if (h !== 0 && m !== 0) {
+        const hStr = h.toString().replace('.', ',');
+        const mStr = (m > 0 ? `+${m.toString().replace('.', ',')}` : m.toString().replace('.', ',')) + ' €';
+        detailStr = `${hStr}h (${mStr}) = ${valStr}`;
+    } else if (h !== 0) {
+        const hStr = h.toString().replace('.', ',');
+        detailStr = `${hStr}h = ${valStr}`;
+    } else {
+        detailStr = `Ajuste = ${valStr}`;
+    }
+
+    return detailStr;
+}
+
+function formatWorkItemLabelES(item) {
+    const h = parseFloat(item.hours) || 0;
+    const m = parseFloat(item.extraMoney) || 0;
+    const amt = parseFloat(item.amount) !== undefined && !isNaN(parseFloat(item.amount))
+        ? parseFloat(item.amount)
+        : ((h * 11) + m);
+    const valStr = amt.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' });
+
+    let detailStr = '';
+    if (h !== 0 && m !== 0) {
+        const hStr = h.toString().replace('.', ',');
+        const mStr = (m > 0 ? `+${m.toString().replace('.', ',')}` : m.toString().replace('.', ',')) + ' €';
+        detailStr = `${hStr}h (${mStr}) = ${valStr}`;
+    } else if (h !== 0) {
+        const hStr = h.toString().replace('.', ',');
+        detailStr = `${hStr}h = ${valStr}`;
+    } else {
+        detailStr = `Ajuste = ${valStr}`;
+    }
+
+    return detailStr;
+}
 
 function buildPendingWorkTextPT(pendingList, totalHours, totalAmount) {
     if (pendingList.length === 0) return "Sem horas de trabalho acumuladas.";
@@ -3467,11 +3568,10 @@ function buildPendingWorkTextPT(pendingList, totalHours, totalAmount) {
         const d = parseDateKey(item.dateKey);
         const dayLabel = d.toLocaleDateString("pt-PT", { weekday: "long", day: "numeric", month: "long" });
         const capitalizedDay = dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1);
-        const hStr = item.hours.toString().replace('.', ',');
-        const valStr = (item.amount || (item.hours * 11)).toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+        const detailStr = formatWorkItemLabelPT(item);
         const noteStr = item.note ? ` (${item.note})` : '';
 
-        lines.push(`📅 ${capitalizedDay}: ${hStr}h = ${valStr}${noteStr}`);
+        lines.push(`📅 ${capitalizedDay}: ${detailStr}${noteStr}`);
     });
 
     const hTotalStr = (Math.round(totalHours * 100) / 100).toString().replace('.', ',');
@@ -3497,11 +3597,10 @@ function buildPendingWorkTextES(pendingList, totalHours, totalAmount) {
         const d = parseDateKey(item.dateKey);
         const dayLabel = d.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" });
         const capitalizedDay = dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1);
-        const hStr = item.hours.toString().replace('.', ',');
-        const valStr = (item.amount || (item.hours * 11)).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' });
+        const detailStr = formatWorkItemLabelES(item);
         const noteStr = item.note ? ` (${item.note})` : '';
 
-        lines.push(`📅 ${capitalizedDay}: ${hStr}h = ${valStr}${noteStr}`);
+        lines.push(`📅 ${capitalizedDay}: ${detailStr}${noteStr}`);
     });
 
     const hTotalStr = (Math.round(totalHours * 100) / 100).toString().replace('.', ',');
@@ -3567,11 +3666,11 @@ function showPaymentsView() {
 
         <!-- Cartões de Resumo no Topo -->
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 24px;">
-            <div style="background: linear-gradient(135deg, rgba(239,68,68,0.08), rgba(245,158,11,0.08)); border: 2px solid ${totalPendingAmount > 0 ? '#ef4444' : '#10b981'}; border-radius: 16px; padding: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.04);">
-                <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: ${totalPendingAmount > 0 ? '#dc2626' : '#059669'};">
-                    ${totalPendingAmount > 0 ? '⚠️ Total a Dever (Pendente)' : '✅ Sem Valores a Dever'}
+            <div style="background: linear-gradient(135deg, rgba(239,68,68,0.08), rgba(245,158,11,0.08)); border: 2px solid ${totalPendingAmount > 0 ? '#ef4444' : (totalPendingAmount < 0 ? '#3b82f6' : '#10b981')}; border-radius: 16px; padding: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.04);">
+                <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: ${totalPendingAmount > 0 ? '#dc2626' : (totalPendingAmount < 0 ? '#2563eb' : '#059669')};">
+                    ${totalPendingAmount > 0 ? '⚠️ Total a Dever (Pendente)' : (totalPendingAmount < 0 ? 'ℹ️ Saldo a Favor (Crédito)' : '✅ Sem Valores a Dever')}
                 </div>
-                <div style="font-size: 30px; font-weight: 900; color: ${totalPendingAmount > 0 ? '#dc2626' : '#059669'}; margin: 6px 0 2px 0;">
+                <div style="font-size: 30px; font-weight: 900; color: ${totalPendingAmount > 0 ? '#dc2626' : (totalPendingAmount < 0 ? '#2563eb' : '#059669')}; margin: 6px 0 2px 0;">
                     ${formattedPendingAmount}
                 </div>
                 <div style="font-size: 13px; opacity: 0.8;">
@@ -3613,25 +3712,32 @@ function showPaymentsView() {
             <!-- Formulário de Adicionar Dia de Trabalho -->
             <div style="border: 2px solid #8b5cf6; border-radius: 16px; padding: 20px; margin-bottom: 26px; background: rgba(139,92,246,0.03); box-shadow: 0 4px 15px rgba(139,92,246,0.06);">
                 <div style="font-size: 16px; font-weight: bold; color: #7c3aed; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                    <span>➕ Registar Dia de Trabalho</span>
-                    <span style="font-size: 12px; font-weight: normal; color: #666;">(11 € / hora)</span>
+                    <span>➕ Registar Dia de Trabalho / Ajuste</span>
+                    <span style="font-size: 12px; font-weight: normal; color: #666;">(11 € / hora ou valor direto)</span>
                 </div>
                 <div style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
                     <div>
-                        <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #444;">📅 Data do Trabalho:</label>
+                        <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #444;">📅 Data:</label>
                         <input type="date" id="al-work-date-input" value="${todayStr}"
                             style="padding: 10px 14px; border: 1.5px solid #ccc; border-radius: 10px; font-size: 14px; cursor: pointer;">
                     </div>
                     <div>
-                        <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #444;">⏱️ Número de Horas (ex: 2,5 ou 4):</label>
-                        <input type="text" id="al-work-hours-input" placeholder="Ex: 2,5"
-                            oninput="window.onWorkHoursInput(this.value)"
+                        <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #444;">⏱️ Horas (ex: 2,5 ou -2):</label>
+                        <input type="text" id="al-work-hours-input" placeholder="Ex: 2,5 ou -2"
+                            oninput="window.onWorkCalcInput()"
                             onkeydown="if(event.key==='Enter') window.addWorkEntry()"
                             style="padding: 10px 14px; border: 1.5px solid #ccc; border-radius: 10px; font-size: 14px; width: 140px; font-weight: bold;">
                     </div>
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #444;">💶 Valor em € (ex: 20 ou -15):</label>
+                        <input type="text" id="al-work-money-input" placeholder="Ex: 20 ou -15"
+                            oninput="window.onWorkCalcInput()"
+                            onkeydown="if(event.key==='Enter') window.addWorkEntry()"
+                            style="padding: 10px 14px; border: 1.5px solid #ccc; border-radius: 10px; font-size: 14px; width: 150px; font-weight: bold;">
+                    </div>
                     <div style="flex-grow: 1; min-width: 180px;">
                         <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #444;">📝 Notas / Descrição (opcional):</label>
-                        <input type="text" id="al-work-note-input" placeholder="Ex: Limpeza Achada 1 e Impasse"
+                        <input type="text" id="al-work-note-input" placeholder="Ex: Limpeza Achada 1, Adiantamento, etc."
                             onkeydown="if(event.key==='Enter') window.addWorkEntry()"
                             style="padding: 10px 14px; border: 1.5px solid #ccc; border-radius: 10px; font-size: 14px; width: 100%; box-sizing: border-box;">
                     </div>
@@ -3688,18 +3794,22 @@ function showPaymentsView() {
                 const d = parseDateKey(item.dateKey);
                 const dayLabel = d.toLocaleDateString("pt-PT", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
                 const capitalizedDay = dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1);
-                const formattedHours = item.hours.toString().replace('.', ',');
-                const formattedItemAmount = (item.amount || (item.hours * 11)).toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+                const itemAmount = (item.amount !== undefined && !isNaN(item.amount))
+                    ? item.amount
+                    : (((item.hours || 0) * 11) + (item.extraMoney || 0));
+                const formattedItemAmount = itemAmount.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
 
                 if (isEditing) {
                     html += `
                         <div style="border: 2px solid #8b5cf6; border-radius: 14px; padding: 14px 18px; background: #fff; box-shadow: 0 4px 15px rgba(139,92,246,0.15);">
-                            <div style="font-size: 14px; font-weight: bold; color: #7c3aed; margin-bottom: 10px;">✏️ Editar Registo de Trabalho</div>
+                            <div style="font-size: 14px; font-weight: bold; color: #7c3aed; margin-bottom: 10px;">✏️ Editar Registo</div>
                             <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px;">
                                 <input type="date" id="al-edit-date-${item.id}" value="${item.dateKey}"
                                     style="padding: 8px 12px; border: 1.5px solid #ccc; border-radius: 8px; font-size: 13px;">
-                                <input type="text" id="al-edit-hours-${item.id}" value="${formattedHours}" placeholder="Horas"
-                                    style="padding: 8px 12px; border: 1.5px solid #ccc; border-radius: 8px; font-size: 13px; width: 100px; font-weight: bold;">
+                                <input type="text" id="al-edit-hours-${item.id}" value="${item.hours ? item.hours.toString().replace('.', ',') : ''}" placeholder="Horas (ex: -2)"
+                                    style="padding: 8px 12px; border: 1.5px solid #ccc; border-radius: 8px; font-size: 13px; width: 110px; font-weight: bold;">
+                                <input type="text" id="al-edit-money-${item.id}" value="${item.extraMoney ? item.extraMoney.toString().replace('.', ',') : ''}" placeholder="Valor € (ex: -15)"
+                                    style="padding: 8px 12px; border: 1.5px solid #ccc; border-radius: 8px; font-size: 13px; width: 120px; font-weight: bold;">
                                 <input type="text" id="al-edit-note-${item.id}" value="${item.note || ''}" placeholder="Notas (opcional)"
                                     style="padding: 8px 12px; border: 1.5px solid #ccc; border-radius: 8px; font-size: 13px; flex-grow: 1;">
                             </div>
@@ -3721,17 +3831,24 @@ function showPaymentsView() {
                             <div>
                                 <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                                     <strong style="font-size: 15px; color: #111;">📅 ${capitalizedDay}</strong>
-                                    <span style="background: rgba(139,92,246,0.12); color: #7c3aed; font-weight: 800; padding: 2px 10px; border-radius: 12px; font-size: 13px;">
-                                        ⏱️ ${formattedHours} h
-                                    </span>
-                                    <span style="font-size: 14px; font-weight: 800; color: #059669;">
+                                    ${item.hours ? `
+                                        <span style="background: rgba(139,92,246,0.12); color: #7c3aed; font-weight: 800; padding: 2px 10px; border-radius: 12px; font-size: 13px;">
+                                            ⏱️ ${item.hours.toString().replace('.', ',')} h
+                                        </span>
+                                    ` : ''}
+                                    ${item.extraMoney ? `
+                                        <span style="background: rgba(2,132,199,0.12); color: #0284c7; font-weight: 800; padding: 2px 10px; border-radius: 12px; font-size: 13px;">
+                                            💶 ${item.extraMoney > 0 ? '+' : ''}${item.extraMoney.toString().replace('.', ',')} €
+                                        </span>
+                                    ` : ''}
+                                    <span style="font-size: 14px; font-weight: 800; color: ${itemAmount >= 0 ? '#059669' : '#dc2626'};">
                                         = ${formattedItemAmount}
                                     </span>
                                 </div>
                                 ${item.note ? `<div style="font-size: 12px; color: #666; margin-top: 4px; font-style: italic;">📝 ${item.note}</div>` : ''}
                             </div>
                             <div style="display: flex; gap: 6px;">
-                                <button onclick="window.startEditWork('${item.id}')" title="Corrigir valores deste dia"
+                                <button onclick="window.startEditWork('${item.id}')" title="Corrigir valores deste registo"
                                     style="padding: 6px 12px; font-size: 12px; cursor: pointer; border-radius: 8px; border: 1px solid #6c757d; background: transparent; color: #495057; font-weight: bold;">
                                     ✏️ Corrigir
                                 </button>
@@ -3774,8 +3891,25 @@ function showPaymentsView() {
                 items.forEach(it => {
                     const itDate = parseDateKey(it.dateKey);
                     const itDateLabel = itDate.toLocaleDateString("pt-PT", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
-                    const itHours = it.hours.toString().replace('.', ',');
-                    const itAmount = (it.amount || (it.hours * (settle.rate || 11))).toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+                    const itHoursVal = parseFloat(it.hours) || 0;
+                    const itMoneyVal = parseFloat(it.extraMoney) || 0;
+                    const itAmountVal = it.amount !== undefined && !isNaN(it.amount)
+                        ? it.amount
+                        : ((itHoursVal * (settle.rate || 11)) + itMoneyVal);
+                    const itAmount = itAmountVal.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+
+                    let itDetailTag = '';
+                    if (itHoursVal !== 0 && itMoneyVal !== 0) {
+                        const hStr = itHoursVal.toString().replace('.', ',');
+                        const mStr = (itMoneyVal > 0 ? `+` : ``) + itMoneyVal.toString().replace('.', ',') + ` €`;
+                        itDetailTag = `<span style="font-weight: 600; color: #7c3aed;">${hStr} h (${mStr})</span>`;
+                    } else if (itHoursVal !== 0) {
+                        const hStr = itHoursVal.toString().replace('.', ',');
+                        itDetailTag = `<span style="font-weight: 600; color: #7c3aed;">${hStr} h</span>`;
+                    } else {
+                        const mStr = (itMoneyVal > 0 ? `+` : ``) + itMoneyVal.toString().replace('.', ',') + ` €`;
+                        itDetailTag = `<span style="font-weight: 600; color: #0284c7;">Ajuste (${mStr})</span>`;
+                    }
 
                     itemsRowsHtml += `
                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 13px;">
@@ -3784,8 +3918,8 @@ function showPaymentsView() {
                                 ${it.note ? `<span style="color: #666; font-size: 12px; margin-left: 8px;">(${it.note})</span>` : ''}
                             </div>
                             <div style="display: flex; gap: 14px; align-items: center;">
-                                <span style="font-weight: 600; color: #7c3aed;">${itHours} h</span>
-                                <strong style="color: #059669;">${itAmount}</strong>
+                                ${itDetailTag}
+                                <strong style="color: ${itAmountVal >= 0 ? '#059669' : '#dc2626'};">${itAmount}</strong>
                             </div>
                         </div>
                     `;
