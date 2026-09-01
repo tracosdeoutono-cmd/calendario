@@ -657,18 +657,18 @@
             align-items: center !important;
             justify-content: center !important;
             text-align: center !important;
-            gap: 8px !important;
-            background: linear-gradient(135deg, #007bff, #0056b3) !important;
-            color: #ffffff !important;
-            -webkit-text-fill-color: #ffffff !important;
-            padding: 0 18px !important;
-            height: 46px !important;
-            border-radius: 11px !important;
-            font-size: 22px !important;
+            gap: 10px !important;
+            background: rgba(255, 255, 255, 0.85) !important;
+            color: #111827 !important;
+            -webkit-text-fill-color: #111827 !important;
+            padding: 10px 20px !important;
+            height: auto !important;
+            border-radius: 14px !important;
+            font-size: 20px !important;
             font-weight: 800 !important;
             font-family: 'Plus Jakarta Sans', sans-serif !important;
-            box-shadow: 0 4px 14px rgba(0, 123, 255, 0.35) !important;
-            border: 2px solid #007bff !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+            border: 1.5px solid rgba(0, 0, 0, 0.1) !important;
             letter-spacing: 0.3px !important;
             white-space: nowrap !important;
             line-height: 1 !important;
@@ -682,10 +682,12 @@
             text-shadow: none !important;
             text-transform: none !important;
             box-sizing: border-box !important;
+            backdrop-filter: blur(8px) !important;
         }
         .al-badge-title:hover {
             transform: translateY(-1px) scale(1.02) !important;
-            filter: brightness(1.06) !important;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07) !important;
+            background: rgba(255, 255, 255, 0.95) !important;
         }
         .al-badge-title:active {
             transform: translateY(1px) scale(0.98) !important;
@@ -693,13 +695,14 @@
 
         /* Estilos Adaptados por Tema para o Título Casas do Martim */
         body[data-theme="outono"] .al-badge-title {
-            background: linear-gradient(135deg, rgba(245,158,11,0.25), rgba(234,88,12,0.35)) !important;
-            border: 2px solid rgba(245,158,11,0.5) !important;
-            color: #fff8f0 !important;
-            -webkit-text-fill-color: #fff8f0 !important;
+            background: rgba(255, 255, 255, 0.85) !important;
+            border: 1.5px solid rgba(245, 158, 11, 0.4) !important;
+            color: #2c1810 !important;
+            -webkit-text-fill-color: #2c1810 !important;
+            border-radius: 14px !important;
             font-family: 'Outfit', sans-serif !important;
-            font-size: 22px !important;
-            box-shadow: 0 4px 20px rgba(245,158,11,0.3) !important;
+            font-size: 20px !important;
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.15) !important;
         }
 
         body[data-theme="cyber"] .al-badge-title {
@@ -1690,7 +1693,14 @@ async function saveToCloudHistory(newEntries) {
 }
 
 async function loadCalendars() {
-    result.innerHTML = "<p style='font-size: 18px; font-weight: bold; color: #007bff;'>⏳ A ligar à Cloud e a carregar calendários (aguarda)...</p>";
+    result.innerHTML = `
+        <div style="text-align: center; padding: 50px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;">
+            <div style="font-size: 46px; line-height: 1;">⏳</div>
+            <div style="font-size: 24px; font-weight: 800; color: #007bff; letter-spacing: -0.2px;">
+                A ligar à Cloud e a carregar calendários (aguarda)...
+            </div>
+        </div>
+    `;
 
     try {
         const historyPromise = fetchCloudHistory();
@@ -1893,7 +1903,99 @@ function syncCleaningPlan() {
                 return;
             }
 
-            // 2. Se o hóspede nunca cheg        snapshotKeys.forEach(key => {
+            // 2. Se o hóspede nunca chegou a entrar (checkin posterior ao cancelamento) ou já tinha saído (checkout anterior), remove
+            if (checkinDate && checkinDate > cancelledDate) {
+                delete reviews[k];
+                hasChanges = true;
+                return;
+            }
+            if (checkoutDate && checkoutDate < cancelledDate) {
+                delete reviews[k];
+                hasChanges = true;
+                return;
+            }
+
+            // 3. Se já houver nova reserva ativa a decorrer para esse quarto, não faz sentido manter aviso
+            const hasNewActive = globalReservations.some(r => r.room === rev.room && r.checkOut >= today);
+            if (hasNewActive) {
+                delete reviews[k];
+                hasChanges = true;
+                return;
+            }
+        });
+
+        Object.keys(plan).forEach(key => {
+            const existing = plan[key];
+            const cleanDate = parseDateKey(existing.cleaningKey);
+
+            if (cleanDate >= today) {
+                if (!activeCleanings[key]) {
+                    const checkinDate = existing.checkinKey ? parseDateKey(existing.checkinKey) : null;
+                    const checkoutDate = existing.checkoutKey ? parseDateKey(existing.checkoutKey) : null;
+
+                    // CRITÉRIO FUNDAMENTAL: Só gera revisão se a estadia estava ATIVAMENTE a decorrer
+                    // (ou seja: checkin já feito <= hoje E saída prevista para >= hoje)
+                    // Se o check-in era no futuro (checkinDate > today), os hóspedes nunca entraram no quarto!
+                    const wasActivelyOccurringStay = checkinDate && checkoutDate && (checkinDate <= today) && (checkoutDate >= today);
+
+                    if (wasActivelyOccurringStay) {
+                        let reviewDate = addDays(today, 1);
+                        if (isSunday(reviewDate)) reviewDate = addDays(reviewDate, 1);
+                        const reviewTargetKey = formatDateKey(reviewDate);
+
+                        reviews[key] = {
+                            id: key,
+                            room: existing.room,
+                            checkinKey: existing.checkinKey || "",
+                            targetDateKey: reviewTargetKey,
+                            targetIso: reviewDate.toISOString(),
+                            cancelledOn: todayStr,
+                            originalCheckout: existing.checkoutKey
+                        };
+                    }
+
+                    delete plan[key];
+                    hasChanges = true;
+                }
+            }
+        });
+
+        if (!cloudHistory["_snapshots"] || typeof cloudHistory["_snapshots"] !== 'object') {
+            cloudHistory["_snapshots"] = {};
+            hasChanges = true;
+        }
+        if (!cloudHistory["_snapshots"][todayStr]) {
+            let sp = {};
+            const lim = addDays(today, 6);
+            globalReservations.forEach(res => {
+                const info = getCleaningInfo(res, globalReservations);
+                if (info.date >= today && info.date <= lim) {
+                    const sdk = formatDateKey(info.date);
+                    if (!sp[sdk]) sp[sdk] = { dateIso: info.date.toISOString(), rooms: [] };
+                    if (!sp[sdk].rooms.some(r => r.room === res.room)) {
+                        sp[sdk].rooms.push({ room: res.room, sunday: info.sunday, urgent: info.urgent });
+                    }
+                }
+            });
+            cloudHistory["_snapshots"][todayStr] = sp;
+            hasChanges = true;
+        }
+
+        if (hasChanges && historyLoadedOk) {
+            saveToCloudHistory(cloudHistory);
+        }
+    } catch(err) {
+        console.error("Erro na sincronização:", err);
+    }
+}
+
+function showSnapshotsPlan() {
+    let html=renderNavigation(); html+=`<h1>🕒 Previsões Passadas</h1>`;
+    const snapshots=cloudHistory["_snapshots"]||{}; const snapshotKeys=Object.keys(snapshots).sort().reverse();
+    if (snapshotKeys.length===0) { html+=`<p>Ainda não há previsões guardadas. A primeira foi gerada agora!</p>`; result.innerHTML=html; return; }
+    if (!selectedSnapshotDate) {
+        html+=`<p style="color: #555;">Escolhe um dia para ver o plano que estava previsto nesse momento:</p><div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px;">`;
+        snapshotKeys.forEach(key => {
             const d = parseDateKey(key);
             html+=`<button onclick="window.selectSnapshot('${key}')" style="padding: 10px 15px; font-size: 14px; cursor: pointer; border-radius: 6px; border: 1px solid #17a2b8; background-color: #f8f9fa; color: #17a2b8; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">📅 ${d.toLocaleDateString("pt-PT",{day:"numeric",month:"long",year:"numeric"})}</button>`;
         });
