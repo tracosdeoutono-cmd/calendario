@@ -1725,8 +1725,8 @@ async function saveToCloudHistory(newEntries) {
 
 async function loadCalendars() {
     result.innerHTML = `
-        <div style="display: flex; justify-content: center; align-items: center; padding: 40px 15px;">
-            <div style="display: inline-flex; align-items: center; gap: 10px; padding: 12px 22px; border-radius: 12px; background: rgba(0, 123, 255, 0.08); border: 1.5px solid rgba(0, 123, 255, 0.22); color: #007bff; font-size: 15px; font-weight: 700; box-shadow: 0 4px 14px rgba(0, 123, 255, 0.08); font-family: 'Plus Jakarta Sans', sans-serif;">
+        <div style="display: flex; justify-content: flex-start; align-items: center; padding: 25px 0 20px 0;">
+            <div style="display: inline-flex; align-items: center; gap: 10px; padding: 10px 18px; border-radius: 12px; background: rgba(0, 123, 255, 0.08); border: 1.5px solid rgba(0, 123, 255, 0.22); color: #007bff; font-size: 15px; font-weight: 700; box-shadow: 0 4px 12px rgba(0, 123, 255, 0.06); font-family: 'Plus Jakarta Sans', sans-serif;">
                 <span style="font-size: 18px; line-height: 1;">⏳</span>
                 <span>A ligar à Cloud e a carregar calendários...</span>
             </div>
@@ -2178,26 +2178,26 @@ function buildNext10DaysPanelHTML(grouped, today) {
         const weekdayShort = d.toLocaleDateString("pt-PT", { weekday: "short" }).replace('.', '').toUpperCase();
         const dayNum = d.getDate();
 
-        let pillBg = 'rgba(0,0,0,0.03)';
-        let pillBorder = '1px solid rgba(0,0,0,0.08)';
-        let pillColor = '#555';
+        let pillBg = 'rgba(255,255,255,0.9)';
+        let pillBorder = '1px solid rgba(255,255,255,0.5)';
+        let pillColor = '#4b5563';
         let badgeEmoji = '😴';
         let badgeText = 'Folga';
-        let badgeBg = 'rgba(0,0,0,0.05)';
+        let badgeBg = 'rgba(0,0,0,0.06)';
         let badgeColor = '#666';
 
         if (hasWork) {
             if (isSun) {
-                pillBg = 'rgba(239,68,68,0.08)';
-                pillBorder = '1.5px solid #ef4444';
+                pillBg = '#ffffff';
+                pillBorder = '2px solid #ef4444';
                 pillColor = '#dc2626';
                 badgeEmoji = '🔴';
                 badgeText = `${totalItems} qto${totalItems > 1 ? 's' : ''}`;
                 badgeBg = '#ef4444';
                 badgeColor = '#ffffff';
             } else {
-                pillBg = 'rgba(16,185,129,0.08)';
-                pillBorder = '1.5px solid #10b981';
+                pillBg = '#ffffff';
+                pillBorder = '2px solid #10b981';
                 pillColor = '#059669';
                 badgeEmoji = '🧹';
                 badgeText = `${totalItems} qto${totalItems > 1 ? 's' : ''}`;
@@ -2207,8 +2207,8 @@ function buildNext10DaysPanelHTML(grouped, today) {
         }
 
         pills.push(`
-            <div style="flex: 1; min-width: 58px; max-width: 82px; text-align: center; padding: 10px 4px; border-radius: 12px; background: ${pillBg}; border: ${pillBorder}; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; ${isToday ? 'box-shadow: 0 0 0 2px #6366f1;' : ''}">
-                <div style="font-weight: 800; font-size: 10px; opacity: 0.75; text-transform: uppercase; color: ${pillColor};">${isToday ? 'HOJE' : weekdayShort}</div>
+            <div style="flex: 1; min-width: 58px; max-width: 82px; text-align: center; padding: 10px 4px; border-radius: 12px; background: ${pillBg}; border: ${pillBorder}; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; ${isToday ? 'box-shadow: 0 0 0 2px #facc15;' : ''}">
+                <div style="font-weight: 800; font-size: 10px; opacity: 0.85; text-transform: uppercase; color: ${pillColor};">${isToday ? 'HOJE' : weekdayShort}</div>
                 <div style="font-size: 16px; font-weight: 900; color: ${pillColor};">${dayNum}</div>
                 <div style="font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 6px; background: ${badgeBg}; color: ${badgeColor}; white-space: nowrap; display: flex; align-items: center; gap: 2px;">
                     <span>${badgeEmoji}</span> <span>${badgeText}</span>
@@ -2218,24 +2218,31 @@ function buildNext10DaysPanelHTML(grouped, today) {
     }
 
     const calendarContent = showNext10DaysCalendar ? `
-        <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(0,0,0,0.08); display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin;">
+        <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.25); display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin;">
             ${pills.join("")}
         </div>
     ` : '';
 
+    const containerStyle = showNext10DaysCalendar
+        ? `background: linear-gradient(135deg, #6366f1, #4f46e5); color: #ffffff; border: 2px solid #4338ca; box-shadow: 0 6px 20px rgba(99,102,241,0.35);`
+        : `background: #ffffff; color: #4338ca; border: 2px solid #6366f1; box-shadow: 0 2px 8px rgba(99,102,241,0.08);`;
+
+    const titleColor = showNext10DaysCalendar ? '#ffffff' : '#4338ca';
+
     return `
-        <div style="margin: 14px 0 22px 0; padding: 14px 18px; border-radius: 16px; background: rgba(255,255,255,0.85); border: 1.5px solid ${showNext10DaysCalendar ? '#6366f1' : 'rgba(0,0,0,0.08)'}; box-shadow: 0 4px 14px ${showNext10DaysCalendar ? 'rgba(99,102,241,0.12)' : 'rgba(0,0,0,0.03)'}; transition: all 0.2s ease;">
+        <div onclick="window.toggleNext10DaysCalendar(event)"
+            style="margin: 14px 0 22px 0; padding: 14px 18px; border-radius: 16px; ${containerStyle} cursor: pointer; transition: all 0.2s ease;"
+            title="Clica para abrir ou fechar a visualização dos 10 dias">
             <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-                <button onclick="window.toggleNext10DaysCalendar(event)"
-                    style="padding: 9px 18px; font-size: 15px; cursor: pointer; border-radius: 10px; font-weight: 800; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; border: 2px solid #6366f1; background: ${showNext10DaysCalendar ? 'linear-gradient(135deg, #6366f1, #4f46e5)' : '#ffffff'}; color: ${showNext10DaysCalendar ? '#ffffff' : '#4338ca'}; box-shadow: ${showNext10DaysCalendar ? '0 4px 12px rgba(99,102,241,0.3)' : '0 2px 5px rgba(99,102,241,0.1)'};">
+                <div style="font-size: 15px; font-weight: 800; color: ${titleColor}; display: inline-flex; align-items: center; gap: 8px; user-select: none;">
                     📅 Próximos 10 dias de trabalho
-                </button>
+                </div>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <button onclick="window.copyFromData(this, '${encodeURIComponent(textPT)}')"
+                    <button onclick="event.stopPropagation(); window.copyFromData(this, '${encodeURIComponent(textPT)}')"
                         style="padding: 8px 15px; font-size: 13px; cursor: pointer; border-radius: 8px; border: 1px solid #28a745; background: #28a745; color: white; font-weight: bold; box-shadow: 0 2px 6px rgba(40,167,69,0.25);">
                         🇵🇹 Copiar PT
                     </button>
-                    <button onclick="window.copyFromData(this, '${encodeURIComponent(textES)}')"
+                    <button onclick="event.stopPropagation(); window.copyFromData(this, '${encodeURIComponent(textES)}')"
                         style="padding: 8px 15px; font-size: 13px; cursor: pointer; border-radius: 8px; border: 1px solid #17a2b8; background: #17a2b8; color: white; font-weight: bold; box-shadow: 0 2px 6px rgba(23,162,184,0.25);">
                         🇪🇸 Copiar ES
                     </button>
