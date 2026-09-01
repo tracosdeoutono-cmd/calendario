@@ -1725,10 +1725,10 @@ async function saveToCloudHistory(newEntries) {
 
 async function loadCalendars() {
     result.innerHTML = `
-        <div style="text-align: center; padding: 50px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;">
-            <div style="font-size: 46px; line-height: 1;">⏳</div>
-            <div style="font-size: 24px; font-weight: 800; color: #007bff; letter-spacing: -0.2px;">
-                A ligar à Cloud e a carregar calendários (aguarda)...
+        <div style="display: flex; justify-content: center; align-items: center; padding: 40px 15px;">
+            <div style="display: inline-flex; align-items: center; gap: 10px; padding: 12px 22px; border-radius: 12px; background: rgba(0, 123, 255, 0.08); border: 1.5px solid rgba(0, 123, 255, 0.22); color: #007bff; font-size: 15px; font-weight: 700; box-shadow: 0 4px 14px rgba(0, 123, 255, 0.08); font-family: 'Plus Jakarta Sans', sans-serif;">
+                <span style="font-size: 18px; line-height: 1;">⏳</span>
+                <span>A ligar à Cloud e a carregar calendários...</span>
             </div>
         </div>
     `;
@@ -2224,24 +2224,19 @@ function buildNext10DaysPanelHTML(grouped, today) {
     ` : '';
 
     return `
-        <div onclick="window.toggleNext10DaysCalendar(event)"
-            style="margin: 12px 0 22px 0; padding: 14px 18px; border-radius: 16px; background: rgba(255,255,255,0.85); border: 1.5px solid rgba(99,102,241,0.2); box-shadow: 0 4px 14px rgba(99,102,241,0.05); cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;"
-            title="Clica para abrir ou fechar a visualização dos 10 dias">
+        <div style="margin: 14px 0 22px 0; padding: 14px 18px; border-radius: 16px; background: rgba(255,255,255,0.85); border: 1.5px solid ${showNext10DaysCalendar ? '#6366f1' : 'rgba(0,0,0,0.08)'}; box-shadow: 0 4px 14px ${showNext10DaysCalendar ? 'rgba(99,102,241,0.12)' : 'rgba(0,0,0,0.03)'}; transition: all 0.2s ease;">
             <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                    <span style="font-size: 15px; font-weight: 800; color: #4338ca;">📅 Próximos 10 dias de trabalho</span>
-                    <span style="font-size: 11px; font-weight: 700; background: rgba(99,102,241,0.12); color: #4338ca; padding: 2px 8px; border-radius: 10px;">
-                        ${workDaysCount} dia${workDaysCount !== 1 ? 's' : ''} ativo${workDaysCount !== 1 ? 's' : ''}
-                    </span>
-                    <span style="font-size: 12px; opacity: 0.6; color: #4338ca;">${showNext10DaysCalendar ? '▲ ocultar' : '▼ ver dias'}</span>
-                </div>
+                <button onclick="window.toggleNext10DaysCalendar(event)"
+                    style="padding: 9px 18px; font-size: 15px; cursor: pointer; border-radius: 10px; font-weight: 800; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; border: 2px solid #6366f1; background: ${showNext10DaysCalendar ? 'linear-gradient(135deg, #6366f1, #4f46e5)' : '#ffffff'}; color: ${showNext10DaysCalendar ? '#ffffff' : '#4338ca'}; box-shadow: ${showNext10DaysCalendar ? '0 4px 12px rgba(99,102,241,0.3)' : '0 2px 5px rgba(99,102,241,0.1)'};">
+                    📅 Próximos 10 dias de trabalho
+                </button>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <button onclick="event.stopPropagation(); window.copyFromData(this, '${encodeURIComponent(textPT)}')"
-                        style="padding: 7px 14px; font-size: 13px; cursor: pointer; border-radius: 8px; border: 1px solid #28a745; background: #28a745; color: white; font-weight: bold; box-shadow: 0 2px 6px rgba(40,167,69,0.25);">
+                    <button onclick="window.copyFromData(this, '${encodeURIComponent(textPT)}')"
+                        style="padding: 8px 15px; font-size: 13px; cursor: pointer; border-radius: 8px; border: 1px solid #28a745; background: #28a745; color: white; font-weight: bold; box-shadow: 0 2px 6px rgba(40,167,69,0.25);">
                         🇵🇹 Copiar PT
                     </button>
-                    <button onclick="event.stopPropagation(); window.copyFromData(this, '${encodeURIComponent(textES)}')"
-                        style="padding: 7px 14px; font-size: 13px; cursor: pointer; border-radius: 8px; border: 1px solid #17a2b8; background: #17a2b8; color: white; font-weight: bold; box-shadow: 0 2px 6px rgba(23,162,184,0.25);">
+                    <button onclick="window.copyFromData(this, '${encodeURIComponent(textES)}')"
+                        style="padding: 8px 15px; font-size: 13px; cursor: pointer; border-radius: 8px; border: 1px solid #17a2b8; background: #17a2b8; color: white; font-weight: bold; box-shadow: 0 2px 6px rgba(23,162,184,0.25);">
                         🇪🇸 Copiar ES
                     </button>
                 </div>
