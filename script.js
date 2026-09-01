@@ -1893,99 +1893,7 @@ function syncCleaningPlan() {
                 return;
             }
 
-            // 2. Se o hóspede nunca chegou a entrar (checkin posterior ao cancelamento) ou já tinha saído (checkout anterior), remove
-            if (checkinDate && checkinDate > cancelledDate) {
-                delete reviews[k];
-                hasChanges = true;
-                return;
-            }
-            if (checkoutDate && checkoutDate < cancelledDate) {
-                delete reviews[k];
-                hasChanges = true;
-                return;
-            }
-
-            // 3. Se já houver nova reserva ativa a decorrer para esse quarto, não faz sentido manter aviso
-            const hasNewActive = globalReservations.some(r => r.room === rev.room && r.checkOut >= today);
-            if (hasNewActive) {
-                delete reviews[k];
-                hasChanges = true;
-                return;
-            }
-        });
-
-        Object.keys(plan).forEach(key => {
-            const existing = plan[key];
-            const cleanDate = parseDateKey(existing.cleaningKey);
-
-            if (cleanDate >= today) {
-                if (!activeCleanings[key]) {
-                    const checkinDate = existing.checkinKey ? parseDateKey(existing.checkinKey) : null;
-                    const checkoutDate = existing.checkoutKey ? parseDateKey(existing.checkoutKey) : null;
-
-                    // CRITÉRIO FUNDAMENTAL: Só gera revisão se a estadia estava ATIVAMENTE a decorrer
-                    // (ou seja: checkin já feito <= hoje E saída prevista para >= hoje)
-                    // Se o check-in era no futuro (checkinDate > today), os hóspedes nunca entraram no quarto!
-                    const wasActivelyOccurringStay = checkinDate && checkoutDate && (checkinDate <= today) && (checkoutDate >= today);
-
-                    if (wasActivelyOccurringStay) {
-                        let reviewDate = addDays(today, 1);
-                        if (isSunday(reviewDate)) reviewDate = addDays(reviewDate, 1);
-                        const reviewTargetKey = formatDateKey(reviewDate);
-
-                        reviews[key] = {
-                            id: key,
-                            room: existing.room,
-                            checkinKey: existing.checkinKey || "",
-                            targetDateKey: reviewTargetKey,
-                            targetIso: reviewDate.toISOString(),
-                            cancelledOn: todayStr,
-                            originalCheckout: existing.checkoutKey
-                        };
-                    }
-
-                    delete plan[key];
-                    hasChanges = true;
-                }
-            }
-        });
-
-        if (!cloudHistory["_snapshots"] || typeof cloudHistory["_snapshots"] !== 'object') {
-            cloudHistory["_snapshots"] = {};
-            hasChanges = true;
-        }
-        if (!cloudHistory["_snapshots"][todayStr]) {
-            let sp = {};
-            const lim = addDays(today, 6);
-            globalReservations.forEach(res => {
-                const info = getCleaningInfo(res, globalReservations);
-                if (info.date >= today && info.date <= lim) {
-                    const sdk = formatDateKey(info.date);
-                    if (!sp[sdk]) sp[sdk] = { dateIso: info.date.toISOString(), rooms: [] };
-                    if (!sp[sdk].rooms.some(r => r.room === res.room)) {
-                        sp[sdk].rooms.push({ room: res.room, sunday: info.sunday, urgent: info.urgent });
-                    }
-                }
-            });
-            cloudHistory["_snapshots"][todayStr] = sp;
-            hasChanges = true;
-        }
-
-        if (hasChanges && historyLoadedOk) {
-            saveToCloudHistory(cloudHistory);
-        }
-    } catch(err) {
-        console.error("Erro na sincronização:", err);
-    }
-}
-
-function showSnapshotsPlan() {
-    let html=renderNavigation(); html+=`<h1>🕒 Previsões Passadas</h1>`;
-    const snapshots=cloudHistory["_snapshots"]||{}; const snapshotKeys=Object.keys(snapshots).sort().reverse();
-    if (snapshotKeys.length===0) { html+=`<p>Ainda não há previsões guardadas. A primeira foi gerada agora!</p>`; result.innerHTML=html; return; }
-    if (!selectedSnapshotDate) {
-        html+=`<p style="color: #555;">Escolhe um dia para ver o plano que estava previsto nesse momento:</p><div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px;">`;
-        snapshotKeys.forEach(key => {
+            // 2. Se o hóspede nunca cheg        snapshotKeys.forEach(key => {
             const d = parseDateKey(key);
             html+=`<button onclick="window.selectSnapshot('${key}')" style="padding: 10px 15px; font-size: 14px; cursor: pointer; border-radius: 6px; border: 1px solid #17a2b8; background-color: #f8f9fa; color: #17a2b8; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">📅 ${d.toLocaleDateString("pt-PT",{day:"numeric",month:"long",year:"numeric"})}</button>`;
         });
@@ -2030,7 +1938,7 @@ function buildBlockedDatesPanelHTML() {
         chipsHtml += `<div style="margin-top: 12px; margin-bottom: 8px; font-size: 12px; font-weight: 700; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px;">Passadas (Guardadas para sempre no histórico)</div>`;
         chipsHtml += pastDates.map(dk => {
             const d = parseDateKey(dk);
-            const label = d.toLocaleDateString("pt-PT", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+            const label = d.toLocaleDateString("pt-PT", { weekday: "short", day: "numeric", month: "short" });
             return `<div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(108,117,125,0.08); border: 1px solid rgba(108,117,125,0.25); border-radius: 20px; padding: 5px 12px; font-size: 13px; opacity: 0.75;">
                 <span>📅 ${label}</span>
                 <button onclick="window.removeBlockedDate('${dk}')" title="Remover do histórico" style="background: none; border: none; cursor: pointer; font-size: 16px; line-height: 1; padding: 0; color: #6c757d; font-weight: bold;">×</button>
@@ -2062,89 +1970,55 @@ function buildBlockedDatesPanelHTML() {
 }
 
 function buildNext10DaysScheduleTextPT(grouped, today) {
-    const lines = [];
-    const endDate = addDays(today, 9);
-    const startStr = today.toLocaleDateString("pt-PT", { day: "numeric", month: "long" });
-    const endStr = endDate.toLocaleDateString("pt-PT", { day: "numeric", month: "long" });
-
-    lines.push(`📅 *Dias de Trabalho — Próximos 10 Dias*`);
-    lines.push(`(${startStr} a ${endStr})`);
-    lines.push("");
-
-    let workDaysCount = 0;
-    const dayLines = [];
+    const lines = ["📅 Próximos dias de trabalho:", ""];
+    const workDays = [];
 
     for (let i = 0; i < 10; i++) {
         const d = addDays(today, i);
         const dk = formatDateKey(d);
-        const dayLabel = d.toLocaleDateString("pt-PT", { weekday: "long", day: "numeric", month: "numeric" });
-        const capitalizedDay = dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1);
         const dayData = grouped[dk];
-        const rooms = (dayData && dayData.rooms) ? dayData.rooms : [];
-        const reviews = (dayData && dayData.reviews) ? dayData.reviews : [];
+        const hasRooms = dayData && dayData.rooms && dayData.rooms.length > 0;
+        const hasReviews = dayData && dayData.reviews && dayData.reviews.length > 0;
 
-        const hasWork = rooms.length > 0 || reviews.length > 0;
-        if (hasWork) {
-            workDaysCount++;
-            const roomList = [];
-            rooms.forEach(r => roomList.push(r.room));
-            reviews.forEach(rv => roomList.push(`🔍 Rever ${rv.room}`));
-            const isSun = rooms.some(r => r.sunday);
-            const icon = isSun ? "🔴" : "🧹";
-            const qCount = rooms.length + reviews.length;
-            dayLines.push(`• *${capitalizedDay}*: ${icon} ${qCount} ${qCount === 1 ? 'quarto' : 'quartos'} (${roomList.join(", ")})`);
-        } else {
-            dayLines.push(`• ${capitalizedDay}: 😴 Sem trabalho`);
+        if (hasRooms || hasReviews) {
+            const weekday = d.toLocaleDateString("pt-PT", { weekday: "long" });
+            const capitalized = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+            workDays.push(`• ${capitalized}, dia ${d.getDate()}`);
         }
     }
 
-    lines.push(...dayLines);
-    lines.push("");
-    lines.push(`📊 *Total:* ${workDaysCount} dia${workDaysCount !== 1 ? 's' : ''} de trabalho nos próximos 10 dias.`);
+    if (workDays.length === 0) {
+        lines.push("Sem dias de trabalho nos próximos 10 dias.");
+    } else {
+        lines.push(...workDays);
+    }
 
     return lines.join("\n");
 }
 
 function buildNext10DaysScheduleTextES(grouped, today) {
-    const lines = [];
-    const endDate = addDays(today, 9);
-    const startStr = today.toLocaleDateString("es-ES", { day: "numeric", month: "long" });
-    const endStr = endDate.toLocaleDateString("es-ES", { day: "numeric", month: "long" });
-
-    lines.push(`📅 *Días de Trabajo — Próximos 10 Días*`);
-    lines.push(`(${startStr} al ${endStr})`);
-    lines.push("");
-
-    let workDaysCount = 0;
-    const dayLines = [];
+    const lines = ["📅 Próximos días de trabajo:", ""];
+    const workDays = [];
 
     for (let i = 0; i < 10; i++) {
         const d = addDays(today, i);
         const dk = formatDateKey(d);
-        const dayLabel = d.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "numeric" });
-        const capitalizedDay = dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1);
         const dayData = grouped[dk];
-        const rooms = (dayData && dayData.rooms) ? dayData.rooms : [];
-        const reviews = (dayData && dayData.reviews) ? dayData.reviews : [];
+        const hasRooms = dayData && dayData.rooms && dayData.rooms.length > 0;
+        const hasReviews = dayData && dayData.reviews && dayData.reviews.length > 0;
 
-        const hasWork = rooms.length > 0 || reviews.length > 0;
-        if (hasWork) {
-            workDaysCount++;
-            const roomList = [];
-            rooms.forEach(r => roomList.push(r.room));
-            reviews.forEach(rv => roomList.push(`🔍 Revisar ${rv.room}`));
-            const isSun = rooms.some(r => r.sunday);
-            const icon = isSun ? "🔴" : "🧹";
-            const qCount = rooms.length + reviews.length;
-            dayLines.push(`• *${capitalizedDay}*: ${icon} ${qCount} ${qCount === 1 ? 'habitación' : 'habitaciones'} (${roomList.join(", ")})`);
-        } else {
-            dayLines.push(`• ${capitalizedDay}: 😴 Sin trabajo`);
+        if (hasRooms || hasReviews) {
+            const weekday = d.toLocaleDateString("es-ES", { weekday: "long" });
+            const capitalized = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+            workDays.push(`• ${capitalized}, día ${d.getDate()}`);
         }
     }
 
-    lines.push(...dayLines);
-    lines.push("");
-    lines.push(`📊 *Total:* ${workDaysCount} día${workDaysCount !== 1 ? 's' : ''} de trabajo en los próximos 10 días.`);
+    if (workDays.length === 0) {
+        lines.push("Sin días de trabajo en los próximos 10 días.");
+    } else {
+        lines.push(...workDays);
+    }
 
     return lines.join("\n");
 }
@@ -2152,89 +2026,21 @@ function buildNext10DaysScheduleTextES(grouped, today) {
 function buildNext10DaysPanelHTML(grouped, today) {
     const textPT = buildNext10DaysScheduleTextPT(grouped, today);
     const textES = buildNext10DaysScheduleTextES(grouped, today);
-    const endDate = addDays(today, 9);
-    const startStr = today.toLocaleDateString("pt-PT", { day: "numeric", month: "short" });
-    const endStr = endDate.toLocaleDateString("pt-PT", { day: "numeric", month: "short" });
-
-    let workDaysCount = 0;
-    const pills = [];
-
-    for (let i = 0; i < 10; i++) {
-        const d = addDays(today, i);
-        const dk = formatDateKey(d);
-        const dayData = grouped[dk];
-        const rooms = (dayData && dayData.rooms) ? dayData.rooms : [];
-        const reviews = (dayData && dayData.reviews) ? dayData.reviews : [];
-        const totalItems = rooms.length + reviews.length;
-        const hasWork = totalItems > 0;
-        if (hasWork) workDaysCount++;
-
-        const isToday = i === 0;
-        const isSun = d.getDay() === 0;
-        const weekdayShort = d.toLocaleDateString("pt-PT", { weekday: "short" }).replace('.', '').toUpperCase();
-        const dayNum = d.getDate();
-
-        let pillBg = 'rgba(0,0,0,0.03)';
-        let pillBorder = '1px solid rgba(0,0,0,0.08)';
-        let pillColor = '#555';
-        let badgeText = 'Folga';
-        let badgeBg = 'rgba(0,0,0,0.06)';
-        let badgeColor = '#666';
-
-        if (hasWork) {
-            if (isSun) {
-                pillBg = 'rgba(239,68,68,0.09)';
-                pillBorder = '1.5px solid #ef4444';
-                pillColor = '#dc2626';
-                badgeText = `${totalItems} qto${totalItems > 1 ? 's' : ''}`;
-                badgeBg = '#ef4444';
-                badgeColor = '#ffffff';
-            } else {
-                pillBg = 'rgba(16,185,129,0.09)';
-                pillBorder = '1.5px solid #10b981';
-                pillColor = '#059669';
-                badgeText = `${totalItems} qto${totalItems > 1 ? 's' : ''}`;
-                badgeBg = '#10b981';
-                badgeColor = '#ffffff';
-            }
-        }
-
-        pills.push(`
-            <div style="flex: 1; min-width: 55px; max-width: 80px; text-align: center; padding: 8px 4px; border-radius: 10px; background: ${pillBg}; border: ${pillBorder}; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; ${isToday ? 'box-shadow: 0 0 0 2px #6366f1;' : ''}">
-                <div style="font-weight: 800; font-size: 10px; opacity: 0.75; text-transform: uppercase;">${isToday ? 'HOJE' : weekdayShort}</div>
-                <div style="font-size: 14px; font-weight: 900; color: ${pillColor};">${dayNum}</div>
-                <div style="font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 6px; background: ${badgeBg}; color: ${badgeColor}; white-space: nowrap;">
-                    ${badgeText}
-                </div>
-            </div>
-        `);
-    }
 
     return `
-        <div style="margin: 14px 0 22px 0; padding: 16px 18px; border-radius: 16px; background: linear-gradient(135deg, rgba(99,102,241,0.06), rgba(139,92,246,0.06)); border: 1.5px solid rgba(99,102,241,0.25); box-shadow: 0 4px 14px rgba(99,102,241,0.05);">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 12px;">
-                <div>
-                    <div style="font-size: 16px; font-weight: 800; color: #4338ca; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                        <span>📅 Dias de Trabalho (Próximos 10 Dias)</span>
-                        <span style="font-size: 12px; font-weight: 700; background: #4338ca; color: white; padding: 2px 10px; border-radius: 12px;">${workDaysCount} dia${workDaysCount !== 1 ? 's' : ''} com trabalho</span>
-                    </div>
-                    <div style="font-size: 12px; color: #555; margin-top: 3px;">
-                        De <strong>${startStr}</strong> a <strong>${endStr}</strong> • Clica nos botões para copiar o calendário:
-                    </div>
-                </div>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <button onclick="window.copyFromData(this, '${encodeURIComponent(textPT)}')"
-                        style="padding: 8px 14px; font-size: 13px; cursor: pointer; border-radius: 8px; border: 1.5px solid #28a745; background: #28a745; color: white; font-weight: bold; box-shadow: 0 2px 6px rgba(40,167,69,0.25); display: flex; align-items: center; gap: 6px;">
-                        🇵🇹 Copiar PT (10 Dias)
-                    </button>
-                    <button onclick="window.copyFromData(this, '${encodeURIComponent(textES)}')"
-                        style="padding: 8px 14px; font-size: 13px; cursor: pointer; border-radius: 8px; border: 1.5px solid #17a2b8; background: #17a2b8; color: white; font-weight: bold; box-shadow: 0 2px 6px rgba(23,162,184,0.25); display: flex; align-items: center; gap: 6px;">
-                        🇪🇸 Copiar ES (10 Días)
-                    </button>
-                </div>
+        <div style="margin: 12px 0 20px 0; padding: 12px 18px; border-radius: 12px; background: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+            <div style="font-size: 14px; font-weight: 700; color: #333;">
+                📅 Próximos 10 dias de trabalho
             </div>
-            <div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin;">
-                ${pills.join("")}
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button onclick="window.copyFromData(this, '${encodeURIComponent(textPT)}')"
+                    style="padding: 6px 13px; font-size: 13px; cursor: pointer; border-radius: 8px; border: 1px solid #28a745; background: #28a745; color: white; font-weight: bold; box-shadow: 0 2px 5px rgba(40,167,69,0.2);">
+                    🇵🇹 Copiar PT
+                </button>
+                <button onclick="window.copyFromData(this, '${encodeURIComponent(textES)}')"
+                    style="padding: 6px 13px; font-size: 13px; cursor: pointer; border-radius: 8px; border: 1px solid #17a2b8; background: #17a2b8; color: white; font-weight: bold; box-shadow: 0 2px 5px rgba(23,162,184,0.2);">
+                    🇪🇸 Copiar ES
+                </button>
             </div>
         </div>
     `;
@@ -2358,132 +2164,118 @@ function showCleaningPlan() {
         </div>`;
     }
 
-    html+=`<h1>${showHistoryMode?"📜 Histórico de Limpezas (Cloud)":"🧹 Plano de Limpezas"}</h1>`;
+    html += `
+        <div style="margin: 15px 0 18px 0; padding: 14px 20px; border-radius: 14px; background: rgba(255,255,255,0.8); border: 1.5px solid rgba(0,0,0,0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+            <h1 style="margin: 0; font-size: 24px; color: #111;">${showHistoryMode ? "📜 Histórico de Limpezas (Cloud)" : "🧹 Plano de Limpezas"}</h1>
+        </div>
+    `;
 
     if (!showHistoryMode) {
         html += buildNext10DaysPanelHTML(grouped, today);
     }
 
-    if (sortedKeys.length===0) {
-        html+=`<div style="text-align: center; padding: 40px 20px; border: 2px dashed rgba(0,0,0,0.1); border-radius: 16px; background: rgba(255,255,255,0.4); margin-bottom: 25px;">
-            <span style="font-size: 42px;">🧹</span>
-            <div style="font-size: 16px; font-weight: bold; margin-top: 8px; color: #333;">Não há limpezas ${showHistoryMode ? 'anteriores no histórico' : 'agendadas'}.</div>
-        </div>`;
-    } else {
-        html += `<div class="cleaning-plan-days" style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 30px;">`;
-        sortedKeys.forEach(key => {
-            const day=grouped[key];
-            const hasRooms = day.rooms && day.rooms.length > 0;
-            const hasReviews = day.reviews && day.reviews.length > 0;
-            if (!hasRooms && !hasReviews) return;
+    if (sortedKeys.length===0) html+=`<p>Não há limpezas ${showHistoryMode?'anteriores no histórico':'agendadas'}.</p>`;
 
-            let title=day.date.toLocaleDateString("pt-PT",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
-            if (day.rooms && day.rooms.some(r=>r.sunday)) title="🔴 "+title;
+    sortedKeys.forEach(key => {
+        const day=grouped[key];
+        const hasRooms = day.rooms && day.rooms.length > 0;
+        const hasReviews = day.reviews && day.reviews.length > 0;
+        if (!hasRooms && !hasReviews) return;
 
-            const dayIsBlocked = isBlockedDate(day.date);
-            const isTodayOrFuture = day.date >= today;
-            if (dayIsBlocked && isTodayOrFuture && !showHistoryMode) {
-                title = "⚠️ " + title;
-            }
+        let title=day.date.toLocaleDateString("pt-PT",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+        if (day.rooms && day.rooms.some(r=>r.sunday)) title="🔴 "+title;
 
-            let dPt=title.replace("🔴 ","").replace("⚠️ ",""); dPt=dPt.charAt(0).toUpperCase()+dPt.slice(1); let cPt=[`🧹 Limpezas - ${dPt}:`];
-            let dEs=day.date.toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long",year:"numeric"}); dEs=dEs.charAt(0).toUpperCase()+dEs.slice(1); let cEs=[`🧹 Limpiezas - ${dEs}:`];
-            let rh="";
+        const dayIsBlocked = isBlockedDate(day.date);
+        const isTodayOrFuture = day.date >= today;
+        if (dayIsBlocked && isTodayOrFuture && !showHistoryMode) {
+            title = "⚠️ " + title;
+        }
 
-            if (dayIsBlocked && isTodayOrFuture && hasRooms && !showHistoryMode) {
-                rh += `<div style="margin-bottom: 10px; font-size: 13px; color: #dc3545; font-weight: 700; background: rgba(220,53,69,0.08); padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(220,53,69,0.2);">⚠️ Dia bloqueado — limpezas abaixo são obrigatórias (turnaround)</div>`;
-            }
+        let dPt=title.replace("🔴 ","").replace("⚠️ ",""); dPt=dPt.charAt(0).toUpperCase()+dPt.slice(1); let cPt=[`🧹 Limpezas - ${dPt}:`];
+        let dEs=day.date.toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long",year:"numeric"}); dEs=dEs.charAt(0).toUpperCase()+dEs.slice(1); let cEs=[`🧹 Limpiezas - ${dEs}:`];
+        let rh="";
 
-            if (!showHistoryMode && (hasRooms || hasReviews)) {
-                const gTasks = getGarbageTasks(day.date);
-                gTasks.forEach(gt => {
-                    cPt.push(gt.pt); cEs.push(gt.es);
-                    rh += `<div style="margin-bottom: 6px; font-size: 15px;"><b>${gt.pt}</b></div>`;
-                });
-            }
+        if (dayIsBlocked && isTodayOrFuture && hasRooms && !showHistoryMode) {
+            rh += `<div style="margin-bottom: 8px; font-size: 13px; color: #dc3545; font-weight: 600;">⚠️ Dia bloqueado — limpezas abaixo são obrigatórias (turnaround)</div>`;
+        }
 
-            if (hasReviews && !showHistoryMode) {
-                day.reviews.forEach(rev => {
-                    cPt.push(`🔍 Rever limpeza: ${rev.room} (estadia cancelada)`);
-                    cEs.push(`🔍 Revisar limpieza: ${rev.room} (estancia cancelada)`);
-                    rh += `<div style="margin-top: 6px; margin-bottom: 8px; font-size: 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; background: rgba(245,158,11,0.08); border-left: 4px solid #f59e0b; padding: 8px 12px; border-radius: 8px;">
-                        <div>
-                            🔍 <b>Rever limpeza: ${rev.room}</b> <span style="font-size: 12px; color: #666;">(estadia cancelada após entrada)</span>
-                        </div>
-                        <button onclick="window.dismissReview('${rev.id || rev.room}')" title="Marcar como revisto / remover aviso"
-                            style="padding: 3px 10px; font-size: 11px; cursor: pointer; border-radius: 6px; border: 1px solid #10b981; background: #fff; color: #059669; font-weight: bold;">
-                            ✓ Rever Feito
-                        </button>
-                    </div>`;
-                });
-            }
+        if (!showHistoryMode && (hasRooms || hasReviews)) {
+            const gTasks = getGarbageTasks(day.date);
+            gTasks.forEach(gt => {
+                cPt.push(gt.pt); cEs.push(gt.es);
+                rh += `<div style="margin-bottom: 4px; font-size: 15px;"><b>${gt.pt}</b></div>`;
+            });
+        }
 
-            const settings = getAppSettings();
-            if (hasRooms) {
-                day.rooms.sort((a,b)=>a.room.localeCompare(b.room)).forEach(clean => {
-                    let hCo = clean.hasCheckout;
-                    let hCi = clean.hasCheckin;
-                    let tPt="",tEs="",tH="";
-                    if (showHistoryMode) {
-                        if (clean.urgent) { tPt=" (entrada no mesmo dia)"; tEs=" (entrada en el mismo día)"; tH=" <b>(entrada no mesmo dia)</b>"; }
-                    } else {
-                        if (hCo === undefined || hCi === undefined) {
-                            hCo = globalReservations.some(r=>r.room===clean.room&&sameDay(r.checkOut,day.date));
-                            hCi = clean.urgent||globalReservations.some(r=>r.room===clean.room&&sameDay(r.checkIn,day.date));
-                        }
-                        if (hCo && hCi) { tPt=" (sai e entra)"; tEs=" (sale y entra)"; tH=" <b>(sai e entra)</b>"; }
-                        else if (hCo) { tPt=" (sai hoje)"; tEs=" (sale hoy)"; tH=" <b>(sai hoje)</b>"; }
-                        else if (hCi) { tPt=" (entrada hoje)"; tEs=" (entrada hoy)"; tH=" <b>(entrada hoje)</b>"; }
-                    }
-                    const em = (clean.urgent || (hCi && !showHistoryMode)) ? "⚠️" : "🧹";
-                    const bedConfig = ROOM_BEDS_INFO[clean.room];
-                    const bedPt = bedConfig ? ` (${bedConfig.pt})` : "";
-                    const bedEs = bedConfig ? ` (${bedConfig.es})` : "";
-
-                    // Ao copiar, inclui SEMPRE a configuração de camas em PT e ES
-                    cPt.push(`${em} ${clean.room}${bedPt}${tPt}`);
-                    cEs.push(`${em} ${clean.room}${bedEs}${tEs}`);
-
-                    // No ecrã, mostra se a opção nas definições estiver ativada
-                    const bedHtml = (settings.showBedTypesOnScreen && bedConfig)
-                        ? ` <span style="font-size: 13px; opacity: 0.8; font-weight: 600; color: #7c3aed;">(${bedConfig.pt})</span>`
-                        : "";
-
-                    rh += `<div style="padding: 2px 0;">${em} ${clean.room}${bedHtml}${tH}</div>`;
-                });
-            }
-
-            if (settings.includeAddresses) {
-                cPt.push("");
-                cPt.push("Endereço da minha casa: Impasse Romeiras 6");
-                cPt.push("Endereço da casa Funchal: Beco da Achada 3");
-
-                cEs.push("");
-                cEs.push("Dirección de mi casa: Impasse Romeiras 6");
-                cEs.push("Dirección de la casa Funchal: Beco da Achada 3");
-            }
-
-            const isSundayDay = day.rooms && day.rooms.some(r => r.sunday);
-            const cardLeftAccent = isSundayDay
-                ? 'border-left: 6px solid #ef4444;'
-                : (dayIsBlocked ? 'border-left: 6px solid #f59e0b;' : 'border-left: 6px solid #10b981;');
-
-            const ePt=encodeURIComponent(cPt.join("\n")), eEs=encodeURIComponent(cEs.join("\n"));
-            html+=`
-                <div class="cleaning-day-card" style="padding: 16px 20px; border-radius: 16px; background: rgba(255,255,255,0.9); border: 1.5px solid rgba(0,0,0,0.08); ${cardLeftAccent} box-shadow: 0 4px 14px rgba(0,0,0,0.03); backdrop-filter: blur(8px);">
-                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; border-bottom: 1px solid rgba(0,0,0,0.06); padding-bottom: 8px;">
-                        <h2 style="margin: 0; font-size: 17px; font-weight: 800; color: #111;">${title}</h2>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            <button onclick="window.copyFromData(this,'${ePt}')" style="padding: 6px 13px; font-size: 13px; cursor: pointer; border-radius: 8px; border: 1px solid #28a745; background-color: #28a745; color: white; font-weight: bold; box-shadow: 0 2px 6px rgba(40,167,69,0.2);">🇵🇹 Copiar PT</button>
-                            <button onclick="window.copyFromData(this,'${eEs}')" style="padding: 6px 13px; font-size: 13px; cursor: pointer; border-radius: 8px; border: 1px solid #17a2b8; background-color: #17a2b8; color: white; font-weight: bold; box-shadow: 0 2px 6px rgba(23,162,184,0.2);">🇪🇸 Copiar ES</button>
-                        </div>
+        if (hasReviews && !showHistoryMode) {
+            day.reviews.forEach(rev => {
+                cPt.push(`🔍 Rever limpeza: ${rev.room} (estadia cancelada)`);
+                cEs.push(`🔍 Revisar limpieza: ${rev.room} (estancia cancelada)`);
+                rh += `<div style="margin-top: 5px; margin-bottom: 5px; font-size: 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; background: rgba(245,158,11,0.08); border-left: 4px solid #f59e0b; padding: 6px 10px; border-radius: 6px;">
+                    <div>
+                        🔍 <b>Rever limpeza: ${rev.room}</b> <span style="font-size: 12px; color: #666;">(estadia cancelada após entrada)</span>
                     </div>
-                    <div style="font-size: 15px; line-height: 1.7;">${rh}</div>
-                </div>
-            `;
-        });
-        html += `</div>`;
-    }
+                    <button onclick="window.dismissReview('${rev.id || rev.room}')" title="Marcar como revisto / remover aviso"
+                        style="padding: 3px 8px; font-size: 11px; cursor: pointer; border-radius: 6px; border: 1px solid #10b981; background: #fff; color: #059669; font-weight: bold;">
+                        ✓ Rever Feito
+                    </button>
+                </div>`;
+            });
+        }
+
+        const settings = getAppSettings();
+        if (hasRooms) {
+            day.rooms.sort((a,b)=>a.room.localeCompare(b.room)).forEach(clean => {
+                let hCo = clean.hasCheckout;
+                let hCi = clean.hasCheckin;
+                let tPt="",tEs="",tH="";
+                if (showHistoryMode) {
+                    if (clean.urgent) { tPt=" (entrada no mesmo dia)"; tEs=" (entrada en el mesmo dia)"; tH=" <b>(entrada no mesmo dia)</b>"; }
+                } else {
+                    if (hCo === undefined || hCi === undefined) {
+                        hCo = globalReservations.some(r=>r.room===clean.room&&sameDay(r.checkOut,day.date));
+                        hCi = clean.urgent||globalReservations.some(r=>r.room===clean.room&&sameDay(r.checkIn,day.date));
+                    }
+                    if (hCo && hCi) { tPt=" (sai e entra)"; tEs=" (sale y entra)"; tH=" <b>(sai e entra)</b>"; }
+                    else if (hCo) { tPt=" (sai hoje)"; tEs=" (sale hoy)"; tH=" <b>(sai hoje)</b>"; }
+                    else if (hCi) { tPt=" (entrada hoje)"; tEs=" (entrada hoy)"; tH=" <b>(entrada hoje)</b>"; }
+                }
+                const em = (clean.urgent || (hCi && !showHistoryMode)) ? "⚠️" : "🧹";
+                const bedConfig = ROOM_BEDS_INFO[clean.room];
+                const bedPt = bedConfig ? ` (${bedConfig.pt})` : "";
+                const bedEs = bedConfig ? ` (${bedConfig.es})` : "";
+
+                // Ao copiar, inclui SEMPRE a configuração de camas em PT e ES
+                cPt.push(`${em} ${clean.room}${bedPt}${tPt}`);
+                cEs.push(`${em} ${clean.room}${bedEs}${tEs}`);
+
+                // No ecrã, mostra se a opção nas definições estiver ativada
+                const bedHtml = (settings.showBedTypesOnScreen && bedConfig)
+                    ? ` <span style="font-size: 13px; opacity: 0.8; font-weight: 600; color: #7c3aed;">(${bedConfig.pt})</span>`
+                    : "";
+
+                rh += `${em} ${clean.room}${bedHtml}${tH}<br>`;
+            });
+        }
+
+        if (settings.includeAddresses) {
+            cPt.push("");
+            cPt.push("Endereço da minha casa: Impasse Romeiras 6");
+            cPt.push("Endereço da casa Funchal: Beco da Achada 3");
+
+            cEs.push("");
+            cEs.push("Dirección de mi casa: Impasse Romeiras 6");
+            cEs.push("Dirección de la casa Funchal: Beco da Achada 3");
+        }
+
+        const ePt=encodeURIComponent(cPt.join("\n")), eEs=encodeURIComponent(cEs.join("\n"));
+        html+=`<div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
+            <h2 style="margin: 0;">${title}</h2>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button onclick="window.copyFromData(this,'${ePt}')" style="padding: 6px 12px; font-size: 13px; cursor: pointer; border-radius: 6px; border: 1px solid #28a745; background-color: #28a745; color: white; font-weight: bold;">🇵🇹 Copiar PT</button>
+                <button onclick="window.copyFromData(this,'${eEs}')" style="padding: 6px 12px; font-size: 13px; cursor: pointer; border-radius: 6px; border: 1px solid #17a2b8; background-color: #17a2b8; color: white; font-weight: bold;">🇪🇸 Copiar ES</button>
+            </div></div><div style="margin-top: 8px;">${rh}</div><hr>`;
+    });
     result.innerHTML=html;
 }
 
