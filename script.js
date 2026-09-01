@@ -657,18 +657,18 @@
             align-items: center !important;
             justify-content: center !important;
             text-align: center !important;
-            gap: 10px !important;
-            background: rgba(255, 255, 255, 0.85) !important;
-            color: #111827 !important;
-            -webkit-text-fill-color: #111827 !important;
-            padding: 10px 20px !important;
-            height: auto !important;
-            border-radius: 14px !important;
-            font-size: 20px !important;
+            gap: 8px !important;
+            background: linear-gradient(135deg, #007bff, #0056b3) !important;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+            padding: 0 18px !important;
+            height: 46px !important;
+            border-radius: 11px !important;
+            font-size: 22px !important;
             font-weight: 800 !important;
             font-family: 'Plus Jakarta Sans', sans-serif !important;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04) !important;
-            border: 1.5px solid rgba(0, 0, 0, 0.1) !important;
+            box-shadow: 0 4px 14px rgba(0, 123, 255, 0.35) !important;
+            border: 2px solid #007bff !important;
             letter-spacing: 0.3px !important;
             white-space: nowrap !important;
             line-height: 1 !important;
@@ -682,30 +682,48 @@
             text-shadow: none !important;
             text-transform: none !important;
             box-sizing: border-box !important;
-            backdrop-filter: blur(8px) !important;
         }
         .al-badge-title:hover {
             transform: translateY(-1px) scale(1.02) !important;
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07) !important;
-            background: rgba(255, 255, 255, 0.95) !important;
+            filter: brightness(1.06) !important;
         }
         .al-badge-title:active {
             transform: translateY(1px) scale(0.98) !important;
         }
 
-        /* Estilos Adaptados por Tema para o Título Casas do Martim */
-        body[data-theme="outono"] .al-badge-title {
-            background: rgba(255, 255, 255, 0.85) !important;
-            border: 1.5px solid rgba(245, 158, 11, 0.4) !important;
-            color: #2c1810 !important;
-            -webkit-text-fill-color: #2c1810 !important;
-            border-radius: 14px !important;
-            font-family: 'Outfit', sans-serif !important;
-            font-size: 20px !important;
-            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.15) !important;
+        .al-section-title-badge {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            background: linear-gradient(135deg, #007bff, #0056b3) !important;
+            color: #ffffff !important;
+            padding: 12px 22px !important;
+            border-radius: 12px !important;
+            font-size: 22px !important;
+            font-weight: 800 !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            box-shadow: 0 4px 14px rgba(0, 123, 255, 0.3) !important;
+            border: 2px solid #007bff !important;
+            letter-spacing: 0.3px !important;
+            line-height: 1.2 !important;
+            user-select: none !important;
+            box-sizing: border-box !important;
         }
 
-        body[data-theme="cyber"] .al-badge-title {
+        /* Estilos Adaptados por Tema para o Título Casas do Martim e Título da Secção */
+        body[data-theme="outono"] .al-badge-title,
+        body[data-theme="outono"] .al-section-title-badge {
+            background: linear-gradient(135deg, rgba(245,158,11,0.25), rgba(234,88,12,0.35)) !important;
+            border: 2px solid rgba(245,158,11,0.5) !important;
+            color: #fff8f0 !important;
+            -webkit-text-fill-color: #fff8f0 !important;
+            font-family: 'Outfit', sans-serif !important;
+            font-size: 22px !important;
+            box-shadow: 0 4px 20px rgba(245,158,11,0.3) !important;
+        }
+
+        body[data-theme="cyber"] .al-badge-title,
+        body[data-theme="cyber"] .al-section-title-badge {
             background: rgba(0,255,65,0.12) !important;
             border: 2px solid #00ff41 !important;
             border-radius: 0px !important;
@@ -717,7 +735,8 @@
             box-shadow: 0 0 15px rgba(0,255,65,0.25) !important;
         }
 
-        body[data-theme="cappuccino"] .al-badge-title {
+        body[data-theme="cappuccino"] .al-badge-title,
+        body[data-theme="cappuccino"] .al-section-title-badge {
             background: #fffde7 !important;
             border: 2px dashed #e88d67 !important;
             border-radius: 6px !important;
@@ -728,7 +747,8 @@
             box-shadow: 3px 3px 0px rgba(44,24,16,0.15) !important;
         }
 
-        body[data-theme="carnival"] .al-badge-title {
+        body[data-theme="carnival"] .al-badge-title,
+        body[data-theme="carnival"] .al-section-title-badge {
             background: #fff7cc !important;
             border: 3px solid #ff0050 !important;
             border-radius: 30px !important;
@@ -739,7 +759,8 @@
             box-shadow: 4px 4px 0px #ff0050 !important;
         }
 
-        body[data-theme="sakura"] .al-badge-title {
+        body[data-theme="sakura"] .al-badge-title,
+        body[data-theme="sakura"] .al-section-title-badge {
             background: rgba(255,255,255,0.9) !important;
             border: 2px solid #f9a8d4 !important;
             border-radius: 14px !important;
@@ -750,7 +771,8 @@
             box-shadow: 0 4px 15px rgba(244,114,182,0.25) !important;
         }
 
-        body[data-theme="aquarela"] .al-badge-title {
+        body[data-theme="aquarela"] .al-badge-title,
+        body[data-theme="aquarela"] .al-section-title-badge {
             background: linear-gradient(135deg, rgba(2, 132, 199, 0.22) 0%, rgba(124, 58, 237, 0.2) 50%, rgba(225, 29, 72, 0.2) 100%) !important;
             border: 2px solid #0284c7 !important;
             border-radius: 16px !important;
@@ -763,7 +785,8 @@
             backdrop-filter: blur(10px) !important;
         }
 
-        body[data-theme="jornal"] .al-badge-title {
+        body[data-theme="jornal"] .al-badge-title,
+        body[data-theme="jornal"] .al-section-title-badge {
             background: #ffffff !important;
             border: 2px solid #1a1a1a !important;
             border-radius: 0px !important;
@@ -775,7 +798,8 @@
             box-shadow: none !important;
         }
 
-        body[data-theme="quadro"] .al-badge-title {
+        body[data-theme="quadro"] .al-badge-title,
+        body[data-theme="quadro"] .al-section-title-badge {
             background: rgba(255,255,255,0.06) !important;
             border: 2px dashed rgba(255,255,255,0.5) !important;
             border-radius: 6px !important;
@@ -1047,6 +1071,7 @@ try {
 } catch(e) { blockedDates = []; }
 
 let showBlockedDatesPanel = false;
+let showNext10DaysCalendar = false;
 
 function isBlockedDate(date) {
     return blockedDates.includes(formatDateKey(date));
@@ -1054,6 +1079,12 @@ function isBlockedDate(date) {
 
 window.toggleBlockedDatesPanel = function() {
     showBlockedDatesPanel = !showBlockedDatesPanel;
+    showCleaningPlan();
+};
+
+window.toggleNext10DaysCalendar = function(event) {
+    if (event) event.stopPropagation();
+    showNext10DaysCalendar = !showNext10DaysCalendar;
     showCleaningPlan();
 };
 
@@ -2129,21 +2160,93 @@ function buildNext10DaysPanelHTML(grouped, today) {
     const textPT = buildNext10DaysScheduleTextPT(grouped, today);
     const textES = buildNext10DaysScheduleTextES(grouped, today);
 
+    let workDaysCount = 0;
+    const pills = [];
+
+    for (let i = 0; i < 10; i++) {
+        const d = addDays(today, i);
+        const dk = formatDateKey(d);
+        const dayData = grouped[dk];
+        const rooms = (dayData && dayData.rooms) ? dayData.rooms : [];
+        const reviews = (dayData && dayData.reviews) ? dayData.reviews : [];
+        const totalItems = rooms.length + reviews.length;
+        const hasWork = totalItems > 0;
+        if (hasWork) workDaysCount++;
+
+        const isToday = i === 0;
+        const isSun = d.getDay() === 0;
+        const weekdayShort = d.toLocaleDateString("pt-PT", { weekday: "short" }).replace('.', '').toUpperCase();
+        const dayNum = d.getDate();
+
+        let pillBg = 'rgba(0,0,0,0.03)';
+        let pillBorder = '1px solid rgba(0,0,0,0.08)';
+        let pillColor = '#555';
+        let badgeEmoji = '😴';
+        let badgeText = 'Folga';
+        let badgeBg = 'rgba(0,0,0,0.05)';
+        let badgeColor = '#666';
+
+        if (hasWork) {
+            if (isSun) {
+                pillBg = 'rgba(239,68,68,0.08)';
+                pillBorder = '1.5px solid #ef4444';
+                pillColor = '#dc2626';
+                badgeEmoji = '🔴';
+                badgeText = `${totalItems} qto${totalItems > 1 ? 's' : ''}`;
+                badgeBg = '#ef4444';
+                badgeColor = '#ffffff';
+            } else {
+                pillBg = 'rgba(16,185,129,0.08)';
+                pillBorder = '1.5px solid #10b981';
+                pillColor = '#059669';
+                badgeEmoji = '🧹';
+                badgeText = `${totalItems} qto${totalItems > 1 ? 's' : ''}`;
+                badgeBg = '#10b981';
+                badgeColor = '#ffffff';
+            }
+        }
+
+        pills.push(`
+            <div style="flex: 1; min-width: 58px; max-width: 82px; text-align: center; padding: 10px 4px; border-radius: 12px; background: ${pillBg}; border: ${pillBorder}; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; ${isToday ? 'box-shadow: 0 0 0 2px #6366f1;' : ''}">
+                <div style="font-weight: 800; font-size: 10px; opacity: 0.75; text-transform: uppercase; color: ${pillColor};">${isToday ? 'HOJE' : weekdayShort}</div>
+                <div style="font-size: 16px; font-weight: 900; color: ${pillColor};">${dayNum}</div>
+                <div style="font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 6px; background: ${badgeBg}; color: ${badgeColor}; white-space: nowrap; display: flex; align-items: center; gap: 2px;">
+                    <span>${badgeEmoji}</span> <span>${badgeText}</span>
+                </div>
+            </div>
+        `);
+    }
+
+    const calendarContent = showNext10DaysCalendar ? `
+        <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(0,0,0,0.08); display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin;">
+            ${pills.join("")}
+        </div>
+    ` : '';
+
     return `
-        <div style="margin: 12px 0 20px 0; padding: 12px 18px; border-radius: 12px; background: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-            <div style="font-size: 14px; font-weight: 700; color: #333;">
-                📅 Próximos 10 dias de trabalho
+        <div onclick="window.toggleNext10DaysCalendar(event)"
+            style="margin: 12px 0 22px 0; padding: 14px 18px; border-radius: 16px; background: rgba(255,255,255,0.85); border: 1.5px solid rgba(99,102,241,0.2); box-shadow: 0 4px 14px rgba(99,102,241,0.05); cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;"
+            title="Clica para abrir ou fechar a visualização dos 10 dias">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <span style="font-size: 15px; font-weight: 800; color: #4338ca;">📅 Próximos 10 dias de trabalho</span>
+                    <span style="font-size: 11px; font-weight: 700; background: rgba(99,102,241,0.12); color: #4338ca; padding: 2px 8px; border-radius: 10px;">
+                        ${workDaysCount} dia${workDaysCount !== 1 ? 's' : ''} ativo${workDaysCount !== 1 ? 's' : ''}
+                    </span>
+                    <span style="font-size: 12px; opacity: 0.6; color: #4338ca;">${showNext10DaysCalendar ? '▲ ocultar' : '▼ ver dias'}</span>
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button onclick="event.stopPropagation(); window.copyFromData(this, '${encodeURIComponent(textPT)}')"
+                        style="padding: 7px 14px; font-size: 13px; cursor: pointer; border-radius: 8px; border: 1px solid #28a745; background: #28a745; color: white; font-weight: bold; box-shadow: 0 2px 6px rgba(40,167,69,0.25);">
+                        🇵🇹 Copiar PT
+                    </button>
+                    <button onclick="event.stopPropagation(); window.copyFromData(this, '${encodeURIComponent(textES)}')"
+                        style="padding: 7px 14px; font-size: 13px; cursor: pointer; border-radius: 8px; border: 1px solid #17a2b8; background: #17a2b8; color: white; font-weight: bold; box-shadow: 0 2px 6px rgba(23,162,184,0.25);">
+                        🇪🇸 Copiar ES
+                    </button>
+                </div>
             </div>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <button onclick="window.copyFromData(this, '${encodeURIComponent(textPT)}')"
-                    style="padding: 6px 13px; font-size: 13px; cursor: pointer; border-radius: 8px; border: 1px solid #28a745; background: #28a745; color: white; font-weight: bold; box-shadow: 0 2px 5px rgba(40,167,69,0.2);">
-                    🇵🇹 Copiar PT
-                </button>
-                <button onclick="window.copyFromData(this, '${encodeURIComponent(textES)}')"
-                    style="padding: 6px 13px; font-size: 13px; cursor: pointer; border-radius: 8px; border: 1px solid #17a2b8; background: #17a2b8; color: white; font-weight: bold; box-shadow: 0 2px 5px rgba(23,162,184,0.2);">
-                    🇪🇸 Copiar ES
-                </button>
-            </div>
+            ${calendarContent}
         </div>
     `;
 }
@@ -2267,8 +2370,10 @@ function showCleaningPlan() {
     }
 
     html += `
-        <div style="margin: 15px 0 18px 0; padding: 14px 20px; border-radius: 14px; background: rgba(255,255,255,0.8); border: 1.5px solid rgba(0,0,0,0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
-            <h1 style="margin: 0; font-size: 24px; color: #111;">${showHistoryMode ? "📜 Histórico de Limpezas (Cloud)" : "🧹 Plano de Limpezas"}</h1>
+        <div style="margin: 18px 0 20px 0; display: flex; align-items: center;">
+            <div class="al-section-title-badge">
+                ${showHistoryMode ? "📜 Histórico de Limpezas (Cloud)" : "🧹 Plano de Limpezas"}
+            </div>
         </div>
     `;
 
