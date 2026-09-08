@@ -2856,7 +2856,17 @@ function showCleaningPlan() {
     `;
 
     if (!showHistoryMode) {
-        html += buildNext10DaysPanelHTML(grouped, today);
+        // ── Indicador de Limpeza Ativa (Ajudante em turno) ──
+        const timeclock = cloudHistory["_timeclock"] || {};
+        const todayStrClock = formatDateKey(today);
+        const activeShift = timeclock[todayStrClock];
+        if (activeShift && activeShift.status === "in_progress" && activeShift.inTime) {
+            html += `<div style="padding: 10px 16px; border-radius: 10px; background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(6,182,212,0.08)); border: 1.5px solid #10b981; font-size: 13px; margin-bottom: 16px; color: #065f46; display: flex; align-items: center; gap: 10px; box-shadow: 0 3px 10px rgba(16,185,129,0.15);">
+                <span style="font-size: 18px; animation: pulse 1.5s infinite;">🟢</span>
+                <span><strong>Limpeza ativa:</strong> Ajudante em turno desde as <strong>${activeShift.inTime}</strong></span>
+            </div>
+            <style>@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.45} }</style>`;
+        }
     }
 
     if (sortedKeys.length===0) html+=`<p>Não há limpezas ${showHistoryMode?'anteriores no histórico':'agendadas'}.</p>`;
