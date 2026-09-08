@@ -988,9 +988,21 @@ function showWorkerView() {
             const bedText = bedConfig ? (isEs ? bedConfig.es : bedConfig.pt) : "";
             const bedHtml = bedText ? ` <span style="font-size: 13px; opacity: 0.8; font-weight: 600; color: #7c3aed;">(${bedText})</span>` : "";
 
+            const hCo = globalReservations.some(r => r.room === c.room && sameDay(r.checkOut, today));
+            const hCi = globalReservations.some(r => r.room === c.room && sameDay(r.checkIn, today));
+            let tH = "";
+            if (hCo && hCi) {
+                tH = isEs ? " <b>(sale y entra)</b>" : " <b>(sai e entra)</b>";
+            } else if (hCo) {
+                tH = isEs ? " <b>(sale hoy)</b>" : " <b>(sai hoje)</b>";
+            } else if (hCi) {
+                tH = isEs ? " <b>(entrada hoy)</b>" : " <b>(entrada hoje)</b>";
+            }
+            const em = hCi ? "⚠️" : "🧹";
+
             todayBodyHtml += `
                 <div style="font-size: 15px; margin: 4px 0;">
-                    🧹 <b>${c.room}</b> <span style="background: rgba(139,92,246,0.12); color: #7c3aed; font-size: 11px; font-weight: bold; padding: 2px 7px; border-radius: 6px;">${isEs ? 'Específica' : 'Específica'}</span>${bedHtml}${c.note ? ` <i style="color: #666; font-size: 13px;">(${c.note})</i>` : ''}
+                    ${em} <b>${c.room}</b> <span style="background: rgba(139,92,246,0.12); color: #7c3aed; font-size: 11px; font-weight: bold; padding: 2px 7px; border-radius: 6px;">${isEs ? 'Específica' : 'Específica'}</span>${bedHtml}${tH}${c.note ? ` <i style="color: #666; font-size: 13px;">(${c.note})</i>` : ''}
                 </div>
             `;
         });
@@ -1092,9 +1104,21 @@ function showWorkerView() {
             const bedText = bedConfig ? (isEs ? bedConfig.es : bedConfig.pt) : "";
             const bedHtml = bedText ? ` <span style="font-size: 13px; opacity: 0.8; font-weight: 600; color: #7c3aed;">(${bedText})</span>` : "";
 
+            const hCo = globalReservations.some(r => r.room === c.room && sameDay(r.checkOut, tomorrow));
+            const hCi = globalReservations.some(r => r.room === c.room && sameDay(r.checkIn, tomorrow));
+            let tH = "";
+            if (hCo && hCi) {
+                tH = isEs ? " <b>(sale y entra)</b>" : " <b>(sai e entra)</b>";
+            } else if (hCo) {
+                tH = isEs ? " <b>(sale mañana)</b>" : " <b>(sai amanhã)</b>";
+            } else if (hCi) {
+                tH = isEs ? " <b>(entrada mañana)</b>" : " <b>(entrada amanhã)</b>";
+            }
+            const em = hCi ? "⚠️" : "🧹";
+
             tomorrowBodyHtml += `
                 <div style="font-size: 15px; margin: 4px 0;">
-                    🧹 <b>${c.room}</b> <span style="background: rgba(139,92,246,0.12); color: #7c3aed; font-size: 11px; font-weight: bold; padding: 2px 7px; border-radius: 6px;">${isEs ? 'Específica' : 'Específica'}</span>${bedHtml}${c.note ? ` <i style="color: #666; font-size: 13px;">(${c.note})</i>` : ''}
+                    ${em} <b>${c.room}</b> <span style="background: rgba(139,92,246,0.12); color: #7c3aed; font-size: 11px; font-weight: bold; padding: 2px 7px; border-radius: 6px;">${isEs ? 'Específica' : 'Específica'}</span>${bedHtml}${tH}${c.note ? ` <i style="color: #666; font-size: 13px;">(${c.note})</i>` : ''}
                 </div>
             `;
         });
