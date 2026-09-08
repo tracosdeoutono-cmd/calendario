@@ -2962,15 +2962,27 @@ function showCleaningPlan() {
                 const notePt = c.note ? ` - ${c.note}` : "";
                 const noteEs = c.note ? ` - ${c.note}` : "";
 
-                cPt.push(`🧹 ${c.room}${bedPt} (Específica${notePt})`);
-                cEs.push(`🧹 ${c.room}${bedEs} (Específica${noteEs})`);
+                const hCo = globalReservations.some(r => r.room === c.room && sameDay(r.checkOut, day.date));
+                const hCi = globalReservations.some(r => r.room === c.room && sameDay(r.checkIn, day.date));
+                let tPt = "", tEs = "", tH = "";
+                if (showHistoryMode) {
+                    if (hCi) { tPt = " (entrada no mesmo dia)"; tEs = " (entrada en el mesmo dia)"; tH = " <b>(entrada no mesmo dia)</b>"; }
+                } else {
+                    if (hCo && hCi) { tPt = " (sai e entra)"; tEs = " (sale y entra)"; tH = " <b>(sai e entra)</b>"; }
+                    else if (hCo) { tPt = " (sai hoje)"; tEs = " (sale hoy)"; tH = " <b>(sai hoje)</b>"; }
+                    else if (hCi) { tPt = " (entrada hoje)"; tEs = " (entrada hoy)"; tH = " <b>(entrada hoje)</b>"; }
+                }
+                const em = (hCi && !showHistoryMode) ? "⚠️" : "🧹";
+
+                cPt.push(`${em} ${c.room}${bedPt} (Específica${notePt})${tPt}`);
+                cEs.push(`${em} ${c.room}${bedEs} (Específica${noteEs})${tEs}`);
 
                 const bedHtml = (settings.showBedTypesOnScreen && bedConfig)
                     ? ` <span style="font-size: 13px; opacity: 0.8; font-weight: 600; color: #7c3aed;">(${bedConfig.pt})</span>`
                     : "";
 
                 rh += `<div style="display: inline-flex; align-items: center; gap: 8px; margin: 3px 0;">
-                    <span>🧹 <b>${c.room}</b> <span style="background: rgba(139,92,246,0.12); color: #7c3aed; font-size: 11px; font-weight: bold; padding: 2px 7px; border-radius: 6px;">Específica</span>${bedHtml}${c.note ? ` <i style="color: #666; font-size: 13px;">(${c.note})</i>` : ''}</span>
+                    <span>${em} <b>${c.room}</b> <span style="background: rgba(139,92,246,0.12); color: #7c3aed; font-size: 11px; font-weight: bold; padding: 2px 7px; border-radius: 6px;">Específica</span>${bedHtml}${tH}${c.note ? ` <i style="color: #666; font-size: 13px;">(${c.note})</i>` : ''}</span>
                     <button onclick="window.removeCustomCleaning('${c.id}')" title="Remover limpeza específica" style="background: none; border: none; cursor: pointer; color: #dc3545; font-weight: bold; font-size: 14px; padding: 0 4px;">×</button>
                 </div><br>`;
             });
