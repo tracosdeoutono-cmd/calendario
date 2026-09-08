@@ -4582,11 +4582,21 @@ function showPaymentsView() {
                         </div>
                     `;
                 } else {
+                    const isWorkerEntry = item.byWorker || (item.note && /ajudante/i.test(item.note));
+                    const cardStyle = isWorkerEntry
+                        ? 'border: 2px solid #10b981; border-left: 6px solid #10b981; background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(6,182,212,0.04)); box-shadow: 0 4px 12px rgba(16,185,129,0.12);'
+                        : 'border: 1px solid rgba(0,0,0,0.1); border-radius: 14px; background: rgba(255,255,255,0.85); box-shadow: 0 2px 6px rgba(0,0,0,0.02);';
+
                     html += `
-                        <div style="border: 1px solid rgba(0,0,0,0.1); border-radius: 14px; padding: 14px 18px; background: rgba(255,255,255,0.85); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
+                        <div style="${cardStyle} border-radius: 14px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                             <div>
                                 <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                                     <strong style="font-size: 15px; color: #111;">📅 ${capitalizedDay}</strong>
+                                    ${isWorkerEntry ? `
+                                        <span style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 2px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(16,185,129,0.3);">
+                                            👤 Marcado pela Ajudante ${item.checkInTime && item.checkOutTime ? `(${item.checkInTime} - ${item.checkOutTime})` : ''}
+                                        </span>
+                                    ` : ''}
                                     ${item.hours ? `
                                         <span style="background: rgba(139,92,246,0.12); color: #7c3aed; font-weight: 800; padding: 2px 10px; border-radius: 12px; font-size: 13px;">
                                             ⏱️ ${item.hours.toString().replace('.', ',')} h
@@ -4742,6 +4752,154 @@ let showWorkerPaymentsHistory = false;
 window.toggleWorkerPaymentsTab = function(historyMode) {
     showWorkerPaymentsHistory = !!historyMode;
     showWorkerView();
+};
+
+let showCheckInOptions = false;
+let showCheckOutOptions = false;
+
+window.toggleCheckInOptions = function(event) {
+    if (event) event.stopPropagation();
+    showCheckInOptions = !showCheckInOptions;
+    showCheckOutOptions = false;
+    showWorkerView();
+};
+
+window.toggleCheckOutOptions = function(event) {
+    if (event) event.stopPropagation();
+    showCheckOutOptions = !showCheckOutOptions;
+    showCheckInOptions = false;
+    showWorkerView();
+};
+
+window.recordWorkerCheckIn = async function(minutesAgo) {
+    const isEs = workerLanguage === "es";
+    const targetMs = Date.now() - (minutesAgo * 60 * 1000);
+    const targetDate = new Date(targetMs);
+    const timeStr = targetDate.toLocaleTimeString(isEs ? "es-ES" : "pt-PT", { hour: "2-digit", minute: "2-digit" });
+    
+    const msg = isEs
+        ? `¿Confirmas que deseas empezar el día a las ${timeStr}?`
+        : `Confirmas que queres começar o dia às ${timeStr}?`;
+    
+    if (!confirm(msg)) return;
+
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const todayStr = formatDateKey(today);
+
+    if (!cloudHistory["_timeclock"] || typeof cloudHistory["_timeclock"] !== 'object') {
+        cloudHistory["_timeclock"] = {};
+    }
+
+    cloudHistory["_timeclock"][todayStr] = {
+        status: "in_progress",
+        inTime: timeStr,
+        inTimestamp: targetMs,
+        dateKey: todayStr
+    };
+
+    showCheckInOptions = false;
+    try { localStorage.setItem("al_cloud_history_backup", JSON.stringify(cloudHistory)); } catch(e) {}
+    showWorkerView();
+    if (historyLoadedOk) await saveToCloudHistory(cloudHistory);
+};
+
+window.recordWorkerCheckOut = async function(minutesAgo) {
+    const isEs = workerLanguage === "es";
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const todayStr = formatDateKey(today);
+
+    const shift = (cloudHistory["_timeclock"] && cloudHistory["_timeclock"][todayStr]) ? cloudHistory["_timeclock"][todayStr] : null;
+    if (!shift || !shift.inTimestamp) {
+        alert(isEs ? "Error: No se encontró la hora de entrada." : "Erro: Não foi encontrada a hora de entrada.");
+        return;
+    }
+
+    const outMs = Date.now() - (minutesAgo * 60 * 1000);
+    const outDate = new Date(outMs);
+    const outTimeStr = outDate.toLocaleTimeString(isEs ? "es-ES" : "pt-PT", { hour: "2-digit", minute: "2-digit" });
+
+    const diffMs = outMs - shift.inTimestamp;
+    if (diffMs <= 0) {
+        alert(isEs ? "La hora de salida no puede ser anterior a la hora de entrada." : "A hora de saída não pode ser anterior à hora de entrada.");
+        return;
+    }
+
+    const diffMinutes = Math.round(diffMs / (60 * 1000));
+    let hours = Math.round((diffMinutes / 60) * 100) / 100;
+    if (hours < 0.1) hours = 0.1;
+    const hoursFormatted = hours.toString().replace('.', ',');
+    const totalAmount = Math.round(hours * 11 * 100) / 100;
+    const amountFormatted = totalAmount.toLocaleString(isEs ? 'es-ES' : 'pt-PT', { style: 'currency', currency: 'EUR' });
+
+    const msg = isEs
+        ? `¿Confirmas que deseas finalizar el día a las ${outTimeStr}?\n\n⏱️ Total: ${hoursFormatted} horas\n💰 Importe calculado: ${amountFormatted}`
+        : `Confirmas que queres finalizar o dia às ${outTimeStr}?\n\n⏱️ Total: ${hoursFormatted} horas\n💰 Valor calculado: ${amountFormatted}`;
+
+    if (!confirm(msg)) return;
+
+    const pData = getPayrollData();
+    const newWorkId = "work_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
+    const newWorkEntry = {
+        id: newWorkId,
+        dateKey: todayStr,
+        hours: hours,
+        extraMoney: 0,
+        rate: 11,
+        amount: totalAmount,
+        note: isEs ? `Registrado por la ayudante (${shift.inTime} - ${outTimeStr})` : `Registado pela ajudante (${shift.inTime} - ${outTimeStr})`,
+        byWorker: true,
+        checkInTime: shift.inTime,
+        checkOutTime: outTimeStr,
+        createdAt: new Date().toISOString()
+    };
+
+    pData.pendingWork.push(newWorkEntry);
+    pData.pendingWork.sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+
+    cloudHistory["_timeclock"][todayStr] = {
+        status: "completed",
+        inTime: shift.inTime,
+        outTime: outTimeStr,
+        hours: hours,
+        amount: totalAmount,
+        workId: newWorkId,
+        dateKey: todayStr
+    };
+
+    showCheckOutOptions = false;
+    try { localStorage.setItem("al_cloud_history_backup", JSON.stringify(cloudHistory)); } catch(e) {}
+    showWorkerView();
+    if (historyLoadedOk) await saveToCloudHistory(cloudHistory);
+};
+
+window.resetWorkerShift = async function() {
+    const isEs = workerLanguage === "es";
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const todayStr = formatDateKey(today);
+
+    const msg = isEs
+        ? "¿Deseas reiniciar o corregir el registro de horario de hoy?"
+        : "Queres reiniciar ou corrigir o registo de horário de hoje?";
+    
+    if (!confirm(msg)) return;
+
+    if (cloudHistory["_timeclock"] && cloudHistory["_timeclock"][todayStr]) {
+        const shift = cloudHistory["_timeclock"][todayStr];
+        if (shift.workId) {
+            const pData = getPayrollData();
+            pData.pendingWork = pData.pendingWork.filter(w => w.id !== shift.workId);
+        }
+        delete cloudHistory["_timeclock"][todayStr];
+    }
+
+    showCheckInOptions = false;
+    showCheckOutOptions = false;
+    try { localStorage.setItem("al_cloud_history_backup", JSON.stringify(cloudHistory)); } catch(e) {}
+    showWorkerView();
+    if (historyLoadedOk) await saveToCloudHistory(cloudHistory);
 };
 
 function showWorkerView() {
@@ -4965,7 +5123,261 @@ function showWorkerView() {
     `;
 
     // ══════════════════════════════════════════════════
-    // 2. PRÓXIMOS 10 DIAS DE TRABALHO (Sem botões de cópia)
+    // 2. LIMPEZAS DE AMANHÃ (Dia Seguinte)
+    // ══════════════════════════════════════════════════
+    const tomorrow = addDays(today, 1);
+    const tomorrowStr = formatDateKey(tomorrow);
+    const tomorrowData = grouped[tomorrowStr] || { date: tomorrow, rooms: [], reviews: [], customCleanings: [] };
+    const tomorrowRooms = tomorrowData.rooms || [];
+    const tomorrowReviews = tomorrowData.reviews || [];
+    const tomorrowCustom = tomorrowData.customCleanings || [];
+    const hasTomorrowWork = tomorrowRooms.length > 0 || tomorrowReviews.length > 0 || tomorrowCustom.length > 0;
+
+    const rawTomorrowDay = tomorrow.toLocaleDateString(isEs ? "es-ES" : "pt-PT", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    const capitalizedTomorrowDay = rawTomorrowDay.charAt(0).toUpperCase() + rawTomorrowDay.slice(1);
+
+    let tomorrowBodyHtml = "";
+
+    if (hasTomorrowWork) {
+        // Tarefas de Lixo de amanhã
+        const gTasksTomorrow = getGarbageTasks(tomorrow);
+        gTasksTomorrow.forEach(gt => {
+            const taskText = isEs ? gt.es : gt.pt;
+            tomorrowBodyHtml += `<div style="margin-bottom: 6px; font-size: 15px; font-weight: 700; color: #0284c7;">${taskText}</div>`;
+        });
+
+        // Revisões de amanhã
+        if (tomorrowReviews.length > 0) {
+            tomorrowReviews.forEach(rev => {
+                tomorrowBodyHtml += `
+                    <div style="margin: 6px 0; padding: 8px 12px; background: rgba(245,158,11,0.08); border-left: 4px solid #f59e0b; border-radius: 6px; font-size: 14px;">
+                        🔍 <b>${isEs ? 'Revisar limpieza:' : 'Rever limpeza:'} ${rev.room}</b> <span style="font-size: 12px; color: #666;">(${isEs ? 'estancia cancelada' : 'estadia cancelada'})</span>
+                    </div>
+                `;
+            });
+        }
+
+        // Quartos regulares de amanhã
+        tomorrowRooms.sort((a, b) => a.room.localeCompare(b.room)).forEach(clean => {
+            let hCo = clean.hasCheckout;
+            let hCi = clean.hasCheckin;
+            let tH = "";
+            if (hCo === undefined || hCi === undefined) {
+                hCo = globalReservations.some(r => r.room === clean.room && sameDay(r.checkOut, tomorrow));
+                hCi = clean.urgent || globalReservations.some(r => r.room === clean.room && sameDay(r.checkIn, tomorrow));
+            }
+            if (hCo && hCi) {
+                tH = isEs ? " <b>(sale y entra)</b>" : " <b>(sai e entra)</b>";
+            } else if (hCo) {
+                tH = isEs ? " <b>(sale mañana)</b>" : " <b>(sai amanhã)</b>";
+            } else if (hCi) {
+                tH = isEs ? " <b>(entrada mañana)</b>" : " <b>(entrada amanhã)</b>";
+            }
+
+            const em = (clean.urgent || hCi) ? "⚠️" : "🧹";
+            const bedConfig = ROOM_BEDS_INFO[clean.room];
+            const bedText = bedConfig ? (isEs ? bedConfig.es : bedConfig.pt) : "";
+            const bedHtml = bedText ? ` <span style="font-size: 13px; opacity: 0.8; font-weight: 600; color: #7c3aed;">(${bedText})</span>` : "";
+
+            tomorrowBodyHtml += `<div style="font-size: 15px; margin: 4px 0;">${em} <b>${clean.room}</b>${bedHtml}${tH}</div>`;
+        });
+
+        // Limpezas específicas de amanhã
+        tomorrowCustom.forEach(c => {
+            const bedConfig = ROOM_BEDS_INFO[c.room];
+            const bedText = bedConfig ? (isEs ? bedConfig.es : bedConfig.pt) : "";
+            const bedHtml = bedText ? ` <span style="font-size: 13px; opacity: 0.8; font-weight: 600; color: #7c3aed;">(${bedText})</span>` : "";
+
+            tomorrowBodyHtml += `
+                <div style="font-size: 15px; margin: 4px 0;">
+                    🧹 <b>${c.room}</b> <span style="background: rgba(139,92,246,0.12); color: #7c3aed; font-size: 11px; font-weight: bold; padding: 2px 7px; border-radius: 6px;">${isEs ? 'Específica' : 'Específica'}</span>${bedHtml}${c.note ? ` <i style="color: #666; font-size: 13px;">(${c.note})</i>` : ''}
+                </div>
+            `;
+        });
+
+        if (settings.includeAddresses) {
+            tomorrowBodyHtml += `
+                <div style="margin-top: 14px; padding-top: 10px; border-top: 1px dashed rgba(0,0,0,0.1); font-size: 12px; color: #666; line-height: 1.5;">
+                    <div>📍 <b>${isEs ? 'Dirección Impasse:' : 'Morada Impasse:'}</b> Impasse Romeiras 6</div>
+                    <div>📍 <b>${isEs ? 'Dirección Funchal (Achada):' : 'Morada Funchal (Achada):'}</b> Beco da Achada 3</div>
+                </div>
+            `;
+        }
+    } else {
+        tomorrowBodyHtml = `
+            <div style="padding: 14px 0; font-size: 15px; color: #059669; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <span>✨</span> <span>${isEs ? '¡No hay limpiezas programadas para mañana!' : 'Sem limpezas programadas para amanhã!'}</span>
+            </div>
+        `;
+    }
+
+    html += `
+        <!-- Secção 2: Limpezas de Amanhã -->
+        <div style="border: 1px solid #ddd; border-radius: 16px; padding: 20px; margin-bottom: 22px; background-color: #f8f9fa; border-left: 6px solid #6366f1; box-shadow: 0 4px 14px rgba(99,102,241,0.08);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+                <div>
+                    <h2 style="margin: 0; font-size: 20px; color: #4f46e5;">${isEs ? '📅 Limpiezas de Mañana' : '📅 Limpezas de Amanhã'}</h2>
+                    <div style="font-size: 13px; opacity: 0.75; font-weight: 600; margin-top: 2px;">📅 ${capitalizedTomorrowDay}</div>
+                </div>
+            </div>
+            <div style="margin-top: 10px;">
+                ${tomorrowBodyHtml}
+            </div>
+        </div>
+    `;
+
+    // ══════════════════════════════════════════════════
+    // 3. REGISTO DE PONTO / HORÁRIO DE HOJE
+    // ══════════════════════════════════════════════════
+    if (!cloudHistory["_timeclock"] || typeof cloudHistory["_timeclock"] !== 'object') {
+        cloudHistory["_timeclock"] = {};
+    }
+    const currentShift = cloudHistory["_timeclock"][todayStr] || null;
+
+    let timeclockBodyHtml = "";
+    const now = new Date();
+    const formatTimeOffset = (mins) => {
+        const d = new Date(now.getTime() - mins * 60 * 1000);
+        return d.toLocaleTimeString(isEs ? "es-ES" : "pt-PT", { hour: "2-digit", minute: "2-digit" });
+    };
+
+    if (!currentShift || currentShift.status === "not_started") {
+        timeclockBodyHtml = `
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="font-size: 14px; opacity: 0.85; line-height: 1.4;">
+                    ${isEs ? 'Marca la hora de entrada al empezar tu jornada de trabajo:' : 'Marca a hora de entrada ao começares a trabalhar hoje:'}
+                </div>
+                <div>
+                    <button onclick="window.toggleCheckInOptions(event)"
+                        style="padding: 12px 22px; font-size: 15px; font-weight: 800; cursor: pointer; border-radius: 12px; border: none; background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 4px 14px rgba(16,185,129,0.3); display: inline-flex; align-items: center; gap: 8px; transition: transform 0.15s ease;">
+                        <span>🟢</span> <span>${isEs ? 'Empezar Día (Marcar Entrada)' : 'Começar Dia (Marcar Entrada)'}</span>
+                    </button>
+                </div>
+                ${showCheckInOptions ? `
+                    <div style="background: rgba(255,255,255,0.95); border: 2px solid #10b981; border-radius: 14px; padding: 14px; margin-top: 4px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); animation: popupFadeIn 0.2s ease;">
+                        <div style="font-size: 13px; font-weight: 700; color: #059669; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">
+                            ${isEs ? 'Selecciona la hora de entrada:' : 'Seleciona a hora de entrada:'}
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button onclick="window.recordWorkerCheckIn(0)"
+                                style="padding: 10px 18px; font-size: 14px; font-weight: 800; cursor: pointer; border-radius: 10px; border: 1.5px solid #10b981; background: #ffffff; color: #059669; box-shadow: 0 2px 6px rgba(16,185,129,0.15);">
+                                ⏱️ ${isEs ? 'Ahora' : 'Agora'} (${formatTimeOffset(0)})
+                            </button>
+                            <button onclick="window.recordWorkerCheckIn(15)"
+                                style="padding: 10px 18px; font-size: 14px; font-weight: 800; cursor: pointer; border-radius: 10px; border: 1.5px solid #10b981; background: #ffffff; color: #059669; box-shadow: 0 2px 6px rgba(16,185,129,0.15);">
+                                ⏱️ ${isEs ? 'Hace 15 min' : 'Há 15 min'} (${formatTimeOffset(15)})
+                            </button>
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    } else if (currentShift.status === "in_progress") {
+        timeclockBodyHtml = `
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding: 12px 16px; background: rgba(16,185,129,0.12); border-left: 5px solid #10b981; border-radius: 10px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 20px;">🟢</span>
+                        <div>
+                            <strong style="font-size: 15px; color: #065f46;">${isEs ? 'Jornada en curso' : 'Jornada em curso'}</strong>
+                            <div style="font-size: 13px; color: #047857; margin-top: 1px;">
+                                ${isEs ? 'Entrada marcada a las' : 'Entrada marcada às'} <b>${currentShift.inTime}</b>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <button onclick="window.resetWorkerShift()" style="font-size: 12px; color: #6b7280; background: none; border: none; text-decoration: underline; cursor: pointer; padding: 4px;">
+                            ${isEs ? 'Corregir entrada' : 'Corrigir entrada'}
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <button onclick="window.toggleCheckOutOptions(event)"
+                        style="padding: 12px 22px; font-size: 15px; font-weight: 800; cursor: pointer; border-radius: 12px; border: none; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; box-shadow: 0 4px 14px rgba(239,68,68,0.3); display: inline-flex; align-items: center; gap: 8px; transition: transform 0.15s ease;">
+                        <span>🔴</span> <span>${isEs ? 'Terminar Día (Marcar Salida)' : 'Acabar Dia (Marcar Saída)'}</span>
+                    </button>
+                </div>
+
+                ${showCheckOutOptions ? `
+                    <div style="background: rgba(255,255,255,0.95); border: 2px solid #ef4444; border-radius: 14px; padding: 14px; margin-top: 4px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); animation: popupFadeIn 0.2s ease;">
+                        <div style="font-size: 13px; font-weight: 700; color: #dc2626; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">
+                            ${isEs ? 'Selecciona la hora de salida:' : 'Seleciona a hora de saída:'}
+                        </div>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button onclick="window.recordWorkerCheckOut(0)"
+                                style="padding: 9px 14px; font-size: 13px; font-weight: 800; cursor: pointer; border-radius: 9px; border: 1.5px solid #ef4444; background: #ffffff; color: #dc2626;">
+                                ⏱️ ${isEs ? 'Ahora' : 'Agora'} (${formatTimeOffset(0)})
+                            </button>
+                            <button onclick="window.recordWorkerCheckOut(15)"
+                                style="padding: 9px 14px; font-size: 13px; font-weight: 800; cursor: pointer; border-radius: 9px; border: 1.5px solid #ef4444; background: #ffffff; color: #dc2626;">
+                                ⏱️ ${isEs ? 'Hace 15 min' : 'Há 15 min'} (${formatTimeOffset(15)})
+                            </button>
+                            <button onclick="window.recordWorkerCheckOut(30)"
+                                style="padding: 9px 14px; font-size: 13px; font-weight: 800; cursor: pointer; border-radius: 9px; border: 1.5px solid #ef4444; background: #ffffff; color: #dc2626;">
+                                ⏱️ ${isEs ? 'Hace 30 min' : 'Há 30 min'} (${formatTimeOffset(30)})
+                            </button>
+                            <button onclick="window.recordWorkerCheckOut(60)"
+                                style="padding: 9px 14px; font-size: 13px; font-weight: 800; cursor: pointer; border-radius: 9px; border: 1.5px solid #ef4444; background: #ffffff; color: #dc2626;">
+                                ⏱️ ${isEs ? 'Hace 1 hora' : 'Há 1 hora'} (${formatTimeOffset(60)})
+                            </button>
+                            <button onclick="window.recordWorkerCheckOut(120)"
+                                style="padding: 9px 14px; font-size: 13px; font-weight: 800; cursor: pointer; border-radius: 9px; border: 1.5px solid #ef4444; background: #ffffff; color: #dc2626;">
+                                ⏱️ ${isEs ? 'Hace 2 horas' : 'Há 2 horas'} (${formatTimeOffset(120)})
+                            </button>
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    } else if (currentShift.status === "completed") {
+        const hoursFmt = (currentShift.hours || 0).toString().replace('.', ',');
+        const amtVal = (currentShift.amount !== undefined && !isNaN(currentShift.amount)) ? currentShift.amount : ((currentShift.hours || 0) * 11);
+        const amtFmt = amtVal.toLocaleString(isEs ? 'es-ES' : 'pt-PT', { style: 'currency', currency: 'EUR' });
+
+        timeclockBodyHtml = `
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; padding: 14px 18px; background: rgba(16,185,129,0.1); border: 2px solid #10b981; border-radius: 12px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size: 26px;">✅</span>
+                    <div>
+                        <div style="font-size: 15px; font-weight: 800; color: #065f46;">
+                            ${isEs ? '¡Día de trabajo completado y registrado!' : 'Dia de trabalho concluído e registado!'}
+                        </div>
+                        <div style="font-size: 13px; color: #047857; margin-top: 2px;">
+                            ${currentShift.inTime} – ${currentShift.outTime} • <strong>${hoursFmt} horas</strong> (${amtFmt})
+                        </div>
+                        <div style="font-size: 12px; color: #059669; margin-top: 2px; font-weight: 600;">
+                            ${isEs ? '💰 Añadido a tus pagos pendientes abajo' : '💰 Adicionado aos teus pagamentos pendentes abaixo'}
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <button onclick="window.resetWorkerShift()"
+                        style="padding: 7px 14px; font-size: 12px; cursor: pointer; border-radius: 8px; border: 1px solid #10b981; background: #ffffff; color: #059669; font-weight: bold;">
+                        ✏️ ${isEs ? 'Corregir / Reiniciar' : 'Corrigir / Reiniciar'}
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    html += `
+        <!-- Secção 3: Registo de Horário de Hoje (Ponto) -->
+        <div style="border: 2px solid #10b981; border-radius: 16px; padding: 20px; margin-bottom: 22px; background: #f0fdf4; border-left: 6px solid #10b981; box-shadow: 0 4px 14px rgba(16,185,129,0.1);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+                <div>
+                    <h2 style="margin: 0; font-size: 20px; color: #047857;">${isEs ? '⏱️ Registro de Horario de Hoy' : '⏱️ Registo de Horário de Hoje'}</h2>
+                    <div style="font-size: 13px; opacity: 0.75; font-weight: 600; margin-top: 2px;">Tarifa: 11,00 € / hora</div>
+                </div>
+            </div>
+            <div style="margin-top: 10px;">
+                ${timeclockBodyHtml}
+            </div>
+        </div>
+    `;
+
+    // ══════════════════════════════════════════════════
+    // 4. PRÓXIMOS 10 DIAS DE TRABALHO (Sem botões de cópia)
     // ══════════════════════════════════════════════════
     const pills = [];
     for (let i = 0; i < 10; i++) {
