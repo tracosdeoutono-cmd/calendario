@@ -1070,7 +1070,14 @@ try {
     if (!Array.isArray(blockedDates)) blockedDates = [];
 } catch(e) { blockedDates = []; }
 
+let customCleanings = [];
+try {
+    customCleanings = JSON.parse(localStorage.getItem("al_custom_cleanings") || "[]");
+    if (!Array.isArray(customCleanings)) customCleanings = [];
+} catch(e) { customCleanings = []; }
+
 let showBlockedDatesPanel = false;
+let showCustomCleaningsPanel = false;
 let showNext10DaysCalendar = false;
 
 function isBlockedDate(date) {
@@ -1079,6 +1086,13 @@ function isBlockedDate(date) {
 
 window.toggleBlockedDatesPanel = function() {
     showBlockedDatesPanel = !showBlockedDatesPanel;
+    if (showBlockedDatesPanel) showCustomCleaningsPanel = false;
+    showCleaningPlan();
+};
+
+window.toggleCustomCleaningsPanel = function() {
+    showCustomCleaningsPanel = !showCustomCleaningsPanel;
+    if (showCustomCleaningsPanel) showBlockedDatesPanel = false;
     showCleaningPlan();
 };
 
@@ -1110,6 +1124,42 @@ window.removeBlockedDate = function(dk) {
     try { localStorage.setItem("al_blocked_dates", JSON.stringify(blockedDates)); } catch(e) {}
     if (historyLoadedOk) saveToCloudHistory(cloudHistory);
     syncCleaningPlan();
+    showCleaningPlan();
+};
+
+window.addCustomCleaning = function() {
+    const dateInput = document.getElementById('al-custom-date-input');
+    const roomSelect = document.getElementById('al-custom-room-select');
+    const noteInput = document.getElementById('al-custom-note-input');
+    if (!dateInput || !dateInput.value || !roomSelect || !roomSelect.value) return;
+
+    const dk = dateInput.value;
+    const room = roomSelect.value.trim();
+    const note = noteInput ? noteInput.value.trim() : "";
+
+    const newCleaning = {
+        id: "cust_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4),
+        dateKey: dk,
+        room: room,
+        note: note,
+        createdAt: new Date().toISOString()
+    };
+
+    customCleanings.push(newCleaning);
+    customCleanings.sort((a,b) => a.dateKey.localeCompare(b.dateKey));
+    cloudHistory["_customCleanings"] = customCleanings;
+    try { localStorage.setItem("al_custom_cleanings", JSON.stringify(customCleanings)); } catch(e) {}
+    if (historyLoadedOk) saveToCloudHistory(cloudHistory);
+    
+    if (noteInput) noteInput.value = "";
+    showCleaningPlan();
+};
+
+window.removeCustomCleaning = function(id) {
+    customCleanings = customCleanings.filter(c => c.id !== id);
+    cloudHistory["_customCleanings"] = customCleanings;
+    try { localStorage.setItem("al_custom_cleanings", JSON.stringify(customCleanings)); } catch(e) {}
+    if (historyLoadedOk) saveToCloudHistory(cloudHistory);
     showCleaningPlan();
 };
 
@@ -1687,6 +1737,26 @@ async function fetchCloudHistory() {
             } catch(e) {}
         }
 
+        // Sincroniza limpezas específicas da cloud + local
+        let mergedCustom = new Map();
+        customCleanings.forEach(c => {
+            if (c && c.dateKey && c.room) {
+                const id = c.id || `${c.dateKey}_${c.room}`;
+                mergedCustom.set(id, { ...c, id });
+            }
+        });
+        if (Array.isArray(cloudHistory["_customCleanings"])) {
+            cloudHistory["_customCleanings"].forEach(c => {
+                if (c && c.dateKey && c.room) {
+                    const id = c.id || `${c.dateKey}_${c.room}`;
+                    mergedCustom.set(id, { ...c, id });
+                }
+            });
+        }
+        customCleanings = Array.from(mergedCustom.values()).sort((a,b) => a.dateKey.localeCompare(b.dateKey));
+        cloudHistory["_customCleanings"] = customCleanings;
+        try { localStorage.setItem("al_custom_cleanings", JSON.stringify(customCleanings)); } catch(e) {}
+
         // Regista o acesso do dispositivo atual e envia para a Cloud imediatamente
         logDeviceAccess();
         saveToCloudHistory(cloudHistory);
@@ -1703,6 +1773,22 @@ async function fetchCloudHistory() {
             if (!cloudHistory["_payroll"]) {
                 const localPayroll = JSON.parse(localStorage.getItem("al_payroll_backup") || 'null');
                 if (localPayroll) cloudHistory["_payroll"] = localPayroll;
+            }
+            if (Array.isArray(cloudHistory["_customCleanings"])) {
+                let mergedCustom = new Map();
+                customCleanings.forEach(c => {
+                    if (c && c.dateKey && c.room) {
+                        const id = c.id || `${c.dateKey}_${c.room}`;
+                        mergedCustom.set(id, { ...c, id });
+                    }
+                });
+                cloudHistory["_customCleanings"].forEach(c => {
+                    if (c && c.dateKey && c.room) {
+                        const id = c.id || `${c.dateKey}_${c.room}`;
+                        mergedCustom.set(id, { ...c, id });
+                    }
+                });
+                customCleanings = Array.from(mergedCustom.values()).sort((a,b) => a.dateKey.localeCompare(b.dateKey));
             }
         } catch(err) { cloudHistory = {}; }
         historyLoadedOk = false;
@@ -2102,6 +2188,69 @@ function buildBlockedDatesPanelHTML() {
     `;
 }
 
+function buildCustomCleaningsPanelHTML() {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const todayStr = formatDateKey(today);
+    const futureCleanings = customCleanings.filter(c => parseDateKey(c.dateKey) >= today);
+    const pastCleanings = customCleanings.filter(c => parseDateKey(c.dateKey) < today);
+
+    let chipsHtml = '';
+    if (futureCleanings.length > 0) {
+        chipsHtml += `<div style="margin-bottom: 8px; font-size: 12px; font-weight: 700; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Próximas</div>`;
+        chipsHtml += futureCleanings.map(c => {
+            const d = parseDateKey(c.dateKey);
+            const label = d.toLocaleDateString("pt-PT", { weekday: "short", day: "numeric", month: "short" });
+            return `<div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(139,92,246,0.1); border: 1.5px solid rgba(139,92,246,0.35); border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 600; color: #5b21b6;">
+                <span>✨ <b>${c.room}</b> • 📅 ${label}${c.note ? ` <i>(${c.note})</i>` : ''}</span>
+                <button onclick="window.removeCustomCleaning('${c.id}')" title="Remover" style="background: none; border: none; cursor: pointer; font-size: 16px; line-height: 1; padding: 0; color: #dc3545; font-weight: bold;">×</button>
+            </div>`;
+        }).join('');
+    }
+    if (pastCleanings.length > 0) {
+        chipsHtml += `<div style="margin-top: 12px; margin-bottom: 8px; font-size: 12px; font-weight: 700; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px;">Passadas (Histórico)</div>`;
+        chipsHtml += pastCleanings.map(c => {
+            const d = parseDateKey(c.dateKey);
+            const label = d.toLocaleDateString("pt-PT", { weekday: "short", day: "numeric", month: "short" });
+            return `<div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(108,117,125,0.08); border: 1px solid rgba(108,117,125,0.25); border-radius: 20px; padding: 5px 12px; font-size: 13px; opacity: 0.75;">
+                <span>✨ ${c.room} • 📅 ${label}${c.note ? ` <i>(${c.note})</i>` : ''}</span>
+                <button onclick="window.removeCustomCleaning('${c.id}')" title="Remover do histórico" style="background: none; border: none; cursor: pointer; font-size: 16px; line-height: 1; padding: 0; color: #6c757d; font-weight: bold;">×</button>
+            </div>`;
+        }).join('');
+    }
+    if (customCleanings.length === 0) {
+        chipsHtml = `<div style="font-size: 14px; opacity: 0.5; font-style: italic;">Nenhuma limpeza específica adicionada ainda.</div>`;
+    }
+
+    const allRooms = Object.keys(ROOM_LINEN);
+    const roomOptionsHtml = allRooms.map(r => `<option value="${r}">${r}</option>`).join('');
+
+    return `
+        <div style="border: 1px solid #ddd; border-radius: 12px; padding: 18px; margin-bottom: 20px; background-color: #f8f9fa; border-left: 4px solid #8b5cf6;">
+            <div style="font-size: 15px; font-weight: 700; margin-bottom: 14px; color: #7c3aed;">
+                ✨ Adicionar Limpeza Específica
+                <span style="font-size: 12px; font-weight: 400; color: #666; margin-left: 8px;">(não afeta as restantes reservas)</span>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 14px; flex-wrap: wrap;">
+                <input type="date" id="al-custom-date-input" value="${todayStr}"
+                    style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; cursor: pointer;"
+                    onkeydown="if(event.key==='Enter') window.addCustomCleaning()">
+                <select id="al-custom-room-select"
+                    style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; cursor: pointer; background: white; font-weight: 600;">
+                    ${roomOptionsHtml}
+                </select>
+                <input type="text" id="al-custom-note-input" placeholder="Nota opcional (ex: a fundo)..."
+                    style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; flex: 1; min-width: 180px;"
+                    onkeydown="if(event.key==='Enter') window.addCustomCleaning()">
+                <button onclick="window.addCustomCleaning()"
+                    style="padding: 8px 16px; font-size: 14px; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; font-weight: bold; box-shadow: 0 2px 6px rgba(139,92,246,0.3);">
+                    ➕ Adicionar
+                </button>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">${chipsHtml}</div>
+        </div>
+    `;
+}
+
 function buildNext10DaysScheduleTextPT(grouped, today) {
     const lines = ["📅 Próximos dias de trabalho:", ""];
     const workDays = [];
@@ -2112,8 +2261,9 @@ function buildNext10DaysScheduleTextPT(grouped, today) {
         const dayData = grouped[dk];
         const hasRooms = dayData && dayData.rooms && dayData.rooms.length > 0;
         const hasReviews = dayData && dayData.reviews && dayData.reviews.length > 0;
+        const hasCustom = dayData && dayData.customCleanings && dayData.customCleanings.length > 0;
 
-        if (hasRooms || hasReviews) {
+        if (hasRooms || hasReviews || hasCustom) {
             const weekday = d.toLocaleDateString("pt-PT", { weekday: "long" });
             const capitalized = weekday.charAt(0).toUpperCase() + weekday.slice(1);
             workDays.push(`• ${capitalized}, dia ${d.getDate()}`);
@@ -2139,8 +2289,9 @@ function buildNext10DaysScheduleTextES(grouped, today) {
         const dayData = grouped[dk];
         const hasRooms = dayData && dayData.rooms && dayData.rooms.length > 0;
         const hasReviews = dayData && dayData.reviews && dayData.reviews.length > 0;
+        const hasCustom = dayData && dayData.customCleanings && dayData.customCleanings.length > 0;
 
-        if (hasRooms || hasReviews) {
+        if (hasRooms || hasReviews || hasCustom) {
             const weekday = d.toLocaleDateString("es-ES", { weekday: "long" });
             const capitalized = weekday.charAt(0).toUpperCase() + weekday.slice(1);
             workDays.push(`• ${capitalized}, día ${d.getDate()}`);
@@ -2169,7 +2320,8 @@ function buildNext10DaysPanelHTML(grouped, today) {
         const dayData = grouped[dk];
         const rooms = (dayData && dayData.rooms) ? dayData.rooms : [];
         const reviews = (dayData && dayData.reviews) ? dayData.reviews : [];
-        const totalItems = rooms.length + reviews.length;
+        const customList = (dayData && dayData.customCleanings) ? dayData.customCleanings : [];
+        const totalItems = rooms.length + reviews.length + customList.length;
         const hasWork = totalItems > 0;
         if (hasWork) workDaysCount++;
 
@@ -2333,7 +2485,7 @@ function showCleaningPlan() {
                 if (checkoutDate && checkoutDate < cancelledDate) return;
 
                 const dk = rev.targetDateKey;
-                if (!grouped[dk]) grouped[dk] = { date: targetDate, rooms: [], reviews: [] };
+                if (!grouped[dk]) grouped[dk] = { date: targetDate, rooms: [], reviews: [], customCleanings: [] };
                 if (!grouped[dk].reviews) grouped[dk].reviews = [];
                 if (!grouped[dk].reviews.some(r => r.room === rev.room)) {
                     grouped[dk].reviews.push(rev);
@@ -2341,6 +2493,21 @@ function showCleaningPlan() {
             }
         });
     }
+
+    // Integração de Limpezas Específicas / Manuais (não afeta as restantes reservas automáticas)
+    customCleanings.forEach(c => {
+        if (!c || !c.dateKey || !c.room) return;
+        const cDate = parseDateKey(c.dateKey);
+        const isPast = cDate < today;
+        if ((showHistoryMode && isPast) || (!showHistoryMode && !isPast)) {
+            const dk = c.dateKey;
+            if (!grouped[dk]) grouped[dk] = { date: cDate, rooms: [], reviews: [], customCleanings: [] };
+            if (!grouped[dk].customCleanings) grouped[dk].customCleanings = [];
+            if (!grouped[dk].customCleanings.some(existing => existing.id === c.id)) {
+                grouped[dk].customCleanings.push(c);
+            }
+        }
+    });
 
     let sortedKeys=Object.keys(grouped).sort(); if (showHistoryMode) sortedKeys.reverse();
     let html=renderNavigation();
@@ -2353,6 +2520,16 @@ function showCleaningPlan() {
         ? 'border: 2px solid #dc3545; background-color: #dc3545; color: white; box-shadow: 0 3px 8px rgba(220,53,69,0.3);'
         : 'border: 2px solid #dc3545; background-color: rgba(220,53,69,0.06); color: #dc3545;';
 
+    const futureCustom = customCleanings.filter(c => parseDateKey(c.dateKey) >= today);
+    const customBtnLabel = showCustomCleaningsPanel
+        ? '✨ Fechar Limpeza Específica'
+        : `✨ Limpeza Específica${futureCustom.length > 0 ? ` (${futureCustom.length} ativa${futureCustom.length > 1 ? 's' : ''})` : ''}`;
+    const customBtnStyle = showCustomCleaningsPanel
+        ? 'border: 2px solid #8b5cf6; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; box-shadow: 0 4px 12px rgba(139,92,246,0.35);'
+        : futureCustom.length > 0
+            ? 'border: 2px solid #8b5cf6; background-color: rgba(139,92,246,0.12); color: #7c3aed; box-shadow: 0 2px 6px rgba(139,92,246,0.15);'
+            : 'border: 2px solid #8b5cf6; background-color: rgba(139,92,246,0.06); color: #7c3aed;';
+
     html += `<div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
         <button onclick="window.toggleHistoryView()" style="padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px; border: 1.5px solid #10b981; background: linear-gradient(135deg, #10b981, #059669); color: white; font-weight: bold; box-shadow: 0 3px 8px rgba(16,185,129,0.25);">
             ${showHistoryMode ? "📅 Ver Próximas Limpezas" : "📜 Ver Dias Anteriores"}
@@ -2360,10 +2537,15 @@ function showCleaningPlan() {
         <button onclick="window.toggleBlockedDatesPanel()" style="padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px; font-weight: bold; ${blockedBtnStyle}">
             ${blockedBtnLabel}
         </button>
+        <button onclick="window.toggleCustomCleaningsPanel()" style="padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px; font-weight: bold; transition: all 0.2s ease; ${customBtnStyle}">
+            ${customBtnLabel}
+        </button>
     </div>`;
 
     if (showBlockedDatesPanel) {
         html += buildBlockedDatesPanelHTML();
+    } else if (showCustomCleaningsPanel) {
+        html += buildCustomCleaningsPanelHTML();
     } else if (futureBlocked.length > 0 && !showHistoryMode) {
         const labels = futureBlocked.map(dk => parseDateKey(dk).toLocaleDateString("pt-PT", { day: "numeric", month: "short" })).join(", ");
         html += `<div style="padding: 8px 14px; border-radius: 8px; background: rgba(220,53,69,0.08); border: 1px solid rgba(220,53,69,0.2); font-size: 13px; margin-bottom: 16px; color: #dc3545;">
@@ -2389,7 +2571,8 @@ function showCleaningPlan() {
         const day=grouped[key];
         const hasRooms = day.rooms && day.rooms.length > 0;
         const hasReviews = day.reviews && day.reviews.length > 0;
-        if (!hasRooms && !hasReviews) return;
+        const hasCustom = day.customCleanings && day.customCleanings.length > 0;
+        if (!hasRooms && !hasReviews && !hasCustom) return;
 
         let title=day.date.toLocaleDateString("pt-PT",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
         if (day.rooms && day.rooms.some(r=>r.sunday)) title="🔴 "+title;
@@ -2408,7 +2591,7 @@ function showCleaningPlan() {
             rh += `<div style="margin-bottom: 8px; font-size: 13px; color: #dc3545; font-weight: 600;">⚠️ Dia bloqueado — limpezas abaixo são obrigatórias (turnaround)</div>`;
         }
 
-        if (!showHistoryMode && (hasRooms || hasReviews)) {
+        if (!showHistoryMode && (hasRooms || hasReviews || hasCustom)) {
             const gTasks = getGarbageTasks(day.date);
             gTasks.forEach(gt => {
                 cPt.push(gt.pt); cEs.push(gt.es);
@@ -2464,6 +2647,28 @@ function showCleaningPlan() {
                     : "";
 
                 rh += `${em} ${clean.room}${bedHtml}${tH}<br>`;
+            });
+        }
+
+        if (hasCustom) {
+            day.customCleanings.forEach(c => {
+                const bedConfig = ROOM_BEDS_INFO[c.room];
+                const bedPt = bedConfig ? ` (${bedConfig.pt})` : "";
+                const bedEs = bedConfig ? ` (${bedConfig.es})` : "";
+                const notePt = c.note ? ` - ${c.note}` : "";
+                const noteEs = c.note ? ` - ${c.note}` : "";
+
+                cPt.push(`🧹 ${c.room}${bedPt} (Específica${notePt})`);
+                cEs.push(`🧹 ${c.room}${bedEs} (Específica${noteEs})`);
+
+                const bedHtml = (settings.showBedTypesOnScreen && bedConfig)
+                    ? ` <span style="font-size: 13px; opacity: 0.8; font-weight: 600; color: #7c3aed;">(${bedConfig.pt})</span>`
+                    : "";
+
+                rh += `<div style="display: inline-flex; align-items: center; gap: 8px; margin: 3px 0;">
+                    <span>🧹 <b>${c.room}</b> <span style="background: rgba(139,92,246,0.12); color: #7c3aed; font-size: 11px; font-weight: bold; padding: 2px 7px; border-radius: 6px;">Específica</span>${bedHtml}${c.note ? ` <i style="color: #666; font-size: 13px;">(${c.note})</i>` : ''}</span>
+                    <button onclick="window.removeCustomCleaning('${c.id}')" title="Remover limpeza específica" style="background: none; border: none; cursor: pointer; color: #dc3545; font-weight: bold; font-size: 14px; padding: 0 4px;">×</button>
+                </div><br>`;
             });
         }
 
