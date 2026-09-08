@@ -3856,14 +3856,14 @@ function showSettingsView() {
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 14px;">
                 <div>
                     <div style="font-size: 16px; font-weight: bold; color: #7c3aed; margin-bottom: 4px;">
-                        🧹 Link da Ajudante (ajudante.html)
+                        🧹 Link da Ajudante (Link Principal)
                     </div>
                     <div style="font-size: 13px; opacity: 0.85; max-width: 550px; line-height: 1.4;">
                         Link direto e seguro para partilhar com a ajudante (apenas limpezas de hoje, 10 dias e pagamentos).
                     </div>
                 </div>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <button onclick="window.copyFromData(this, '${encodeURIComponent(window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'ajudante.html')}')"
+                    <button onclick="window.copyFromData(this, '${encodeURIComponent(window.location.origin + window.location.pathname.replace(/[^/]*$/, ''))}')"
                         style="padding: 9px 16px; font-size: 13px; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; font-weight: bold; box-shadow: 0 2px 8px rgba(139,92,246,0.3);">
                         📋 Copiar Link Ajudante
                     </button>
