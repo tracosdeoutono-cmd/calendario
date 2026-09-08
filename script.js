@@ -4821,7 +4821,6 @@ function showWorkerView() {
                         ${buildThemePopupHTML()}
                     </div>
                     ${currentTheme === 'aleatorio' ? `<button onclick="window.rerollRandomTheme(event)" class="clock-btn" title="${isEs ? 'Otro Tema' : 'Outro Tema'}">🎲</button>` : ''}
-                    <button onclick="window.switchMainView('cleaning')" class="clock-btn" title="${isEs ? 'Volver al Panel Principal' : 'Voltar ao Painel Principal'}">🔙</button>
                 </div>
             </div>
         </div>
