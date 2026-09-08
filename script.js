@@ -4104,11 +4104,41 @@ window.cancelEditWork = function() {
     showPaymentsView();
 };
 
+window.calcEditTimes = function(workId) {
+    const inInput = document.getElementById(`al-edit-in-${workId}`);
+    const outInput = document.getElementById(`al-edit-out-${workId}`);
+    const hoursInput = document.getElementById(`al-edit-hours-${workId}`);
+    const noteInput = document.getElementById(`al-edit-note-${workId}`);
+    if (!inInput || !outInput || !hoursInput) return;
+
+    const inVal = inInput.value;
+    const outVal = outInput.value;
+
+    if (inVal && outVal) {
+        const [inH, inM] = inVal.split(':').map(Number);
+        const [outH, outM] = outVal.split(':').map(Number);
+        
+        const inMinutes = (inH * 60) + inM;
+        const outMinutes = (outH * 60) + outM;
+
+        if (outMinutes > inMinutes) {
+            const diffMinutes = outMinutes - inMinutes;
+            const hours = Math.round((diffMinutes / 60) * 100) / 100;
+            hoursInput.value = hours.toString().replace('.', ',');
+            if (noteInput && (!noteInput.value || /ajudante/i.test(noteInput.value))) {
+                noteInput.value = `Registado pela ajudante (${inVal} - ${outVal})`;
+            }
+        }
+    }
+};
+
 window.saveWorkEntry = function(workId) {
     const dateInput = document.getElementById(`al-edit-date-${workId}`);
     const hoursInput = document.getElementById(`al-edit-hours-${workId}`);
     const moneyInput = document.getElementById(`al-edit-money-${workId}`);
     const noteInput = document.getElementById(`al-edit-note-${workId}`);
+    const inInput = document.getElementById(`al-edit-in-${workId}`);
+    const outInput = document.getElementById(`al-edit-out-${workId}`);
     if (!dateInput) return;
 
     const dk = dateInput.value;
@@ -4136,7 +4166,16 @@ window.saveWorkEntry = function(workId) {
         const rate = item.rate || pData.ratePerHour || 11;
         item.amount = Math.round(((item.hours * rate) + item.extraMoney) * 100) / 100;
         item.note = note;
+        if (inInput && inInput.value) item.checkInTime = inInput.value;
+        if (outInput && outInput.value) item.checkOutTime = outInput.value;
         pData.pendingWork.sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+
+        if (cloudHistory["_timeclock"] && cloudHistory["_timeclock"][dk] && cloudHistory["_timeclock"][dk].workId === workId) {
+            cloudHistory["_timeclock"][dk].inTime = item.checkInTime || cloudHistory["_timeclock"][dk].inTime;
+            cloudHistory["_timeclock"][dk].outTime = item.checkOutTime || cloudHistory["_timeclock"][dk].outTime;
+            cloudHistory["_timeclock"][dk].hours = item.hours;
+            cloudHistory["_timeclock"][dk].amount = item.amount;
+        }
     }
 
     editingWorkId = null;
@@ -4557,25 +4596,50 @@ function showPaymentsView() {
 
                 if (isEditing) {
                     html += `
-                        <div style="border: 2px solid #8b5cf6; border-radius: 14px; padding: 14px 18px; background: #fff; box-shadow: 0 4px 15px rgba(139,92,246,0.15);">
-                            <div style="font-size: 14px; font-weight: bold; color: #7c3aed; margin-bottom: 10px;">✏️ Editar Registo</div>
-                            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px;">
-                                <input type="date" id="al-edit-date-${item.id}" value="${item.dateKey}"
-                                    style="padding: 8px 12px; border: 1.5px solid #ccc; border-radius: 8px; font-size: 13px;">
-                                <input type="text" id="al-edit-hours-${item.id}" value="${item.hours ? item.hours.toString().replace('.', ',') : ''}" placeholder="Horas (ex: -2)"
-                                    style="padding: 8px 12px; border: 1.5px solid #ccc; border-radius: 8px; font-size: 13px; width: 110px; font-weight: bold;">
-                                <input type="text" id="al-edit-money-${item.id}" value="${item.extraMoney ? item.extraMoney.toString().replace('.', ',') : ''}" placeholder="Valor € (ex: -15)"
-                                    style="padding: 8px 12px; border: 1.5px solid #ccc; border-radius: 8px; font-size: 13px; width: 120px; font-weight: bold;">
-                                <input type="text" id="al-edit-note-${item.id}" value="${item.note || ''}" placeholder="Notas (opcional)"
-                                    style="padding: 8px 12px; border: 1.5px solid #ccc; border-radius: 8px; font-size: 13px; flex-grow: 1;">
+                        <div style="border: 2px solid #8b5cf6; border-radius: 14px; padding: 16px 18px; background: #fff; box-shadow: 0 4px 15px rgba(139,92,246,0.15);">
+                            <div style="font-size: 14px; font-weight: bold; color: #7c3aed; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                                <span>✏️ Editar / Corrigir Horário e Valores</span>
+                                ${item.byWorker ? `<span style="background: rgba(16,185,129,0.15); color: #059669; font-size: 11px; padding: 2px 8px; border-radius: 6px;">👤 Marcado pela Ajudante</span>` : ''}
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 12px;">
+                                <div>
+                                    <label style="display: block; font-size: 11px; font-weight: 700; color: #555; margin-bottom: 3px;">📅 Data:</label>
+                                    <input type="date" id="al-edit-date-${item.id}" value="${item.dateKey}"
+                                        style="padding: 8px 10px; border: 1.5px solid #ccc; border-radius: 8px; font-size: 13px; width: 100%; box-sizing: border-box;">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 11px; font-weight: 700; color: #059669; margin-bottom: 3px;">🟢 Entrada (HH:MM):</label>
+                                    <input type="time" id="al-edit-in-${item.id}" value="${item.checkInTime || ''}" onchange="window.calcEditTimes('${item.id}')"
+                                        style="padding: 8px 10px; border: 1.5px solid #10b981; border-radius: 8px; font-size: 13px; width: 100%; box-sizing: border-box; font-weight: bold;">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 11px; font-weight: 700; color: #dc2626; margin-bottom: 3px;">🔴 Saída (HH:MM):</label>
+                                    <input type="time" id="al-edit-out-${item.id}" value="${item.checkOutTime || ''}" onchange="window.calcEditTimes('${item.id}')"
+                                        style="padding: 8px 10px; border: 1.5px solid #ef4444; border-radius: 8px; font-size: 13px; width: 100%; box-sizing: border-box; font-weight: bold;">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 11px; font-weight: 700; color: #7c3aed; margin-bottom: 3px;">⏱️ Horas Totais:</label>
+                                    <input type="text" id="al-edit-hours-${item.id}" value="${item.hours ? item.hours.toString().replace('.', ',') : ''}" placeholder="Ex: 4,5"
+                                        style="padding: 8px 10px; border: 1.5px solid #8b5cf6; border-radius: 8px; font-size: 13px; width: 100%; box-sizing: border-box; font-weight: bold;">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 11px; font-weight: 700; color: #0284c7; margin-bottom: 3px;">💶 Ajuste €:</label>
+                                    <input type="text" id="al-edit-money-${item.id}" value="${item.extraMoney ? item.extraMoney.toString().replace('.', ',') : ''}" placeholder="Ex: 10 ou -5"
+                                        style="padding: 8px 10px; border: 1.5px solid #ccc; border-radius: 8px; font-size: 13px; width: 100%; box-sizing: border-box;">
+                                </div>
+                            </div>
+                            <div style="margin-bottom: 12px;">
+                                <label style="display: block; font-size: 11px; font-weight: 700; color: #555; margin-bottom: 3px;">📝 Notas / Descrição:</label>
+                                <input type="text" id="al-edit-note-${item.id}" value="${item.note || ''}" placeholder="Notas sobre este dia"
+                                    style="padding: 8px 12px; border: 1.5px solid #ccc; border-radius: 8px; font-size: 13px; width: 100%; box-sizing: border-box;">
                             </div>
                             <div style="display: flex; gap: 8px;">
                                 <button onclick="window.saveWorkEntry('${item.id}')"
-                                    style="padding: 6px 14px; font-size: 13px; cursor: pointer; border-radius: 6px; border: none; background: #10b981; color: white; font-weight: bold;">
-                                    💾 Guardar
+                                    style="padding: 8px 18px; font-size: 13px; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #10b981, #059669); color: white; font-weight: bold; box-shadow: 0 2px 6px rgba(16,185,129,0.3);">
+                                    💾 Guardar Alterações
                                 </button>
                                 <button onclick="window.cancelEditWork()"
-                                    style="padding: 6px 12px; font-size: 13px; cursor: pointer; border-radius: 6px; border: 1px solid #ccc; background: #f8f9fa; color: #555;">
+                                    style="padding: 8px 14px; font-size: 13px; cursor: pointer; border-radius: 8px; border: 1px solid #ccc; background: #f8f9fa; color: #555;">
                                     Cancelar
                                 </button>
                             </div>
