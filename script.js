@@ -1080,14 +1080,34 @@ function getThemeEmoji(key) {
 const result = document.getElementById("result");
 let globalReservations = [];
 let cloudHistory = {};
-let currentView = "cleaning"; // "cleaning" | "occupancy" | "snapshots" | "laundry" | "settings" | "payments" | "worker"
+let isAdminAuthorized = false;
+let currentView = "worker"; // Vista segura por defeito
 try {
     const urlParams = new URLSearchParams(window.location.search);
     const hash = (window.location.hash || "").toLowerCase();
-    if (urlParams.has("worker") || urlParams.has("trabalhador") || urlParams.has("ajudante") || urlParams.has("es") || urlParams.has("espanhol") || hash.includes("worker") || hash.includes("trabalhador") || hash.includes("ajudante") || hash.includes("es")) {
-        currentView = "worker";
+
+    // 1. Deteção da Chave Secreta de Administrador
+    if (urlParams.has("admin") || urlParams.has("martim") || urlParams.has("gestao") || hash.includes("admin") || hash.includes("martim") || hash.includes("gestao")) {
+        isAdminAuthorized = true;
+        try { localStorage.setItem("al_admin_auth", "true"); } catch(e) {}
+        // Limpa a chave do URL para ficar discreto na barra de endereços
+        if (window.history && window.history.replaceState) {
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+        }
+    } else {
+        isAdminAuthorized = (localStorage.getItem("al_admin_auth") === "true");
     }
-} catch(e) {}
+
+    // 2. Se não estiver autorizado como admin ou se pediu ajudante, abre apenas a vista do ajudante
+    if (urlParams.has("worker") || urlParams.has("trabalhador") || urlParams.has("ajudante") || urlParams.has("es") || urlParams.has("espanhol") || hash.includes("worker") || hash.includes("trabalhador") || hash.includes("ajudante") || hash.includes("es") || !isAdminAuthorized) {
+        currentView = "worker";
+    } else {
+        currentView = "cleaning";
+    }
+} catch(e) {
+    currentView = "worker";
+}
 let showHistoryMode = false;
 let selectedHouse = "achada";
 let showOccupancyStats = false;
@@ -1811,7 +1831,12 @@ window.copyFromData = function(btnElement, encodedText) {
     }).catch(err => { console.error("Erro ao copiar:", err); });
 };
 
-window.switchMainView = function(view) { currentView = view; if (currentView === "snapshots") selectedSnapshotDate = null; renderCurrentView(); };
+window.switchMainView = function(view) {
+    if (!isAdminAuthorized && view !== "worker") return;
+    currentView = view;
+    if (currentView === "snapshots") selectedSnapshotDate = null;
+    renderCurrentView();
+};
 window.toggleHistoryView = function() { showHistoryMode = !showHistoryMode; showCleaningPlan(); };
 window.toggleOccupancyStats = function() { showOccupancyStats = !showOccupancyStats; if (!showOccupancyStats) showPastStatsMode = false; showOccupancyPlan(); };
 window.togglePastStats = function() { showPastStatsMode = !showPastStatsMode; showOccupancyPlan(); };
@@ -3846,25 +3871,46 @@ function showSettingsView() {
             </div>
         </div>
 
-        <!-- Secção: Link Direto para a Ajudante (Espanhol) -->
+        <!-- Secção: Link Independente para a Ajudante -->
         <div style="background: rgba(139,92,246,0.06); border: 2px dashed #8b5cf6; border-radius: 14px; padding: 18px 20px; margin-top: 16px;">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                 <div>
                     <div style="font-size: 16px; font-weight: bold; color: #7c3aed; margin-bottom: 4px;">
-                        🇪🇸 Link Direto para a Ajudante (Espanhol)
+                        🧹 Link Independente para a Ajudante
                     </div>
                     <div style="font-size: 13px; opacity: 0.85; max-width: 550px; line-height: 1.4;">
-                        Link simplificado que mostra apenas as limpezas de hoje, previsão dos próximos 10 dias de trabalho e o resumo de horas/dinheiro a pagar (tudo em espanhol, sem histórico nem médias).
+                        Link direto e seguro (ficheiro <code>ajudante.html</code>) que mostra apenas as limpezas de hoje, previsão dos próximos 10 dias e pagamentos/histórico. Sem acesso a definições, ocupação ou relatórios.
                     </div>
                 </div>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <button onclick="window.copyFromData(this, '${encodeURIComponent(window.location.origin + window.location.pathname + '?ajudante')}')"
+                    <button onclick="window.copyFromData(this, '${encodeURIComponent(window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'ajudante.html')}')"
                         style="padding: 9px 16px; font-size: 13px; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; font-weight: bold; box-shadow: 0 2px 8px rgba(139,92,246,0.3);">
-                        📋 Copiar Link
+                        📋 Copiar Link do Ajudante
                     </button>
                     <button onclick="window.switchMainView('worker')"
                         style="padding: 9px 16px; font-size: 13px; cursor: pointer; border-radius: 8px; border: 1.5px solid #8b5cf6; background: white; color: #7c3aed; font-weight: bold;">
-                        👁️ Ver Página
+                        👁️ Pré-visualizar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secção: Chave de Administrador deste Telemóvel -->
+        <div style="background: rgba(16,185,129,0.06); border: 1.5px solid rgba(16,185,129,0.3); border-radius: 14px; padding: 14px 18px; margin-top: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    <div style="font-size: 14px; font-weight: bold; color: #059669; display: flex; align-items: center; gap: 6px;">
+                        <span>🛡️ Acesso de Administrador</span>
+                        <span style="background: #10b981; color: white; padding: 2px 7px; border-radius: 8px; font-size: 11px;">Autorizado neste aparelho</span>
+                    </div>
+                    <div style="font-size: 12px; color: #666; margin-top: 3px;">
+                        Para autorizar um novo telemóvel ou computador como Administrador, basta abrir o link com <code>?admin</code> no final uma única vez.
+                    </div>
+                </div>
+                <div>
+                    <button onclick="window.copyFromData(this, '${encodeURIComponent(window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + '?admin')}')"
+                        style="padding: 8px 14px; font-size: 12px; cursor: pointer; border-radius: 8px; border: 1px solid #10b981; background: white; color: #059669; font-weight: bold;">
+                        📋 Copiar Link Admin (?admin)
                     </button>
                 </div>
             </div>
