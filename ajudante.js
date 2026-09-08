@@ -403,6 +403,9 @@ window.recordWorkerCheckOut = async function(minutesAgo) {
     pData.pendingWork.push(newWorkEntry);
     pData.pendingWork.sort((a, b) => b.dateKey.localeCompare(a.dateKey));
 
+    if (!cloudHistory["_timeclock"] || typeof cloudHistory["_timeclock"] !== 'object') {
+        cloudHistory["_timeclock"] = {};
+    }
     cloudHistory["_timeclock"][todayStr] = {
         status: "completed",
         inTime: shift.inTime,
@@ -413,6 +416,8 @@ window.recordWorkerCheckOut = async function(minutesAgo) {
         dateKey: todayStr
     };
 
+    cloudHistory["_payroll"] = pData;
+    try { localStorage.setItem("al_payroll_backup", JSON.stringify(pData)); } catch(e) {}
     showCheckOutOptions = false;
     try { localStorage.setItem("al_cloud_history_backup", JSON.stringify(cloudHistory)); } catch(e) {}
     showWorkerView();
@@ -556,9 +561,15 @@ function getAppSettings() {
 }
 
 function getPayrollData() {
-    if (!cloudHistory["_payroll"] || typeof cloudHistory["_payroll"] !== 'object') {
-        cloudHistory["_payroll"] = { ratePerHour: 11, pendingWork: [], settlements: [] };
+    if (!cloudHistory["_payroll"] || typeof cloudHistory["_payroll"] !== 'object' || Array.isArray(cloudHistory["_payroll"])) {
+        try {
+            cloudHistory["_payroll"] = JSON.parse(localStorage.getItem("al_payroll_backup") || 'null');
+        } catch(e) {}
+        if (!cloudHistory["_payroll"] || typeof cloudHistory["_payroll"] !== 'object' || Array.isArray(cloudHistory["_payroll"])) {
+            cloudHistory["_payroll"] = { ratePerHour: 11, pendingWork: [], settlements: [] };
+        }
     }
+    if (typeof cloudHistory["_payroll"].ratePerHour !== 'number') cloudHistory["_payroll"].ratePerHour = 11;
     if (!Array.isArray(cloudHistory["_payroll"].pendingWork)) cloudHistory["_payroll"].pendingWork = [];
     if (!Array.isArray(cloudHistory["_payroll"].settlements)) cloudHistory["_payroll"].settlements = [];
     return cloudHistory["_payroll"];
@@ -624,10 +635,23 @@ async function fetchCloudHistory() {
         if (Array.isArray(cloudHistory["_blockedDates"])) blockedDates = cloudHistory["_blockedDates"];
         if (Array.isArray(cloudHistory["_customCleanings"])) customCleanings = cloudHistory["_customCleanings"];
         if (Array.isArray(cloudHistory["_suppressedCleanings"])) suppressedCleanings = cloudHistory["_suppressedCleanings"];
+
+        if (cloudHistory["_payroll"] && typeof cloudHistory["_payroll"] === 'object') {
+            try { localStorage.setItem("al_payroll_backup", JSON.stringify(cloudHistory["_payroll"])); } catch(e) {}
+        } else {
+            try {
+                const localPayroll = JSON.parse(localStorage.getItem("al_payroll_backup") || 'null');
+                if (localPayroll) cloudHistory["_payroll"] = localPayroll;
+            } catch(e) {}
+        }
     } catch (e) {
         console.warn("Aviso: Dados carregados em modo offline/cache.", e);
         try {
             cloudHistory = JSON.parse(localStorage.getItem("al_cloud_history_backup") || "{}");
+            if (!cloudHistory["_payroll"]) {
+                const localPayroll = JSON.parse(localStorage.getItem("al_payroll_backup") || 'null');
+                if (localPayroll) cloudHistory["_payroll"] = localPayroll;
+            }
         } catch(err) { cloudHistory = {}; }
     }
 }
@@ -1030,11 +1054,6 @@ function showWorkerView() {
                             </div>
                         </div>
                     </div>
-                    <div>
-                        <button onclick="window.resetWorkerShift()" style="font-size: 12px; color: #6b7280; background: none; border: none; text-decoration: underline; cursor: pointer; padding: 4px;">
-                            ${isEs ? 'Corregir entrada' : 'Corrigir entrada'}
-                        </button>
-                    </div>
                 </div>
 
                 <div>
@@ -1095,12 +1114,6 @@ function showWorkerView() {
                             ${isEs ? '💰 Añadido a tus pagos pendientes abajo' : '💰 Adicionado aos teus pagamentos pendentes abaixo'}
                         </div>
                     </div>
-                </div>
-                <div>
-                    <button onclick="window.resetWorkerShift()"
-                        style="padding: 7px 14px; font-size: 12px; cursor: pointer; border-radius: 8px; border: 1px solid #10b981; background: #ffffff; color: #059669; font-weight: bold;">
-                        ✏️ ${isEs ? 'Corregir / Reiniciar' : 'Corrigir / Reiniciar'}
-                    </button>
                 </div>
             </div>
         `;
@@ -1201,7 +1214,12 @@ function showWorkerView() {
     const pendingList = pData.pendingWork || [];
     const settlementsList = pData.settlements || [];
     const totalPendingHours = pendingList.reduce((sum, w) => sum + (parseFloat(w.hours) || 0), 0);
-    const totalPendingAmount = pendingList.reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
+    const totalPendingAmount = pendingList.reduce((sum, w) => {
+        const itemAmt = (w.amount !== undefined && !isNaN(parseFloat(w.amount)))
+            ? parseFloat(w.amount)
+            : (((parseFloat(w.hours) || 0) * (w.rate || 11)) + (parseFloat(w.extraMoney) || 0));
+        return sum + itemAmt;
+    }, 0);
 
     const formattedPendingAmount = totalPendingAmount.toLocaleString(isEs ? 'es-ES' : 'pt-PT', { style: 'currency', currency: 'EUR' });
     const formattedPendingHours = (Math.round(totalPendingHours * 100) / 100).toString().replace('.', ',');
@@ -1262,26 +1280,37 @@ function showWorkerView() {
                 </div>
             `;
         } else {
-            html += `<div style="display: flex; flex-direction: column; gap: 8px;">`;
+            html += `<div style="display: flex; flex-direction: column; gap: 10px;">`;
             pendingList.forEach(item => {
                 const d = parseDateKey(item.dateKey);
                 const dayLabel = d.toLocaleDateString(isEs ? "es-ES" : "pt-PT", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
                 const capitalizedDayItem = dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1);
                 const detailStr = isEs ? formatWorkItemLabelES(item) : formatWorkItemLabelPT(item);
-                const itemAmount = (item.amount !== undefined && !isNaN(item.amount))
-                    ? item.amount
-                    : (((parseFloat(item.hours) || 0) * 11) + (parseFloat(item.extraMoney) || 0));
+                const itemAmount = (item.amount !== undefined && !isNaN(parseFloat(item.amount)))
+                    ? parseFloat(item.amount)
+                    : (((parseFloat(item.hours) || 0) * (item.rate || 11)) + (parseFloat(item.extraMoney) || 0));
                 const formattedItemAmount = itemAmount.toLocaleString(isEs ? 'es-ES' : 'pt-PT', { style: 'currency', currency: 'EUR' });
 
+                const isByWorker = item.byWorker || (item.note && /ajudante/i.test(item.note));
+                const cardBg = isByWorker ? '#f0fdf4' : 'rgba(255,255,255,0.7)';
+                const cardBorder = isByWorker ? '2px solid #10b981' : '1px solid rgba(0,0,0,0.08)';
+                const amountColor = isByWorker ? '#047857' : (itemAmount >= 0 ? '#111' : '#2563eb');
+                const badgeHtml = isByWorker
+                    ? `<span style="display: inline-block; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 6px; background: #10b981; color: white; margin-left: 6px; box-shadow: 0 2px 6px rgba(16,185,129,0.25);">⏱️ ${isEs ? 'Marcado por ti' : 'Marcado por ti'}</span>`
+                    : '';
+
                 html += `
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: rgba(255,255,255,0.7); border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; flex-wrap: wrap; gap: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: ${cardBg}; border: ${cardBorder}; border-radius: 12px; flex-wrap: wrap; gap: 8px; ${isByWorker ? 'box-shadow: 0 3px 10px rgba(16,185,129,0.12);' : ''}">
                         <div>
-                            <strong style="font-size: 14px; color: #111;">📅 ${capitalizedDayItem}</strong>
-                            <div style="font-size: 12px; opacity: 0.75; margin-top: 2px;">
+                            <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">
+                                <strong style="font-size: 14px; color: ${isByWorker ? '#065f46' : '#111'};">📅 ${capitalizedDayItem}</strong>
+                                ${badgeHtml}
+                            </div>
+                            <div style="font-size: 12px; opacity: 0.85; margin-top: 3px; color: ${isByWorker ? '#047857' : '#555'};">
                                 ${detailStr}${item.note ? ` • <i>${item.note}</i>` : ''}
                             </div>
                         </div>
-                        <div style="font-size: 16px; font-weight: 800; color: ${itemAmount >= 0 ? '#111' : '#2563eb'};">
+                        <div style="font-size: 18px; font-weight: 900; color: ${amountColor};">
                             ${formattedItemAmount}
                         </div>
                     </div>
