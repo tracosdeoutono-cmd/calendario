@@ -1080,7 +1080,14 @@ function getThemeEmoji(key) {
 const result = document.getElementById("result");
 let globalReservations = [];
 let cloudHistory = {};
-let currentView = "cleaning"; // "cleaning" | "occupancy" | "snapshots" | "laundry" | "settings" | "payments"
+let currentView = "cleaning"; // "cleaning" | "occupancy" | "snapshots" | "laundry" | "settings" | "payments" | "worker"
+try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const hash = (window.location.hash || "").toLowerCase();
+    if (urlParams.has("worker") || urlParams.has("trabalhador") || urlParams.has("ajudante") || urlParams.has("es") || urlParams.has("espanhol") || hash.includes("worker") || hash.includes("trabalhador") || hash.includes("ajudante") || hash.includes("es")) {
+        currentView = "worker";
+    }
+} catch(e) {}
 let showHistoryMode = false;
 let selectedHouse = "achada";
 let showOccupancyStats = false;
@@ -1757,7 +1764,8 @@ function renderNavigation() {
 }
 
 function renderCurrentView() {
-    if (currentView === "cleaning") showCleaningPlan();
+    if (currentView === "worker") showWorkerView();
+    else if (currentView === "cleaning") showCleaningPlan();
     else if (currentView === "occupancy") showOccupancyPlan();
     else if (currentView === "snapshots") showSnapshotsPlan();
     else if (currentView === "laundry") showLaundryStockView();
@@ -3838,6 +3846,30 @@ function showSettingsView() {
             </div>
         </div>
 
+        <!-- Secção: Link Direto para a Ajudante (Espanhol) -->
+        <div style="background: rgba(139,92,246,0.06); border: 2px dashed #8b5cf6; border-radius: 14px; padding: 18px 20px; margin-top: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <div>
+                    <div style="font-size: 16px; font-weight: bold; color: #7c3aed; margin-bottom: 4px;">
+                        🇪🇸 Link Direto para a Ajudante (Espanhol)
+                    </div>
+                    <div style="font-size: 13px; opacity: 0.85; max-width: 550px; line-height: 1.4;">
+                        Link simplificado que mostra apenas as limpezas de hoje, previsão dos próximos 10 dias de trabalho e o resumo de horas/dinheiro a pagar (tudo em espanhol, sem histórico nem médias).
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button onclick="window.copyFromData(this, '${encodeURIComponent(window.location.origin + window.location.pathname + '?ajudante')}')"
+                        style="padding: 9px 16px; font-size: 13px; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; font-weight: bold; box-shadow: 0 2px 8px rgba(139,92,246,0.3);">
+                        📋 Copiar Link
+                    </button>
+                    <button onclick="window.switchMainView('worker')"
+                        style="padding: 9px 16px; font-size: 13px; cursor: pointer; border-radius: 8px; border: 1.5px solid #8b5cf6; background: white; color: #7c3aed; font-weight: bold;">
+                        👁️ Ver Página
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Secção 3: Dispositivos Conectados (Últimos 10 min) -->
         <div style="margin-top: 30px; margin-bottom: 25px;">
             <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 6px;">
@@ -4665,6 +4697,419 @@ function showPaymentsView() {
     result.innerHTML = html;
 }
 
+// ══════════════════════════════════════════════════
+// VISTA DEDICADA PARA AJUDANTE / TRABALHADOR (ES) 🇪🇸
+// ══════════════════════════════════════════════════
+function showWorkerView() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = formatDateKey(today);
+
+    let grouped = {};
+    const plan = cloudHistory["_plan"] || {};
+    const planKeys = Object.keys(plan);
+
+    if (planKeys.length > 0) {
+        planKeys.forEach(key => {
+            const entry = plan[key];
+            if (!entry || !entry.cleaningKey) return;
+            const d = parseDateKey(entry.cleaningKey);
+            if (d >= today) {
+                const dk = entry.cleaningKey;
+                if (!grouped[dk]) grouped[dk] = { date: d, rooms: [] };
+                if (!grouped[dk].rooms.some(r => r.room === entry.room)) {
+                    grouped[dk].rooms.push({ room: entry.room, sunday: !!entry.sunday, urgent: !!entry.urgent, hasCheckout: entry.hasCheckout, hasCheckin: entry.hasCheckin });
+                }
+            }
+        });
+    } else {
+        globalReservations.forEach(res => {
+            const info = getCleaningInfo(res, globalReservations);
+            if (info.date >= today) {
+                const dk = formatDateKey(info.date);
+                if (!grouped[dk]) grouped[dk] = { date: info.date, rooms: [] };
+                if (!grouped[dk].rooms.some(r => r.room === res.room)) {
+                    grouped[dk].rooms.push({ room: res.room, sunday: info.sunday, urgent: info.urgent, hasCheckout: info.hasCheckout, hasCheckin: info.hasCheckin });
+                }
+            }
+        });
+    }
+
+    // Revisões ativas
+    const reviews = cloudHistory["_reviews"] || {};
+    Object.keys(reviews).forEach(k => {
+        const rev = reviews[k];
+        if (!rev || !rev.targetDateKey || !rev.room) return;
+        const targetDate = parseDateKey(rev.targetDateKey);
+        const cancelledDate = parseDateKey(rev.cancelledOn || todayStr);
+        const checkinDate = rev.checkinKey ? parseDateKey(rev.checkinKey) : null;
+        const checkoutDate = rev.originalCheckout ? parseDateKey(rev.originalCheckout) : null;
+
+        if (targetDate >= today) {
+            if (checkinDate && checkinDate > cancelledDate) return;
+            if (checkoutDate && checkoutDate < cancelledDate) return;
+
+            const dk = rev.targetDateKey;
+            if (!grouped[dk]) grouped[dk] = { date: targetDate, rooms: [], reviews: [], customCleanings: [] };
+            if (!grouped[dk].reviews) grouped[dk].reviews = [];
+            if (!grouped[dk].reviews.some(r => r.room === rev.room)) {
+                grouped[dk].reviews.push(rev);
+            }
+        }
+    });
+
+    // Limpezas específicas
+    customCleanings.forEach(c => {
+        if (!c || !c.dateKey || !c.room) return;
+        const cDate = parseDateKey(c.dateKey);
+        if (cDate >= today) {
+            const dk = c.dateKey;
+            if (!grouped[dk]) grouped[dk] = { date: cDate, rooms: [], reviews: [], customCleanings: [] };
+            if (!grouped[dk].customCleanings) grouped[dk].customCleanings = [];
+            if (!grouped[dk].customCleanings.some(existing => existing.id === c.id)) {
+                grouped[dk].customCleanings.push(c);
+            }
+        }
+    });
+
+    // Filtra limpezas automáticas suprimidas/ignoradas
+    Object.keys(grouped).forEach(dk => {
+        if (grouped[dk] && Array.isArray(grouped[dk].rooms)) {
+            grouped[dk].rooms = grouped[dk].rooms.filter(clean => !isSuppressedCleaning(dk, clean.room));
+        }
+    });
+
+    const settings = getAppSettings();
+    const themeEmoji = getThemeEmoji(currentTheme);
+
+    // Barra de topo para o link do ajudante
+    let html = `
+        <div class="top-navbar-row" style="margin-bottom: 20px;">
+            <div class="al-badge-title" style="cursor: default;" title="Casas do Martim">
+                🏡 Casas do Martim
+            </div>
+            <div class="floating-menu-container">
+                <button onclick="window.toggleFloatingSubMenu(event)" class="menu-trigger-btn" title="Opciones">
+                    <img src="icone2.jpeg" alt="Menu" class="menu-trigger-img">
+                </button>
+                <div id="al-floating-sub-items" class="floating-sub-items ${showFloatingSubMenu ? 'menu-expanded' : 'menu-collapsed'}">
+                    <div class="theme-popup-wrapper">
+                        <button onclick="window.toggleThemePopup(event)" class="clock-btn" title="Cambiar Tema">${themeEmoji}</button>
+                        ${buildThemePopupHTML()}
+                    </div>
+                    ${currentTheme === 'aleatorio' ? `<button onclick="window.rerollRandomTheme(event)" class="clock-btn" title="Otro Tema">🎲</button>` : ''}
+                    <button onclick="window.switchMainView('cleaning')" class="clock-btn" title="Volver al Panel Principal">🔙</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // ══════════════════════════════════════════════════
+    // 1. LIMPIEZAS DE HOY (Apenas o dia atual, em espanhol)
+    // ══════════════════════════════════════════════════
+    const todayData = grouped[todayStr] || { date: today, rooms: [], reviews: [], customCleanings: [] };
+    const todayRooms = todayData.rooms || [];
+    const todayReviews = todayData.reviews || [];
+    const todayCustom = todayData.customCleanings || [];
+    const hasTodayWork = todayRooms.length > 0 || todayReviews.length > 0 || todayCustom.length > 0;
+
+    const rawDayEs = today.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    const capitalizedDayEs = rawDayEs.charAt(0).toUpperCase() + rawDayEs.slice(1);
+
+    const cEs = [`🧹 Limpiezas - ${capitalizedDayEs}:`];
+    let todayBodyHtml = "";
+
+    if (hasTodayWork) {
+        // Tarefas de Lixo
+        const gTasks = getGarbageTasks(today);
+        gTasks.forEach(gt => {
+            cEs.push(gt.es);
+            todayBodyHtml += `<div style="margin-bottom: 6px; font-size: 15px; font-weight: 700; color: #0284c7;">${gt.es}</div>`;
+        });
+
+        // Revisões
+        if (todayReviews.length > 0) {
+            todayReviews.forEach(rev => {
+                cEs.push(`🔍 Revisar limpieza: ${rev.room} (estancia cancelada)`);
+                todayBodyHtml += `
+                    <div style="margin: 6px 0; padding: 8px 12px; background: rgba(245,158,11,0.08); border-left: 4px solid #f59e0b; border-radius: 6px; font-size: 14px;">
+                        🔍 <b>Revisar limpieza: ${rev.room}</b> <span style="font-size: 12px; color: #666;">(estancia cancelada)</span>
+                    </div>
+                `;
+            });
+        }
+
+        // Quartos regulares
+        todayRooms.sort((a, b) => a.room.localeCompare(b.room)).forEach(clean => {
+            let hCo = clean.hasCheckout;
+            let hCi = clean.hasCheckin;
+            let tEs = "", tH = "";
+            if (hCo === undefined || hCi === undefined) {
+                hCo = globalReservations.some(r => r.room === clean.room && sameDay(r.checkOut, today));
+                hCi = clean.urgent || globalReservations.some(r => r.room === clean.room && sameDay(r.checkIn, today));
+            }
+            if (hCo && hCi) { tEs = " (sale y entra)"; tH = " <b>(sale y entra)</b>"; }
+            else if (hCo) { tEs = " (sale hoy)"; tH = " <b>(sale hoy)</b>"; }
+            else if (hCi) { tEs = " (entrada hoy)"; tH = " <b>(entrada hoy)</b>"; }
+
+            const em = (clean.urgent || hCi) ? "⚠️" : "🧹";
+            const bedConfig = ROOM_BEDS_INFO[clean.room];
+            const bedEs = bedConfig ? ` (${bedConfig.es})` : "";
+
+            cEs.push(`${em} ${clean.room}${bedEs}${tEs}`);
+
+            const bedHtml = bedConfig ? ` <span style="font-size: 13px; opacity: 0.8; font-weight: 600; color: #7c3aed;">(${bedConfig.es})</span>` : "";
+            todayBodyHtml += `<div style="font-size: 15px; margin: 4px 0;">${em} <b>${clean.room}</b>${bedHtml}${tH}</div>`;
+        });
+
+        // Limpezas específicas
+        todayCustom.forEach(c => {
+            const bedConfig = ROOM_BEDS_INFO[c.room];
+            const bedEs = bedConfig ? ` (${bedConfig.es})` : "";
+            const noteEs = c.note ? ` - ${c.note}` : "";
+
+            cEs.push(`🧹 ${c.room}${bedEs} (Específica${noteEs})`);
+
+            const bedHtml = bedConfig ? ` <span style="font-size: 13px; opacity: 0.8; font-weight: 600; color: #7c3aed;">(${bedConfig.es})</span>` : "";
+            todayBodyHtml += `
+                <div style="font-size: 15px; margin: 4px 0;">
+                    🧹 <b>${c.room}</b> <span style="background: rgba(139,92,246,0.12); color: #7c3aed; font-size: 11px; font-weight: bold; padding: 2px 7px; border-radius: 6px;">Específica</span>${bedHtml}${c.note ? ` <i style="color: #666; font-size: 13px;">(${c.note})</i>` : ''}
+                </div>
+            `;
+        });
+
+        if (settings.includeAddresses) {
+            cEs.push("");
+            cEs.push("Dirección de mi casa: Impasse Romeiras 6");
+            cEs.push("Dirección de la casa Funchal: Beco da Achada 3");
+        }
+    } else {
+        cEs.push("Sin limpiezas hoy.");
+        todayBodyHtml = `
+            <div style="padding: 14px 0; font-size: 15px; color: #059669; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <span>✨</span> <span>¡No hay limpiezas programadas para hoy! Día libre.</span>
+            </div>
+        `;
+    }
+
+    const encodedTodayText = encodeURIComponent(cEs.join("\n"));
+
+    html += `
+        <!-- Secção 1: Limpiezas de Hoy -->
+        <div style="border: 1px solid #ddd; border-radius: 16px; padding: 20px; margin-bottom: 22px; background-color: #f8f9fa; border-left: 6px solid #007bff; box-shadow: 0 4px 14px rgba(0,123,255,0.08);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+                <div>
+                    <h2 style="margin: 0; font-size: 20px; color: #007bff;">🧹 Limpiezas de Hoy</h2>
+                    <div style="font-size: 13px; opacity: 0.75; font-weight: 600; margin-top: 2px;">📅 ${capitalizedDayEs}</div>
+                </div>
+                ${hasTodayWork ? `
+                    <button onclick="window.copyFromData(this, '${encodedTodayText}')"
+                        style="padding: 8px 16px; font-size: 13px; cursor: pointer; border-radius: 8px; border: 1px solid #17a2b8; background: #17a2b8; color: white; font-weight: bold; box-shadow: 0 2px 6px rgba(23,162,184,0.25);">
+                        🇪🇸 Copiar Limpiezas
+                    </button>
+                ` : ''}
+            </div>
+            <div style="margin-top: 10px;">
+                ${todayBodyHtml}
+            </div>
+        </div>
+    `;
+
+    // ══════════════════════════════════════════════════
+    // 2. PRÓXIMOS 10 DIAS DE TRABALHO (Widget & Texto em ES)
+    // ══════════════════════════════════════════════════
+    html += buildNext10DaysPanelHTML(grouped, today);
+
+    // ══════════════════════════════════════════════════
+    // 3. PAGOS & HISTORIAL DE PAGOS (100% em Espanhol)
+    // ══════════════════════════════════════════════════
+    const pData = getPayrollData();
+    const pendingList = pData.pendingWork || [];
+    const settlementsList = pData.settlements || [];
+    const totalPendingHours = pendingList.reduce((sum, w) => sum + (parseFloat(w.hours) || 0), 0);
+    const totalPendingAmount = pendingList.reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
+
+    const formattedPendingAmount = totalPendingAmount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' });
+    const formattedPendingHours = (Math.round(totalPendingHours * 100) / 100).toString().replace('.', ',');
+    const textES_Payroll = buildPendingWorkTextES(pendingList, totalPendingHours, totalPendingAmount);
+    const encodedPayrollText = encodeURIComponent(textES_Payroll);
+
+    html += `
+        <div style="border: 1px solid #ddd; border-radius: 16px; padding: 20px; margin-top: 22px; background-color: #f8f9fa; border-left: 6px solid #8b5cf6; box-shadow: 0 4px 14px rgba(139,92,246,0.08);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;">
+                <div>
+                    <h2 style="margin: 0; font-size: 20px; color: #7c3aed;">💶 Pagos y Horas de Trabajo</h2>
+                    <div style="font-size: 13px; opacity: 0.75; font-weight: 600; margin-top: 2px;">Tarifa: 11,00 € / hora</div>
+                </div>
+                ${pendingList.length > 0 ? `
+                    <button onclick="window.copyFromData(this, '${encodedPayrollText}')"
+                        style="padding: 8px 16px; font-size: 13px; cursor: pointer; border-radius: 8px; border: 1px solid #8b5cf6; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; font-weight: bold; box-shadow: 0 2px 6px rgba(139,92,246,0.25);">
+                        🇪🇸 Copiar Resumen (${formattedPendingAmount})
+                    </button>
+                ` : ''}
+            </div>
+
+            <!-- Separadores / Tabs de Pagamentos -->
+            <div style="display: flex; gap: 8px; margin-bottom: 18px; border-bottom: 2px solid rgba(0,0,0,0.06); padding-bottom: 12px; flex-wrap: wrap;">
+                <button onclick="window.toggleWorkerPaymentsTab(false)"
+                    style="padding: 9px 16px; font-size: 13px; font-weight: bold; cursor: pointer; border-radius: 10px; border: none; transition: all 0.2s ease; ${!showWorkerPaymentsHistory ? 'background: #8b5cf6; color: white; box-shadow: 0 4px 12px rgba(139,92,246,0.35);' : 'background: rgba(0,0,0,0.05); color: #555;'}">
+                    ⏳ Horas por Pagar (${pendingList.length})
+                </button>
+                <button onclick="window.toggleWorkerPaymentsTab(true)"
+                    style="padding: 9px 16px; font-size: 13px; font-weight: bold; cursor: pointer; border-radius: 10px; border: none; transition: all 0.2s ease; ${showWorkerPaymentsHistory ? 'background: #8b5cf6; color: white; box-shadow: 0 4px 12px rgba(139,92,246,0.35);' : 'background: rgba(0,0,0,0.05); color: #555;'}">
+                    📜 Historial de Pagos (${settlementsList.length})
+                </button>
+            </div>
+    `;
+
+    if (!showWorkerPaymentsHistory) {
+        // ── Tab 1: Horas / Pagos Pendientes ──
+        html += `
+            <!-- Cartão do Total Pendente -->
+            <div style="background: linear-gradient(135deg, rgba(239,68,68,0.08), rgba(245,158,11,0.08)); border: 2px solid ${totalPendingAmount > 0 ? '#ef4444' : '#10b981'}; border-radius: 14px; padding: 16px; margin-bottom: 18px;">
+                <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: ${totalPendingAmount > 0 ? '#dc2626' : '#059669'};">
+                    ${totalPendingAmount > 0 ? '⚠️ Total Pendiente de Pago' : '✅ Sin Pagos Pendientes'}
+                </div>
+                <div style="font-size: 30px; font-weight: 900; color: ${totalPendingAmount > 0 ? '#dc2626' : '#059669'}; margin: 4px 0 2px 0;">
+                    ${formattedPendingAmount}
+                </div>
+                <div style="font-size: 13px; opacity: 0.85;">
+                    <strong>${formattedPendingHours}</strong> horas de trabajo acumuladas (11,00 € / hora)
+                </div>
+            </div>
+
+            <h3 style="font-size: 16px; margin: 0 0 12px 0; color: #333;">📋 Detalle de Días Acumulados:</h3>
+        `;
+
+        if (pendingList.length === 0) {
+            html += `
+                <div style="padding: 16px; text-align: center; border: 1.5px dashed rgba(0,0,0,0.12); border-radius: 12px; color: #666; font-size: 14px;">
+                    ✨ No hay horas ni importes pendientes de pago.
+                </div>
+            `;
+        } else {
+            html += `<div style="display: flex; flex-direction: column; gap: 8px;">`;
+            pendingList.forEach(item => {
+                const d = parseDateKey(item.dateKey);
+                const dayLabel = d.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+                const capitalizedDay = dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1);
+                const detailStr = formatWorkItemLabelES(item);
+                const itemAmount = (item.amount !== undefined && !isNaN(item.amount))
+                    ? item.amount
+                    : (((parseFloat(item.hours) || 0) * 11) + (parseFloat(item.extraMoney) || 0));
+                const formattedItemAmount = itemAmount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' });
+
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: rgba(255,255,255,0.7); border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; flex-wrap: wrap; gap: 8px;">
+                        <div>
+                            <strong style="font-size: 14px; color: #111;">📅 ${capitalizedDay}</strong>
+                            <div style="font-size: 12px; opacity: 0.75; margin-top: 2px;">
+                                ${detailStr}${item.note ? ` • <i>${item.note}</i>` : ''}
+                            </div>
+                        </div>
+                        <div style="font-size: 16px; font-weight: 800; color: ${itemAmount >= 0 ? '#111' : '#2563eb'};">
+                            ${formattedItemAmount}
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        }
+    } else {
+        // ── Tab 2: Histórico de Pagamentos Liquidados ──
+        html += `<h3 style="font-size: 17px; margin: 0 0 14px 0; color: #333;">📜 Historial de Pagos Realizados</h3>`;
+
+        if (settlementsList.length === 0) {
+            html += `
+                <div style="text-align: center; padding: 35px 20px; border: 2px dashed rgba(0,0,0,0.1); border-radius: 14px; background: rgba(255,255,255,0.4);">
+                    <span style="font-size: 38px;">📜</span>
+                    <div style="font-size: 15px; font-weight: bold; margin-top: 8px; color: #333;">Aún no hay pagos liquidados en el historial.</div>
+                </div>
+            `;
+        } else {
+            html += `<div style="display: flex; flex-direction: column; gap: 16px;">`;
+            settlementsList.forEach(settle => {
+                const sDate = parseDateKey(settle.settledDate);
+                const sDateLabel = sDate.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+                const sCapitalized = sDateLabel.charAt(0).toUpperCase() + sDateLabel.slice(1);
+                const formattedSettleAmount = settle.totalAmount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' });
+                const formattedSettleHours = settle.totalHours.toString().replace('.', ',');
+                const items = settle.items || [];
+
+                let itemsRowsHtml = '';
+                items.forEach(it => {
+                    const itDate = parseDateKey(it.dateKey);
+                    const itDateLabel = itDate.toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+                    const itHoursVal = parseFloat(it.hours) || 0;
+                    const itMoneyVal = parseFloat(it.extraMoney) || 0;
+                    const itAmountVal = it.amount !== undefined && !isNaN(it.amount)
+                        ? it.amount
+                        : ((itHoursVal * (settle.rate || 11)) + itMoneyVal);
+                    const itAmount = itAmountVal.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' });
+
+                    let itDetailTag = '';
+                    if (itHoursVal !== 0 && itMoneyVal !== 0) {
+                        const hStr = itHoursVal.toString().replace('.', ',');
+                        const mStr = (itMoneyVal > 0 ? `+` : ``) + itMoneyVal.toString().replace('.', ',') + ` €`;
+                        itDetailTag = `<span style="font-weight: 600; color: #7c3aed;">${hStr} h (${mStr})</span>`;
+                    } else if (itHoursVal !== 0) {
+                        const hStr = itHoursVal.toString().replace('.', ',');
+                        itDetailTag = `<span style="font-weight: 600; color: #7c3aed;">${hStr} h</span>`;
+                    } else {
+                        const mStr = (itMoneyVal > 0 ? `+` : ``) + itMoneyVal.toString().replace('.', ',') + ` €`;
+                        itDetailTag = `<span style="font-weight: 600; color: #0284c7;">Ajuste (${mStr})</span>`;
+                    }
+
+                    itemsRowsHtml += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 13px;">
+                            <div>
+                                <span>📅 ${itDateLabel}</span>
+                                ${it.note ? `<span style="color: #666; font-size: 12px; margin-left: 8px;">(${it.note})</span>` : ''}
+                            </div>
+                            <div style="display: flex; gap: 14px; align-items: center;">
+                                ${itDetailTag}
+                                <strong style="color: ${itAmountVal >= 0 ? '#059669' : '#dc2626'};">${itAmount}</strong>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `
+                    <div style="border: 1.5px solid rgba(16,185,129,0.4); border-radius: 16px; padding: 18px; background: rgba(255,255,255,0.9); box-shadow: 0 4px 14px rgba(16,185,129,0.06); border-left: 6px solid #10b981;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="background: #10b981; color: white; padding: 2px 8px; border-radius: 8px; font-size: 12px; font-weight: bold;">PAGADO</span>
+                                    <strong style="font-size: 16px; color: #111;">💰 Pago del ${sCapitalized}</strong>
+                                </div>
+                                <div style="font-size: 13px; color: #666; margin-top: 3px;">
+                                    Total pagado: <strong style="color: #059669; font-size: 15px;">${formattedSettleAmount}</strong> • <strong>${formattedSettleHours}</strong> horas (${items.length} día${items.length !== 1 ? 's' : ''})
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="background: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.06); border-radius: 12px; padding: 12px 14px; margin-top: 10px;">
+                            <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: #555; margin-bottom: 6px; letter-spacing: 0.5px;">Días incluidos en este pago:</div>
+                            ${itemsRowsHtml}
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        }
+    }
+
+    html += `</div>`;
+    result.innerHTML = html;
+}
+
+let showWorkerPaymentsHistory = false;
+window.toggleWorkerPaymentsTab = function(historyMode) {
+    showWorkerPaymentsHistory = !!historyMode;
+    showWorkerView();
+};
+
 loadCalendars();
+
 
 
