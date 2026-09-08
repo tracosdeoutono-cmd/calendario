@@ -613,25 +613,67 @@
             background: rgba(255,255,255,0.05);
             border: 1px dashed rgba(255,255,255,0.3);
         }
-        .log-day-box {
+        .log-day-box,
+        details.log-day-accordion {
             border: 1px solid rgba(0,0,0,0.1);
             border-radius: 12px;
-            padding: 14px 16px;
             background: rgba(255,255,255,0.7);
-            margin-bottom: 12px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            transition: all 0.2s ease;
         }
+        details.log-day-accordion summary {
+            list-style: none;
+            outline: none;
+            color: #007bff;
+        }
+        details.log-day-accordion summary::-webkit-details-marker {
+            display: none;
+        }
+        details.log-day-accordion summary:hover {
+            background: rgba(0,123,255,0.05);
+        }
+        details.log-day-accordion[open] {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        details.log-day-accordion[open] summary {
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            background: rgba(0,123,255,0.04);
+        }
+        details.log-day-accordion summary .log-day-arrow {
+            transition: transform 0.2s ease;
+            display: inline-block;
+        }
+        details.log-day-accordion[open] summary .log-day-arrow {
+            transform: rotate(180deg);
+        }
+
+        body[data-theme="outono"] details.log-day-accordion,
         body[data-theme="outono"] .log-day-box {
-            background: rgba(255,255,255,0.04);
-            border-color: rgba(245,158,11,0.2);
+            background: rgba(255,255,255,0.04) !important;
+            border-color: rgba(245,158,11,0.2) !important;
         }
+        body[data-theme="outono"] details.log-day-accordion summary {
+            color: #f59e0b !important;
+        }
+
+        body[data-theme="cyber"] details.log-day-accordion,
         body[data-theme="cyber"] .log-day-box {
-            background: rgba(0,255,65,0.04);
-            border-color: #00ff41;
-            border-radius: 0;
+            background: rgba(0,255,65,0.04) !important;
+            border-color: #00ff41 !important;
+            border-radius: 0 !important;
         }
+        body[data-theme="cyber"] details.log-day-accordion summary {
+            color: #00ff41 !important;
+        }
+
+        body[data-theme="quadro"] details.log-day-accordion,
         body[data-theme="quadro"] .log-day-box {
-            background: rgba(255,255,255,0.04);
-            border: 1px dashed rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.04) !important;
+            border: 1px dashed rgba(255,255,255,0.3) !important;
+        }
+        body[data-theme="quadro"] details.log-day-accordion summary {
+            color: #ffe066 !important;
         }
 
         /* ══════════════════════════════════════════ */
@@ -3863,11 +3905,15 @@ function showSettingsView() {
             logsByDay[dk].push(log);
         });
 
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        const todayStr = formatDateKey(today);
         const sortedDayKeys = Object.keys(logsByDay).sort().reverse();
 
         sortedDayKeys.forEach(dk => {
             const dayLogs = logsByDay[dk];
             const d = parseDateKey(dk);
+            const isToday = (dk === todayStr);
             const dayTitle = d.toLocaleDateString("pt-PT", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
             const capitalizedTitle = dayTitle.charAt(0).toUpperCase() + dayTitle.slice(1);
 
@@ -3893,12 +3939,21 @@ function showSettingsView() {
             });
 
             html += `
-                <div class="log-day-box">
-                    <div style="font-size: 14px; font-weight: bold; color: #007bff; margin-bottom: 8px; border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 4px;">
-                        📅 ${capitalizedTitle} <span style="font-size: 12px; font-weight: normal; color: #666;">(${dayLogs.length} acesso${dayLogs.length!==1?'s':''})</span>
+                <details class="log-day-accordion" ${isToday ? 'open' : ''}>
+                    <summary style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; cursor: pointer; user-select: none;">
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <span style="font-size: 14px; font-weight: bold;">📅 ${capitalizedTitle}</span>
+                            ${isToday ? `<span style="background: #007bff; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 800;">HOJE</span>` : ''}
+                            <span style="font-size: 12px; font-weight: normal; opacity: 0.75; color: #555;">(${dayLogs.length} acesso${dayLogs.length!==1?'s':''})</span>
+                        </div>
+                        <div style="font-size: 12px; opacity: 0.7; display: flex; align-items: center; gap: 4px;">
+                            <span class="log-day-arrow">▼</span>
+                        </div>
+                    </summary>
+                    <div style="padding: 10px 14px 12px 14px; border-top: 1px solid rgba(0,0,0,0.06);">
+                        ${logsListHtml}
                     </div>
-                    <div>${logsListHtml}</div>
-                </div>
+                </details>
             `;
         });
     }
