@@ -2689,6 +2689,7 @@ function buildNext10DaysPanelHTML(grouped, today) {
 
 function showCleaningPlan() {
     const today=new Date(); today.setHours(0,0,0,0); let grouped={};
+    const todayStr = formatDateKey(today);
     const plan = cloudHistory["_plan"] || {};
     const planKeys = Object.keys(plan);
 
