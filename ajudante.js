@@ -495,9 +495,8 @@ window.recordWorkerCheckOut = async function(minutesAgo) {
         return;
     }
 
-    const diffMinutes = Math.round(diffMs / (60 * 1000));
-    let hours = Math.round((diffMinutes / 60) * 100) / 100;
-    if (hours < 0.1) hours = 0.1;
+    const diffMinutes = diffMs / (60 * 1000); // minutos reais (decimal)
+    const hours = Math.round((diffMinutes / 60) * 100) / 100; // arredonda a 2 casas decimais
     const hoursFormatted = hours.toString().replace('.', ',');
     const totalAmount = Math.round(hours * 11 * 100) / 100;
     const amountFormatted = totalAmount.toLocaleString(isEs ? 'es-ES' : 'pt-PT', { style: 'currency', currency: 'EUR' });
