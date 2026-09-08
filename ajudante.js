@@ -174,6 +174,94 @@
         body[data-theme="outono"] h3[style*="color: #333"] {
             color: #f5f5f4 !important;
         }
+
+        /* ── Modal de Confirmação ── */
+        #al-confirm-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: alOverlayIn 0.22s ease;
+        }
+        @keyframes alOverlayIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+        #al-confirm-box {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 28px 28px 22px 28px;
+            max-width: 380px;
+            width: 100%;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.15);
+            animation: alBoxIn 0.28s cubic-bezier(0.34,1.56,0.64,1);
+            text-align: center;
+        }
+        @keyframes alBoxIn {
+            from { opacity: 0; transform: scale(0.82) translateY(20px); }
+            to   { opacity: 1; transform: scale(1)    translateY(0);    }
+        }
+        #al-confirm-icon {
+            font-size: 52px;
+            line-height: 1;
+            margin-bottom: 14px;
+            display: block;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.15));
+        }
+        #al-confirm-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 10px;
+            line-height: 1.3;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        #al-confirm-detail {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 22px;
+            line-height: 1.55;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        #al-confirm-detail strong { color: #1e293b; }
+        .al-confirm-btns {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        #al-confirm-cancel {
+            flex: 1;
+            padding: 13px 16px;
+            font-size: 14px;
+            font-weight: 700;
+            border-radius: 14px;
+            border: 2px solid #e2e8f0;
+            background: #f8fafc;
+            color: #64748b;
+            cursor: pointer;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        #al-confirm-cancel:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        #al-confirm-ok {
+            flex: 1.4;
+            padding: 13px 16px;
+            font-size: 15px;
+            font-weight: 800;
+            border-radius: 14px;
+            border: none;
+            cursor: pointer;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+        }
+        #al-confirm-ok:hover { transform: translateY(-2px); filter: brightness(1.06); }
+        #al-confirm-ok:active { transform: translateY(0px); }
     `;
     document.head.appendChild(style);
 })();
@@ -316,17 +404,53 @@ window.toggleCheckOutOptions = function(event) {
     showWorkerView();
 };
 
+// ── Modal bonito de confirmação ──
+function workerConfirm({ icon, title, detail, okLabel, okColor, okShadow, cancelLabel }) {
+    return new Promise(resolve => {
+        const overlay = document.createElement('div');
+        overlay.id = 'al-confirm-overlay';
+        overlay.innerHTML = `
+            <div id="al-confirm-box">
+                <span id="al-confirm-icon">${icon}</span>
+                <div id="al-confirm-title">${title}</div>
+                ${detail ? `<div id="al-confirm-detail">${detail}</div>` : ''}
+                <div class="al-confirm-btns">
+                    <button id="al-confirm-cancel">${cancelLabel || '✖ Cancelar'}</button>
+                    <button id="al-confirm-ok" style="background: ${okColor || 'linear-gradient(135deg,#10b981,#059669)'}; color: #fff; box-shadow: ${okShadow || '0 6px 20px rgba(16,185,129,0.4)'};">${okLabel || '✔ Confirmar'}</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        const cleanup = (result) => {
+            overlay.style.animation = 'alOverlayIn 0.18s ease reverse';
+            overlay.querySelector('#al-confirm-box').style.animation = 'alBoxIn 0.18s ease reverse';
+            setTimeout(() => { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 180);
+            resolve(result);
+        };
+
+        overlay.querySelector('#al-confirm-ok').addEventListener('click', () => cleanup(true));
+        overlay.querySelector('#al-confirm-cancel').addEventListener('click', () => cleanup(false));
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) cleanup(false); });
+    });
+}
+
 window.recordWorkerCheckIn = async function(minutesAgo) {
     const isEs = workerLanguage === "es";
     const targetMs = Date.now() - (minutesAgo * 60 * 1000);
     const targetDate = new Date(targetMs);
     const timeStr = targetDate.toLocaleTimeString(isEs ? "es-ES" : "pt-PT", { hour: "2-digit", minute: "2-digit" });
-    
-    const msg = isEs
-        ? `¿Confirmas que deseas empezar el día a las ${timeStr}?`
-        : `Confirmas que queres começar o dia às ${timeStr}?`;
-    
-    if (!confirm(msg)) return;
+
+    const confirmed = await workerConfirm({
+        icon: '🟢',
+        title: isEs ? `¿Empezar el día a las <strong>${timeStr}</strong>?` : `Começar o dia às <strong>${timeStr}</strong>?`,
+        detail: isEs ? 'Vas a marcar tu hora de entrada. Asegúrate de que la hora es correcta.' : 'Vais marcar a vossa hora de entrada. Confirma que a hora está certa.',
+        okLabel: isEs ? '✔ Sim, Empezar' : '✔ Sim, Começar',
+        okColor: 'linear-gradient(135deg, #10b981, #059669)',
+        okShadow: '0 6px 20px rgba(16,185,129,0.45)',
+        cancelLabel: isEs ? '✖ Cancelar' : '✖ Cancelar'
+    });
+    if (!confirmed) return;
 
     const today = new Date();
     today.setHours(0,0,0,0);
@@ -378,11 +502,18 @@ window.recordWorkerCheckOut = async function(minutesAgo) {
     const totalAmount = Math.round(hours * 11 * 100) / 100;
     const amountFormatted = totalAmount.toLocaleString(isEs ? 'es-ES' : 'pt-PT', { style: 'currency', currency: 'EUR' });
 
-    const msg = isEs
-        ? `¿Confirmas que deseas finalizar el día a las ${outTimeStr}?\n\n⏱️ Total: ${hoursFormatted} horas\n💰 Importe calculado: ${amountFormatted}`
-        : `Confirmas que queres finalizar o dia às ${outTimeStr}?\n\n⏱️ Total: ${hoursFormatted} horas\n💰 Valor calculado: ${amountFormatted}`;
-
-    if (!confirm(msg)) return;
+    const confirmed = await workerConfirm({
+        icon: '🔴',
+        title: isEs ? `¿Terminar el día a las <strong>${outTimeStr}</strong>?` : `Terminar o dia às <strong>${outTimeStr}</strong>?`,
+        detail: isEs
+            ? `Entrada: <strong>${shift.inTime}</strong> · Saída: <strong>${outTimeStr}</strong><br>⏱️ <strong>${hoursFormatted} horas</strong> · 💰 <strong>${amountFormatted}</strong>`
+            : `Entrada: <strong>${shift.inTime}</strong> · Saída: <strong>${outTimeStr}</strong><br>⏱️ <strong>${hoursFormatted} horas</strong> · 💰 <strong>${amountFormatted}</strong>`,
+        okLabel: isEs ? '✔ Sim, Terminar' : '✔ Sim, Terminar',
+        okColor: 'linear-gradient(135deg, #ef4444, #dc2626)',
+        okShadow: '0 6px 20px rgba(239,68,68,0.45)',
+        cancelLabel: isEs ? '✖ Cancelar' : '✖ Cancelar'
+    });
+    if (!confirmed) return;
 
     const pData = getPayrollData();
     const newWorkId = "work_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
@@ -430,11 +561,16 @@ window.resetWorkerShift = async function() {
     today.setHours(0,0,0,0);
     const todayStr = formatDateKey(today);
 
-    const msg = isEs
-        ? "¿Deseas reiniciar o corregir el registro de horario de hoy?"
-        : "Queres reiniciar ou corrigir o registo de horário de hoje?";
-    
-    if (!confirm(msg)) return;
+    const confirmed = await workerConfirm({
+        icon: '⚠️',
+        title: isEs ? '¿Reiniciar el horario de hoy?' : 'Reiniciar o horário de hoje?',
+        detail: isEs ? 'Esto borrará el registro de entrada de hoy. Tendrás que volver a marcar.' : 'Isto vai apagar o registo de entrada de hoje. Terás de marcar de novo.',
+        okLabel: isEs ? '🗑️ Sim, Reiniciar' : '🗑️ Sim, Reiniciar',
+        okColor: 'linear-gradient(135deg, #f59e0b, #d97706)',
+        okShadow: '0 6px 20px rgba(245,158,11,0.45)',
+        cancelLabel: isEs ? '✖ Cancelar' : '✖ Cancelar'
+    });
+    if (!confirmed) return;
 
     if (cloudHistory["_timeclock"] && cloudHistory["_timeclock"][todayStr]) {
         const shift = cloudHistory["_timeclock"][todayStr];
