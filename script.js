@@ -1076,12 +1076,26 @@ try {
     if (!Array.isArray(customCleanings)) customCleanings = [];
 } catch(e) { customCleanings = []; }
 
+let suppressedCleanings = [];
+try {
+    suppressedCleanings = JSON.parse(localStorage.getItem("al_suppressed_cleanings") || "[]");
+    if (!Array.isArray(suppressedCleanings)) suppressedCleanings = [];
+} catch(e) { suppressedCleanings = []; }
+
 let showBlockedDatesPanel = false;
 let showCustomCleaningsPanel = false;
 let showNext10DaysCalendar = false;
 
+let customCleaningsMode = "add"; // "add" ou "remove"
+let customSelectedHouse = "vizinho"; // "vizinho", "achada", "impasse"
+let customSelectedRoom = "Vizinho 1";
+
 function isBlockedDate(date) {
     return blockedDates.includes(formatDateKey(date));
+}
+
+function isSuppressedCleaning(dateKey, room) {
+    return suppressedCleanings.some(s => s.dateKey === dateKey && s.room === room);
 }
 
 window.toggleBlockedDatesPanel = function() {
@@ -1093,6 +1107,25 @@ window.toggleBlockedDatesPanel = function() {
 window.toggleCustomCleaningsPanel = function() {
     showCustomCleaningsPanel = !showCustomCleaningsPanel;
     if (showCustomCleaningsPanel) showBlockedDatesPanel = false;
+    showCleaningPlan();
+};
+
+window.setCustomCleaningsMode = function(mode) {
+    customCleaningsMode = mode;
+    showCleaningPlan();
+};
+
+window.setCustomSelectedHouse = function(house) {
+    customSelectedHouse = house;
+    const rooms = getHouseRooms(house);
+    if (rooms.length > 0 && !rooms.includes(customSelectedRoom)) {
+        customSelectedRoom = rooms[0];
+    }
+    showCleaningPlan();
+};
+
+window.setCustomSelectedRoom = function(room) {
+    customSelectedRoom = room;
     showCleaningPlan();
 };
 
@@ -1129,12 +1162,11 @@ window.removeBlockedDate = function(dk) {
 
 window.addCustomCleaning = function() {
     const dateInput = document.getElementById('al-custom-date-input');
-    const roomSelect = document.getElementById('al-custom-room-select');
     const noteInput = document.getElementById('al-custom-note-input');
-    if (!dateInput || !dateInput.value || !roomSelect || !roomSelect.value) return;
+    if (!dateInput || !dateInput.value) return;
 
     const dk = dateInput.value;
-    const room = roomSelect.value.trim();
+    const room = customSelectedRoom;
     const note = noteInput ? noteInput.value.trim() : "";
 
     const newCleaning = {
@@ -1159,6 +1191,50 @@ window.removeCustomCleaning = function(id) {
     customCleanings = customCleanings.filter(c => c.id !== id);
     cloudHistory["_customCleanings"] = customCleanings;
     try { localStorage.setItem("al_custom_cleanings", JSON.stringify(customCleanings)); } catch(e) {}
+    if (historyLoadedOk) saveToCloudHistory(cloudHistory);
+    showCleaningPlan();
+};
+
+window.addSuppressedCleaning = function(optDk, optRoom, optReason) {
+    let dk = optDk;
+    let room = optRoom;
+    let reason = optReason;
+
+    if (!dk || !room) {
+        const dateInput = document.getElementById('al-custom-date-input');
+        if (dateInput && dateInput.value) dk = dateInput.value;
+        room = customSelectedRoom;
+        const noteInput = document.getElementById('al-custom-note-input');
+        reason = noteInput ? noteInput.value.trim() : "";
+    }
+    if (!dk || !room) return;
+
+    const id = `${dk}_${room}`;
+    if (!suppressedCleanings.some(s => s.id === id || (s.dateKey === dk && s.room === room))) {
+        suppressedCleanings.push({
+            id: id,
+            dateKey: dk,
+            room: room,
+            reason: reason || "",
+            createdAt: new Date().toISOString()
+        });
+        suppressedCleanings.sort((a,b) => a.dateKey.localeCompare(b.dateKey));
+        cloudHistory["_suppressedCleanings"] = suppressedCleanings;
+        try { localStorage.setItem("al_suppressed_cleanings", JSON.stringify(suppressedCleanings)); } catch(e) {}
+        if (historyLoadedOk) saveToCloudHistory(cloudHistory);
+    }
+    const noteInput = document.getElementById('al-custom-note-input');
+    if (noteInput) noteInput.value = "";
+    showCleaningPlan();
+};
+
+window.removeSuppressedCleaning = function(idOrDk, optRoom) {
+    suppressedCleanings = suppressedCleanings.filter(s => {
+        if (optRoom) return !(s.dateKey === idOrDk && s.room === optRoom);
+        return s.id !== idOrDk && s.dateKey !== idOrDk;
+    });
+    cloudHistory["_suppressedCleanings"] = suppressedCleanings;
+    try { localStorage.setItem("al_suppressed_cleanings", JSON.stringify(suppressedCleanings)); } catch(e) {}
     if (historyLoadedOk) saveToCloudHistory(cloudHistory);
     showCleaningPlan();
 };
@@ -1757,6 +1833,26 @@ async function fetchCloudHistory() {
         cloudHistory["_customCleanings"] = customCleanings;
         try { localStorage.setItem("al_custom_cleanings", JSON.stringify(customCleanings)); } catch(e) {}
 
+        // Sincroniza limpezas suprimidas/removidas da cloud + local
+        let mergedSuppressed = new Map();
+        suppressedCleanings.forEach(s => {
+            if (s && s.dateKey && s.room) {
+                const id = s.id || `${s.dateKey}_${s.room}`;
+                mergedSuppressed.set(id, { ...s, id });
+            }
+        });
+        if (Array.isArray(cloudHistory["_suppressedCleanings"])) {
+            cloudHistory["_suppressedCleanings"].forEach(s => {
+                if (s && s.dateKey && s.room) {
+                    const id = s.id || `${s.dateKey}_${s.room}`;
+                    mergedSuppressed.set(id, { ...s, id });
+                }
+            });
+        }
+        suppressedCleanings = Array.from(mergedSuppressed.values()).sort((a,b) => a.dateKey.localeCompare(b.dateKey));
+        cloudHistory["_suppressedCleanings"] = suppressedCleanings;
+        try { localStorage.setItem("al_suppressed_cleanings", JSON.stringify(suppressedCleanings)); } catch(e) {}
+
         // Regista o acesso do dispositivo atual e envia para a Cloud imediatamente
         logDeviceAccess();
         saveToCloudHistory(cloudHistory);
@@ -1789,6 +1885,22 @@ async function fetchCloudHistory() {
                     }
                 });
                 customCleanings = Array.from(mergedCustom.values()).sort((a,b) => a.dateKey.localeCompare(b.dateKey));
+            }
+            if (Array.isArray(cloudHistory["_suppressedCleanings"])) {
+                let mergedSuppressed = new Map();
+                suppressedCleanings.forEach(s => {
+                    if (s && s.dateKey && s.room) {
+                        const id = s.id || `${s.dateKey}_${s.room}`;
+                        mergedSuppressed.set(id, { ...s, id });
+                    }
+                });
+                cloudHistory["_suppressedCleanings"].forEach(s => {
+                    if (s && s.dateKey && s.room) {
+                        const id = s.id || `${s.dateKey}_${s.room}`;
+                        mergedSuppressed.set(id, { ...s, id });
+                    }
+                });
+                suppressedCleanings = Array.from(mergedSuppressed.values()).sort((a,b) => a.dateKey.localeCompare(b.dateKey));
             }
         } catch(err) { cloudHistory = {}; }
         historyLoadedOk = false;
@@ -2191,13 +2303,15 @@ function buildBlockedDatesPanelHTML() {
 function buildCustomCleaningsPanelHTML() {
     const today = new Date(); today.setHours(0,0,0,0);
     const todayStr = formatDateKey(today);
+
+    // Lista de limpezas adicionadas
     const futureCleanings = customCleanings.filter(c => parseDateKey(c.dateKey) >= today);
     const pastCleanings = customCleanings.filter(c => parseDateKey(c.dateKey) < today);
 
-    let chipsHtml = '';
+    let addedChipsHtml = '';
     if (futureCleanings.length > 0) {
-        chipsHtml += `<div style="margin-bottom: 8px; font-size: 12px; font-weight: 700; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Próximas</div>`;
-        chipsHtml += futureCleanings.map(c => {
+        addedChipsHtml += `<div style="margin-bottom: 8px; font-size: 12px; font-weight: 700; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Próximas Específicas</div>`;
+        addedChipsHtml += futureCleanings.map(c => {
             const d = parseDateKey(c.dateKey);
             const label = d.toLocaleDateString("pt-PT", { weekday: "short", day: "numeric", month: "short" });
             return `<div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(139,92,246,0.1); border: 1.5px solid rgba(139,92,246,0.35); border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 600; color: #5b21b6;">
@@ -2207,8 +2321,8 @@ function buildCustomCleaningsPanelHTML() {
         }).join('');
     }
     if (pastCleanings.length > 0) {
-        chipsHtml += `<div style="margin-top: 12px; margin-bottom: 8px; font-size: 12px; font-weight: 700; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px;">Passadas (Histórico)</div>`;
-        chipsHtml += pastCleanings.map(c => {
+        addedChipsHtml += `<div style="margin-top: 12px; margin-bottom: 8px; font-size: 12px; font-weight: 700; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px;">Passadas (Histórico)</div>`;
+        addedChipsHtml += pastCleanings.map(c => {
             const d = parseDateKey(c.dateKey);
             const label = d.toLocaleDateString("pt-PT", { weekday: "short", day: "numeric", month: "short" });
             return `<div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(108,117,125,0.08); border: 1px solid rgba(108,117,125,0.25); border-radius: 20px; padding: 5px 12px; font-size: 13px; opacity: 0.75;">
@@ -2218,35 +2332,149 @@ function buildCustomCleaningsPanelHTML() {
         }).join('');
     }
     if (customCleanings.length === 0) {
-        chipsHtml = `<div style="font-size: 14px; opacity: 0.5; font-style: italic;">Nenhuma limpeza específica adicionada ainda.</div>`;
+        addedChipsHtml = `<div style="font-size: 13px; opacity: 0.6; font-style: italic;">Nenhuma limpeza específica adicionada.</div>`;
     }
 
-    const allRooms = Object.keys(ROOM_LINEN);
-    const roomOptionsHtml = allRooms.map(r => `<option value="${r}">${r}</option>`).join('');
+    // Lista de limpezas suprimidas/removidas
+    const futureSuppressed = suppressedCleanings.filter(s => parseDateKey(s.dateKey) >= today);
+    const pastSuppressed = suppressedCleanings.filter(s => parseDateKey(s.dateKey) < today);
+
+    let suppressedChipsHtml = '';
+    if (futureSuppressed.length > 0) {
+        suppressedChipsHtml += `<div style="margin-bottom: 8px; font-size: 12px; font-weight: 700; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Próximas Removidas</div>`;
+        suppressedChipsHtml += futureSuppressed.map(s => {
+            const d = parseDateKey(s.dateKey);
+            const label = d.toLocaleDateString("pt-PT", { weekday: "short", day: "numeric", month: "short" });
+            return `<div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(220,53,69,0.08); border: 1.5px solid rgba(220,53,69,0.3); border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 600; color: #dc3545;">
+                <span>🚫 <b>${s.room}</b> • 📅 ${label}${s.reason ? ` <i>(${s.reason})</i>` : ''}</span>
+                <button onclick="window.removeSuppressedCleaning('${s.id}')" title="Restaurar / Não ignorar limpeza" style="background: none; border: none; cursor: pointer; font-size: 14px; line-height: 1; padding: 0 4px; color: #10b981; font-weight: bold;">↩️ Restaurar</button>
+            </div>`;
+        }).join('');
+    }
+    if (pastSuppressed.length > 0) {
+        suppressedChipsHtml += `<div style="margin-top: 12px; margin-bottom: 8px; font-size: 12px; font-weight: 700; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px;">Passadas (Histórico)</div>`;
+        suppressedChipsHtml += pastSuppressed.map(s => {
+            const d = parseDateKey(s.dateKey);
+            const label = d.toLocaleDateString("pt-PT", { weekday: "short", day: "numeric", month: "short" });
+            return `<div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(108,117,125,0.08); border: 1px solid rgba(108,117,125,0.25); border-radius: 20px; padding: 5px 12px; font-size: 13px; opacity: 0.75;">
+                <span>🚫 ${s.room} • 📅 ${label}${s.reason ? ` <i>(${s.reason})</i>` : ''}</span>
+                <button onclick="window.removeSuppressedCleaning('${s.id}')" title="Remover do histórico" style="background: none; border: none; cursor: pointer; font-size: 14px; line-height: 1; padding: 0 4px; color: #6c757d; font-weight: bold;">×</button>
+            </div>`;
+        }).join('');
+    }
+    if (suppressedCleanings.length === 0) {
+        suppressedChipsHtml = `<div style="font-size: 13px; opacity: 0.6; font-style: italic;">Nenhuma limpeza removida/ignorada.</div>`;
+    }
+
+    // Grupos de casas e quartos
+    const houseTabs = [
+        { key: "vizinho", label: "🏡 Vizinho (3)" },
+        { key: "achada",  label: "🏘️ Achada (6)" },
+        { key: "impasse", label: "🏠 Impasse (3)" }
+    ];
+
+    const currentHouseRooms = getHouseRooms(customSelectedHouse);
+    if (!currentHouseRooms.includes(customSelectedRoom) && currentHouseRooms.length > 0) {
+        customSelectedRoom = currentHouseRooms[0];
+    }
+
+    const houseButtonsHtml = houseTabs.map(h => {
+        const isActive = customSelectedHouse === h.key;
+        const style = isActive
+            ? 'background: #7c3aed; color: white; border: 2px solid #7c3aed; box-shadow: 0 2px 8px rgba(124,58,237,0.35); font-weight: 800;'
+            : 'background: white; color: #6b21a8; border: 2px solid rgba(124,58,237,0.25); font-weight: 600;';
+        return `<button onclick="window.setCustomSelectedHouse('${h.key}')" style="flex: 1; padding: 8px 12px; font-size: 13px; cursor: pointer; border-radius: 10px; transition: all 0.15s ease; ${style}">
+            ${h.label}
+        </button>`;
+    }).join('');
+
+    const roomChipsHtml = currentHouseRooms.map(r => {
+        const isSelected = customSelectedRoom === r;
+        const style = isSelected
+            ? 'background: #8b5cf6; color: white; border: 2px solid #7c3aed; font-weight: 800; box-shadow: 0 2px 8px rgba(139,92,246,0.3);'
+            : 'background: rgba(255,255,255,0.9); color: #374151; border: 1.5px solid #d1d5db; font-weight: 600;';
+        return `<button onclick="window.setCustomSelectedRoom('${r}')" style="padding: 7px 14px; font-size: 13px; cursor: pointer; border-radius: 8px; transition: all 0.15s ease; ${style}">
+            ${isSelected ? '✓ ' : ''}${r}
+        </button>`;
+    }).join('');
+
+    const isAddMode = customCleaningsMode === "add";
 
     return `
-        <div style="border: 1px solid #ddd; border-radius: 12px; padding: 18px; margin-bottom: 20px; background-color: #f8f9fa; border-left: 4px solid #8b5cf6;">
-            <div style="font-size: 15px; font-weight: 700; margin-bottom: 14px; color: #7c3aed;">
-                ✨ Adicionar Limpeza Específica
-                <span style="font-size: 12px; font-weight: 400; color: #666; margin-left: 8px;">(não afeta as restantes reservas)</span>
-            </div>
-            <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 14px; flex-wrap: wrap;">
-                <input type="date" id="al-custom-date-input" value="${todayStr}"
-                    style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; cursor: pointer;"
-                    onkeydown="if(event.key==='Enter') window.addCustomCleaning()">
-                <select id="al-custom-room-select"
-                    style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; cursor: pointer; background: white; font-weight: 600;">
-                    ${roomOptionsHtml}
-                </select>
-                <input type="text" id="al-custom-note-input" placeholder="Nota opcional (ex: a fundo)..."
-                    style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; flex: 1; min-width: 180px;"
-                    onkeydown="if(event.key==='Enter') window.addCustomCleaning()">
-                <button onclick="window.addCustomCleaning()"
-                    style="padding: 8px 16px; font-size: 14px; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; font-weight: bold; box-shadow: 0 2px 6px rgba(139,92,246,0.3);">
-                    ➕ Adicionar
+        <div style="border: 1px solid #ddd; border-radius: 16px; padding: 20px; margin-bottom: 22px; background-color: #f8f9fa; border-left: 5px solid #8b5cf6; box-shadow: 0 4px 14px rgba(139,92,246,0.08);">
+            <!-- Abas de Modo: Adicionar vs Remover -->
+            <div style="display: flex; gap: 8px; margin-bottom: 18px; border-bottom: 1px solid #e5e7eb; padding-bottom: 12px; flex-wrap: wrap;">
+                <button onclick="window.setCustomCleaningsMode('add')" style="padding: 8px 16px; font-size: 13px; cursor: pointer; border-radius: 10px; font-weight: 800; transition: all 0.2s ease; ${isAddMode ? 'background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; border: none; box-shadow: 0 2px 8px rgba(139,92,246,0.3);' : 'background: white; color: #6b7280; border: 1px solid #d1d5db;'}">
+                    ➕ Adicionar Limpeza Específica
+                </button>
+                <button onclick="window.setCustomCleaningsMode('remove')" style="padding: 8px 16px; font-size: 13px; cursor: pointer; border-radius: 10px; font-weight: 800; transition: all 0.2s ease; ${!isAddMode ? 'background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; box-shadow: 0 2px 8px rgba(239,68,68,0.3);' : 'background: white; color: #6b7280; border: 1px solid #d1d5db;'}">
+                    🚫 Remover / Ignorar Limpeza do Dia
                 </button>
             </div>
-            <div style="display: flex; flex-wrap: wrap; gap: 8px;">${chipsHtml}</div>
+
+            <!-- Título Explicativo -->
+            <div style="font-size: 14px; font-weight: 700; margin-bottom: 14px; color: ${isAddMode ? '#7c3aed' : '#dc2626'};">
+                ${isAddMode ? '✨ Adicionar limpeza avulsa (não afeta as restantes reservas)' : '🚫 Remover/Ignorar limpeza calculada pelo programa para um dia específico'}
+            </div>
+
+            <!-- 1. Seletor de Casa (Agrupado) -->
+            <div style="margin-bottom: 10px;">
+                <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #6b7280; margin-bottom: 6px; letter-spacing: 0.5px;">1. Escolhe a Casa:</div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    ${houseButtonsHtml}
+                </div>
+            </div>
+
+            <!-- 2. Seletor de Quarto da Casa Selecionada -->
+            <div style="margin-bottom: 16px;">
+                <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #6b7280; margin-bottom: 6px; letter-spacing: 0.5px;">2. Escolhe o Quarto:</div>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    ${roomChipsHtml}
+                </div>
+            </div>
+
+            <!-- 3. Data, Nota e Botão de Ação -->
+            <div style="margin-bottom: 16px;">
+                <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #6b7280; margin-bottom: 6px; letter-spacing: 0.5px;">3. Data e Detalhes:</div>
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <input type="date" id="al-custom-date-input" value="${todayStr}"
+                        style="padding: 8px 12px; border: 1.5px solid #d1d5db; border-radius: 8px; font-size: 14px; cursor: pointer; background: white; font-weight: 600;"
+                        onkeydown="if(event.key==='Enter') ${isAddMode ? 'window.addCustomCleaning()' : 'window.addSuppressedCleaning()'}">
+                    
+                    <input type="text" id="al-custom-note-input" placeholder="${isAddMode ? 'Nota opcional (ex: a fundo, troca lençóis)...' : 'Motivo opcional (ex: pedido hóspede)...'}"
+                        style="padding: 8px 12px; border: 1.5px solid #d1d5db; border-radius: 8px; font-size: 14px; flex: 1; min-width: 190px; background: white;"
+                        onkeydown="if(event.key==='Enter') ${isAddMode ? 'window.addCustomCleaning()' : 'window.addSuppressedCleaning()'}">
+
+                    ${isAddMode ? `
+                        <button onclick="window.addCustomCleaning()"
+                            style="padding: 9px 18px; font-size: 14px; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; font-weight: 800; box-shadow: 0 3px 8px rgba(139,92,246,0.35);">
+                            ➕ Adicionar Limpeza
+                        </button>
+                    ` : `
+                        <button onclick="window.addSuppressedCleaning()"
+                            style="padding: 9px 18px; font-size: 14px; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; font-weight: 800; box-shadow: 0 3px 8px rgba(239,68,68,0.35);">
+                            🚫 Remover Deste Dia
+                        </button>
+                    `}
+                </div>
+            </div>
+
+            <!-- Listagens Atuais -->
+            <div style="border-top: 1px solid #e5e7eb; padding-top: 16px; display: flex; flex-direction: column; gap: 14px;">
+                <div>
+                    <div style="font-size: 13px; font-weight: 800; color: #5b21b6; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                        <span>✨ Limpezas Específicas Criadas:</span>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">${addedChipsHtml}</div>
+                </div>
+
+                <div>
+                    <div style="font-size: 13px; font-weight: 800; color: #dc3545; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                        <span>🚫 Limpezas Removidas / Ignoradas:</span>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">${suppressedChipsHtml}</div>
+                </div>
+            </div>
         </div>
     `;
 }
@@ -2509,6 +2737,15 @@ function showCleaningPlan() {
         }
     });
 
+    // Filtra limpezas automáticas que tenham sido suprimidas/removidas pelo utilizador para esse dia
+    if (!showHistoryMode) {
+        Object.keys(grouped).forEach(dk => {
+            if (grouped[dk] && Array.isArray(grouped[dk].rooms)) {
+                grouped[dk].rooms = grouped[dk].rooms.filter(clean => !isSuppressedCleaning(dk, clean.room));
+            }
+        });
+    }
+
     let sortedKeys=Object.keys(grouped).sort(); if (showHistoryMode) sortedKeys.reverse();
     let html=renderNavigation();
 
@@ -2521,12 +2758,14 @@ function showCleaningPlan() {
         : 'border: 2px solid #dc3545; background-color: rgba(220,53,69,0.06); color: #dc3545;';
 
     const futureCustom = customCleanings.filter(c => parseDateKey(c.dateKey) >= today);
+    const futureSuppressed = suppressedCleanings.filter(s => parseDateKey(s.dateKey) >= today);
+    const totalSpecificActions = futureCustom.length + futureSuppressed.length;
     const customBtnLabel = showCustomCleaningsPanel
         ? '✨ Fechar Limpeza Específica'
-        : `✨ Limpeza Específica${futureCustom.length > 0 ? ` (${futureCustom.length} ativa${futureCustom.length > 1 ? 's' : ''})` : ''}`;
+        : `✨ Limpeza Específica${totalSpecificActions > 0 ? ` (${totalSpecificActions} ativa${totalSpecificActions > 1 ? 's' : ''})` : ''}`;
     const customBtnStyle = showCustomCleaningsPanel
         ? 'border: 2px solid #8b5cf6; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; box-shadow: 0 4px 12px rgba(139,92,246,0.35);'
-        : futureCustom.length > 0
+        : totalSpecificActions > 0
             ? 'border: 2px solid #8b5cf6; background-color: rgba(139,92,246,0.12); color: #7c3aed; box-shadow: 0 2px 6px rgba(139,92,246,0.15);'
             : 'border: 2px solid #8b5cf6; background-color: rgba(139,92,246,0.06); color: #7c3aed;';
 
