@@ -4698,9 +4698,32 @@ function showPaymentsView() {
 }
 
 // ══════════════════════════════════════════════════
-// VISTA DEDICADA PARA AJUDANTE / TRABALHADOR (ES) 🇪🇸
+// VISTA DEDICADA PARA AJUDANTE / TRABALHADOR (ES / PT) 🇪🇸🇵🇹
 // ══════════════════════════════════════════════════
+let workerLanguage = "es";
+try {
+    const savedWorkerLang = localStorage.getItem("al_worker_lang");
+    if (savedWorkerLang === "pt" || savedWorkerLang === "es") {
+        workerLanguage = savedWorkerLang;
+    }
+} catch(e) {}
+
+window.setWorkerLanguage = function(lang) {
+    workerLanguage = (lang === "pt") ? "pt" : "es";
+    try {
+        localStorage.setItem("al_worker_lang", workerLanguage);
+    } catch(e) {}
+    showWorkerView();
+};
+
+let showWorkerPaymentsHistory = false;
+window.toggleWorkerPaymentsTab = function(historyMode) {
+    showWorkerPaymentsHistory = !!historyMode;
+    showWorkerView();
+};
+
 function showWorkerView() {
+    const isEs = workerLanguage === "es";
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayStr = formatDateKey(today);
@@ -4782,30 +4805,44 @@ function showWorkerView() {
     const settings = getAppSettings();
     const themeEmoji = getThemeEmoji(currentTheme);
 
-    // Barra de topo para o link do ajudante
+    // Barra de topo para o link do ajudante + Seletor de Idioma
     let html = `
-        <div class="top-navbar-row" style="margin-bottom: 20px;">
+        <div class="top-navbar-row" style="margin-bottom: 14px;">
             <div class="al-badge-title" style="cursor: default;" title="Casas do Martim">
                 🏡 Casas do Martim
             </div>
             <div class="floating-menu-container">
-                <button onclick="window.toggleFloatingSubMenu(event)" class="menu-trigger-btn" title="Opciones">
+                <button onclick="window.toggleFloatingSubMenu(event)" class="menu-trigger-btn" title="${isEs ? 'Opciones' : 'Opções'}">
                     <img src="icone2.jpeg" alt="Menu" class="menu-trigger-img">
                 </button>
                 <div id="al-floating-sub-items" class="floating-sub-items ${showFloatingSubMenu ? 'menu-expanded' : 'menu-collapsed'}">
                     <div class="theme-popup-wrapper">
-                        <button onclick="window.toggleThemePopup(event)" class="clock-btn" title="Cambiar Tema">${themeEmoji}</button>
+                        <button onclick="window.toggleThemePopup(event)" class="clock-btn" title="${isEs ? 'Cambiar Tema' : 'Mudar Tema'}">${themeEmoji}</button>
                         ${buildThemePopupHTML()}
                     </div>
-                    ${currentTheme === 'aleatorio' ? `<button onclick="window.rerollRandomTheme(event)" class="clock-btn" title="Otro Tema">🎲</button>` : ''}
-                    <button onclick="window.switchMainView('cleaning')" class="clock-btn" title="Volver al Panel Principal">🔙</button>
+                    ${currentTheme === 'aleatorio' ? `<button onclick="window.rerollRandomTheme(event)" class="clock-btn" title="${isEs ? 'Otro Tema' : 'Outro Tema'}">🎲</button>` : ''}
+                    <button onclick="window.switchMainView('cleaning')" class="clock-btn" title="${isEs ? 'Volver al Panel Principal' : 'Voltar ao Painel Principal'}">🔙</button>
                 </div>
+            </div>
+        </div>
+
+        <!-- Seletor de Idioma no Topo (Espanhol Default) -->
+        <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 22px;">
+            <div style="display: inline-flex; background: rgba(0,0,0,0.06); padding: 4px; border-radius: 12px; gap: 4px; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+                <button onclick="window.setWorkerLanguage('es')"
+                    style="padding: 8px 18px; font-size: 14px; font-weight: 800; cursor: pointer; border-radius: 9px; border: none; transition: all 0.2s ease; ${isEs ? 'background: #ffffff; color: #e11d48; box-shadow: 0 2px 8px rgba(0,0,0,0.12);' : 'background: transparent; color: #666;'}">
+                    🇪🇸 Español
+                </button>
+                <button onclick="window.setWorkerLanguage('pt')"
+                    style="padding: 8px 18px; font-size: 14px; font-weight: 800; cursor: pointer; border-radius: 9px; border: none; transition: all 0.2s ease; ${!isEs ? 'background: #ffffff; color: #0284c7; box-shadow: 0 2px 8px rgba(0,0,0,0.12);' : 'background: transparent; color: #666;'}">
+                    🇵🇹 Português
+                </button>
             </div>
         </div>
     `;
 
     // ══════════════════════════════════════════════════
-    // 1. LIMPIEZAS DE HOY (Apenas o dia atual, em espanhol)
+    // 1. LIMPEZAS DE HOJE (Apenas o dia atual, sem botões de cópia)
     // ══════════════════════════════════════════════════
     const todayData = grouped[todayStr] || { date: today, rooms: [], reviews: [], customCleanings: [] };
     const todayRooms = todayData.rooms || [];
@@ -4813,27 +4850,25 @@ function showWorkerView() {
     const todayCustom = todayData.customCleanings || [];
     const hasTodayWork = todayRooms.length > 0 || todayReviews.length > 0 || todayCustom.length > 0;
 
-    const rawDayEs = today.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-    const capitalizedDayEs = rawDayEs.charAt(0).toUpperCase() + rawDayEs.slice(1);
+    const rawDay = today.toLocaleDateString(isEs ? "es-ES" : "pt-PT", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    const capitalizedDay = rawDay.charAt(0).toUpperCase() + rawDay.slice(1);
 
-    const cEs = [`🧹 Limpiezas - ${capitalizedDayEs}:`];
     let todayBodyHtml = "";
 
     if (hasTodayWork) {
         // Tarefas de Lixo
         const gTasks = getGarbageTasks(today);
         gTasks.forEach(gt => {
-            cEs.push(gt.es);
-            todayBodyHtml += `<div style="margin-bottom: 6px; font-size: 15px; font-weight: 700; color: #0284c7;">${gt.es}</div>`;
+            const taskText = isEs ? gt.es : gt.pt;
+            todayBodyHtml += `<div style="margin-bottom: 6px; font-size: 15px; font-weight: 700; color: #0284c7;">${taskText}</div>`;
         });
 
         // Revisões
         if (todayReviews.length > 0) {
             todayReviews.forEach(rev => {
-                cEs.push(`🔍 Revisar limpieza: ${rev.room} (estancia cancelada)`);
                 todayBodyHtml += `
                     <div style="margin: 6px 0; padding: 8px 12px; background: rgba(245,158,11,0.08); border-left: 4px solid #f59e0b; border-radius: 6px; font-size: 14px;">
-                        🔍 <b>Revisar limpieza: ${rev.room}</b> <span style="font-size: 12px; color: #666;">(estancia cancelada)</span>
+                        🔍 <b>${isEs ? 'Revisar limpieza:' : 'Rever limpeza:'} ${rev.room}</b> <span style="font-size: 12px; color: #666;">(${isEs ? 'estancia cancelada' : 'estadia cancelada'})</span>
                     </div>
                 `;
             });
@@ -4843,71 +4878,64 @@ function showWorkerView() {
         todayRooms.sort((a, b) => a.room.localeCompare(b.room)).forEach(clean => {
             let hCo = clean.hasCheckout;
             let hCi = clean.hasCheckin;
-            let tEs = "", tH = "";
+            let tH = "";
             if (hCo === undefined || hCi === undefined) {
                 hCo = globalReservations.some(r => r.room === clean.room && sameDay(r.checkOut, today));
                 hCi = clean.urgent || globalReservations.some(r => r.room === clean.room && sameDay(r.checkIn, today));
             }
-            if (hCo && hCi) { tEs = " (sale y entra)"; tH = " <b>(sale y entra)</b>"; }
-            else if (hCo) { tEs = " (sale hoy)"; tH = " <b>(sale hoy)</b>"; }
-            else if (hCi) { tEs = " (entrada hoy)"; tH = " <b>(entrada hoy)</b>"; }
+            if (hCo && hCi) {
+                tH = isEs ? " <b>(sale y entra)</b>" : " <b>(sai e entra)</b>";
+            } else if (hCo) {
+                tH = isEs ? " <b>(sale hoy)</b>" : " <b>(sai hoje)</b>";
+            } else if (hCi) {
+                tH = isEs ? " <b>(entrada hoy)</b>" : " <b>(entrada hoje)</b>";
+            }
 
             const em = (clean.urgent || hCi) ? "⚠️" : "🧹";
             const bedConfig = ROOM_BEDS_INFO[clean.room];
-            const bedEs = bedConfig ? ` (${bedConfig.es})` : "";
+            const bedText = bedConfig ? (isEs ? bedConfig.es : bedConfig.pt) : "";
+            const bedHtml = bedText ? ` <span style="font-size: 13px; opacity: 0.8; font-weight: 600; color: #7c3aed;">(${bedText})</span>` : "";
 
-            cEs.push(`${em} ${clean.room}${bedEs}${tEs}`);
-
-            const bedHtml = bedConfig ? ` <span style="font-size: 13px; opacity: 0.8; font-weight: 600; color: #7c3aed;">(${bedConfig.es})</span>` : "";
             todayBodyHtml += `<div style="font-size: 15px; margin: 4px 0;">${em} <b>${clean.room}</b>${bedHtml}${tH}</div>`;
         });
 
         // Limpezas específicas
         todayCustom.forEach(c => {
             const bedConfig = ROOM_BEDS_INFO[c.room];
-            const bedEs = bedConfig ? ` (${bedConfig.es})` : "";
-            const noteEs = c.note ? ` - ${c.note}` : "";
+            const bedText = bedConfig ? (isEs ? bedConfig.es : bedConfig.pt) : "";
+            const bedHtml = bedText ? ` <span style="font-size: 13px; opacity: 0.8; font-weight: 600; color: #7c3aed;">(${bedText})</span>` : "";
 
-            cEs.push(`🧹 ${c.room}${bedEs} (Específica${noteEs})`);
-
-            const bedHtml = bedConfig ? ` <span style="font-size: 13px; opacity: 0.8; font-weight: 600; color: #7c3aed;">(${bedConfig.es})</span>` : "";
             todayBodyHtml += `
                 <div style="font-size: 15px; margin: 4px 0;">
-                    🧹 <b>${c.room}</b> <span style="background: rgba(139,92,246,0.12); color: #7c3aed; font-size: 11px; font-weight: bold; padding: 2px 7px; border-radius: 6px;">Específica</span>${bedHtml}${c.note ? ` <i style="color: #666; font-size: 13px;">(${c.note})</i>` : ''}
+                    🧹 <b>${c.room}</b> <span style="background: rgba(139,92,246,0.12); color: #7c3aed; font-size: 11px; font-weight: bold; padding: 2px 7px; border-radius: 6px;">${isEs ? 'Específica' : 'Específica'}</span>${bedHtml}${c.note ? ` <i style="color: #666; font-size: 13px;">(${c.note})</i>` : ''}
                 </div>
             `;
         });
 
         if (settings.includeAddresses) {
-            cEs.push("");
-            cEs.push("Dirección de mi casa: Impasse Romeiras 6");
-            cEs.push("Dirección de la casa Funchal: Beco da Achada 3");
+            todayBodyHtml += `
+                <div style="margin-top: 14px; padding-top: 10px; border-top: 1px dashed rgba(0,0,0,0.1); font-size: 12px; color: #666; line-height: 1.5;">
+                    <div>📍 <b>${isEs ? 'Dirección Impasse:' : 'Morada Impasse:'}</b> Impasse Romeiras 6</div>
+                    <div>📍 <b>${isEs ? 'Dirección Funchal (Achada):' : 'Morada Funchal (Achada):'}</b> Beco da Achada 3</div>
+                </div>
+            `;
         }
     } else {
-        cEs.push("Sin limpiezas hoy.");
         todayBodyHtml = `
             <div style="padding: 14px 0; font-size: 15px; color: #059669; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                <span>✨</span> <span>¡No hay limpiezas programadas para hoy! Día libre.</span>
+                <span>✨</span> <span>${isEs ? '¡No hay limpiezas programadas para hoy! Día libre.' : 'Sem limpezas programadas para hoje! Dia de folga.'}</span>
             </div>
         `;
     }
 
-    const encodedTodayText = encodeURIComponent(cEs.join("\n"));
-
     html += `
-        <!-- Secção 1: Limpiezas de Hoy -->
+        <!-- Secção 1: Limpezas de Hoje -->
         <div style="border: 1px solid #ddd; border-radius: 16px; padding: 20px; margin-bottom: 22px; background-color: #f8f9fa; border-left: 6px solid #007bff; box-shadow: 0 4px 14px rgba(0,123,255,0.08);">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
                 <div>
-                    <h2 style="margin: 0; font-size: 20px; color: #007bff;">🧹 Limpiezas de Hoy</h2>
-                    <div style="font-size: 13px; opacity: 0.75; font-weight: 600; margin-top: 2px;">📅 ${capitalizedDayEs}</div>
+                    <h2 style="margin: 0; font-size: 20px; color: #007bff;">${isEs ? '🧹 Limpiezas de Hoy' : '🧹 Limpezas de Hoje'}</h2>
+                    <div style="font-size: 13px; opacity: 0.75; font-weight: 600; margin-top: 2px;">📅 ${capitalizedDay}</div>
                 </div>
-                ${hasTodayWork ? `
-                    <button onclick="window.copyFromData(this, '${encodedTodayText}')"
-                        style="padding: 8px 16px; font-size: 13px; cursor: pointer; border-radius: 8px; border: 1px solid #17a2b8; background: #17a2b8; color: white; font-weight: bold; box-shadow: 0 2px 6px rgba(23,162,184,0.25);">
-                        🇪🇸 Copiar Limpiezas
-                    </button>
-                ` : ''}
             </div>
             <div style="margin-top: 10px;">
                 ${todayBodyHtml}
@@ -4916,12 +4944,80 @@ function showWorkerView() {
     `;
 
     // ══════════════════════════════════════════════════
-    // 2. PRÓXIMOS 10 DIAS DE TRABALHO (Widget & Texto em ES)
+    // 2. PRÓXIMOS 10 DIAS DE TRABALHO (Sem botões de cópia)
     // ══════════════════════════════════════════════════
-    html += buildNext10DaysPanelHTML(grouped, today);
+    const pills = [];
+    for (let i = 0; i < 10; i++) {
+        const d = addDays(today, i);
+        const dk = formatDateKey(d);
+        const dayData = grouped[dk];
+        const rooms = (dayData && dayData.rooms) ? dayData.rooms : [];
+        const revs = (dayData && dayData.reviews) ? dayData.reviews : [];
+        const customList = (dayData && dayData.customCleanings) ? dayData.customCleanings : [];
+        const totalItems = rooms.length + revs.length + customList.length;
+        const hasWork = totalItems > 0;
+
+        const isToday = i === 0;
+        const isSun = d.getDay() === 0;
+        const weekdayShort = d.toLocaleDateString(isEs ? "es-ES" : "pt-PT", { weekday: "short" }).replace('.', '').toUpperCase();
+        const dayNum = d.getDate();
+
+        let pillBg = 'rgba(255,255,255,0.9)';
+        let pillBorder = '1px solid rgba(255,255,255,0.5)';
+        let pillColor = '#4b5563';
+        let badgeEmoji = '😴';
+        let badgeText = isEs ? 'Libre' : 'Folga';
+        let badgeBg = 'rgba(0,0,0,0.06)';
+        let badgeColor = '#666';
+
+        if (hasWork) {
+            const roomLabel = isEs ? (totalItems > 1 ? 'habs.' : 'hab.') : (totalItems > 1 ? 'qtos' : 'qto');
+            if (isSun) {
+                pillBg = '#ffffff';
+                pillBorder = '2px solid #ef4444';
+                pillColor = '#dc2626';
+                badgeEmoji = '🔴';
+                badgeText = `${totalItems} ${roomLabel}`;
+                badgeBg = '#ef4444';
+                badgeColor = '#ffffff';
+            } else {
+                pillBg = '#ffffff';
+                pillBorder = '2px solid #10b981';
+                pillColor = '#059669';
+                badgeEmoji = '🧹';
+                badgeText = `${totalItems} ${roomLabel}`;
+                badgeBg = '#10b981';
+                badgeColor = '#ffffff';
+            }
+        }
+
+        const todayLabel = isEs ? 'HOY' : 'HOJE';
+
+        pills.push(`
+            <div style="flex: 1; min-width: 60px; max-width: 84px; text-align: center; padding: 10px 4px; border-radius: 12px; background: ${pillBg}; border: ${pillBorder}; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; ${isToday ? 'box-shadow: 0 0 0 2px #facc15;' : ''}">
+                <div style="font-weight: 800; font-size: 10px; opacity: 0.85; text-transform: uppercase; color: ${pillColor};">${isToday ? todayLabel : weekdayShort}</div>
+                <div style="font-size: 16px; font-weight: 900; color: ${pillColor};">${dayNum}</div>
+                <div style="font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 6px; background: ${badgeBg}; color: ${badgeColor}; white-space: nowrap; display: flex; align-items: center; gap: 2px;">
+                    <span>${badgeEmoji}</span> <span>${badgeText}</span>
+                </div>
+            </div>
+        `);
+    }
+
+    html += `
+        <!-- Secção 2: Próximos 10 dias de trabalho -->
+        <div style="margin: 14px 0 22px 0; padding: 16px 18px; border-radius: 16px; background: linear-gradient(135deg, #6366f1, #4f46e5); color: #ffffff; border: 2px solid #4338ca; box-shadow: 0 6px 20px rgba(99,102,241,0.25);">
+            <div style="font-size: 16px; font-weight: 800; color: #ffffff; display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                <span>📅</span> <span>${isEs ? 'Próximos 10 días de trabajo' : 'Próximos 10 dias de trabalho'}</span>
+            </div>
+            <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin;">
+                ${pills.join("")}
+            </div>
+        </div>
+    `;
 
     // ══════════════════════════════════════════════════
-    // 3. PAGOS & HISTORIAL DE PAGOS (100% em Espanhol)
+    // 3. PAGAMENTOS & HISTÓRICO (Sem botões de cópia)
     // ══════════════════════════════════════════════════
     const pData = getPayrollData();
     const pendingList = pData.pendingWork || [];
@@ -4929,80 +5025,80 @@ function showWorkerView() {
     const totalPendingHours = pendingList.reduce((sum, w) => sum + (parseFloat(w.hours) || 0), 0);
     const totalPendingAmount = pendingList.reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
 
-    const formattedPendingAmount = totalPendingAmount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' });
+    const formattedPendingAmount = totalPendingAmount.toLocaleString(isEs ? 'es-ES' : 'pt-PT', { style: 'currency', currency: 'EUR' });
     const formattedPendingHours = (Math.round(totalPendingHours * 100) / 100).toString().replace('.', ',');
-    const textES_Payroll = buildPendingWorkTextES(pendingList, totalPendingHours, totalPendingAmount);
-    const encodedPayrollText = encodeURIComponent(textES_Payroll);
 
     html += `
         <div style="border: 1px solid #ddd; border-radius: 16px; padding: 20px; margin-top: 22px; background-color: #f8f9fa; border-left: 6px solid #8b5cf6; box-shadow: 0 4px 14px rgba(139,92,246,0.08);">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;">
                 <div>
-                    <h2 style="margin: 0; font-size: 20px; color: #7c3aed;">💶 Pagos y Horas de Trabajo</h2>
-                    <div style="font-size: 13px; opacity: 0.75; font-weight: 600; margin-top: 2px;">Tarifa: 11,00 € / hora</div>
+                    <h2 style="margin: 0; font-size: 20px; color: #7c3aed;">${isEs ? '💶 Pagos y Horas de Trabajo' : '💶 Pagamentos & Horas de Trabalho'}</h2>
+                    <div style="font-size: 13px; opacity: 0.75; font-weight: 600; margin-top: 2px;">${isEs ? 'Tarifa: 11,00 € / hora' : 'Tarifa: 11,00 € / hora'}</div>
                 </div>
-                ${pendingList.length > 0 ? `
-                    <button onclick="window.copyFromData(this, '${encodedPayrollText}')"
-                        style="padding: 8px 16px; font-size: 13px; cursor: pointer; border-radius: 8px; border: 1px solid #8b5cf6; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; font-weight: bold; box-shadow: 0 2px 6px rgba(139,92,246,0.25);">
-                        🇪🇸 Copiar Resumen (${formattedPendingAmount})
-                    </button>
-                ` : ''}
             </div>
 
             <!-- Separadores / Tabs de Pagamentos -->
             <div style="display: flex; gap: 8px; margin-bottom: 18px; border-bottom: 2px solid rgba(0,0,0,0.06); padding-bottom: 12px; flex-wrap: wrap;">
                 <button onclick="window.toggleWorkerPaymentsTab(false)"
                     style="padding: 9px 16px; font-size: 13px; font-weight: bold; cursor: pointer; border-radius: 10px; border: none; transition: all 0.2s ease; ${!showWorkerPaymentsHistory ? 'background: #8b5cf6; color: white; box-shadow: 0 4px 12px rgba(139,92,246,0.35);' : 'background: rgba(0,0,0,0.05); color: #555;'}">
-                    ⏳ Horas por Pagar (${pendingList.length})
+                    ${isEs ? '⏳ Horas por Pagar' : '⏳ Horas a Pagar'} (${pendingList.length})
                 </button>
                 <button onclick="window.toggleWorkerPaymentsTab(true)"
                     style="padding: 9px 16px; font-size: 13px; font-weight: bold; cursor: pointer; border-radius: 10px; border: none; transition: all 0.2s ease; ${showWorkerPaymentsHistory ? 'background: #8b5cf6; color: white; box-shadow: 0 4px 12px rgba(139,92,246,0.35);' : 'background: rgba(0,0,0,0.05); color: #555;'}">
-                    📜 Historial de Pagos (${settlementsList.length})
+                    ${isEs ? '📜 Historial de Pagos' : '📜 Histórico de Pagamentos'} (${settlementsList.length})
                 </button>
             </div>
     `;
 
     if (!showWorkerPaymentsHistory) {
-        // ── Tab 1: Horas / Pagos Pendientes ──
+        // ── Tab 1: Horas / Pagamentos Pendentes ──
+        const statusLabel = isEs
+            ? (totalPendingAmount > 0 ? '⚠️ Total Pendiente de Pago' : '✅ Sin Pagos Pendientes')
+            : (totalPendingAmount > 0 ? '⚠️ Total a Pagar Acumulado' : '✅ Sem Pagamentos Pendentes');
+
+        const hoursDesc = isEs
+            ? `<strong>${formattedPendingHours}</strong> horas de trabajo acumuladas (11,00 € / hora)`
+            : `<strong>${formattedPendingHours}</strong> horas de trabalho acumuladas (11,00 € / hora)`;
+
         html += `
             <!-- Cartão do Total Pendente -->
             <div style="background: linear-gradient(135deg, rgba(239,68,68,0.08), rgba(245,158,11,0.08)); border: 2px solid ${totalPendingAmount > 0 ? '#ef4444' : '#10b981'}; border-radius: 14px; padding: 16px; margin-bottom: 18px;">
                 <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: ${totalPendingAmount > 0 ? '#dc2626' : '#059669'};">
-                    ${totalPendingAmount > 0 ? '⚠️ Total Pendiente de Pago' : '✅ Sin Pagos Pendientes'}
+                    ${statusLabel}
                 </div>
                 <div style="font-size: 30px; font-weight: 900; color: ${totalPendingAmount > 0 ? '#dc2626' : '#059669'}; margin: 4px 0 2px 0;">
                     ${formattedPendingAmount}
                 </div>
                 <div style="font-size: 13px; opacity: 0.85;">
-                    <strong>${formattedPendingHours}</strong> horas de trabajo acumuladas (11,00 € / hora)
+                    ${hoursDesc}
                 </div>
             </div>
 
-            <h3 style="font-size: 16px; margin: 0 0 12px 0; color: #333;">📋 Detalle de Días Acumulados:</h3>
+            <h3 style="font-size: 16px; margin: 0 0 12px 0; color: #333;">${isEs ? '📋 Detalle de Días Acumulados:' : '📋 Detalhe dos Dias Acumulados:'}</h3>
         `;
 
         if (pendingList.length === 0) {
             html += `
                 <div style="padding: 16px; text-align: center; border: 1.5px dashed rgba(0,0,0,0.12); border-radius: 12px; color: #666; font-size: 14px;">
-                    ✨ No hay horas ni importes pendientes de pago.
+                    ${isEs ? '✨ No hay horas ni importes pendientes de pago.' : '✨ Não há horas nem valores pendentes de pagamento.'}
                 </div>
             `;
         } else {
             html += `<div style="display: flex; flex-direction: column; gap: 8px;">`;
             pendingList.forEach(item => {
                 const d = parseDateKey(item.dateKey);
-                const dayLabel = d.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-                const capitalizedDay = dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1);
-                const detailStr = formatWorkItemLabelES(item);
+                const dayLabel = d.toLocaleDateString(isEs ? "es-ES" : "pt-PT", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+                const capitalizedDayItem = dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1);
+                const detailStr = isEs ? formatWorkItemLabelES(item) : formatWorkItemLabelPT(item);
                 const itemAmount = (item.amount !== undefined && !isNaN(item.amount))
                     ? item.amount
                     : (((parseFloat(item.hours) || 0) * 11) + (parseFloat(item.extraMoney) || 0));
-                const formattedItemAmount = itemAmount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' });
+                const formattedItemAmount = itemAmount.toLocaleString(isEs ? 'es-ES' : 'pt-PT', { style: 'currency', currency: 'EUR' });
 
                 html += `
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: rgba(255,255,255,0.7); border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; flex-wrap: wrap; gap: 8px;">
                         <div>
-                            <strong style="font-size: 14px; color: #111;">📅 ${capitalizedDay}</strong>
+                            <strong style="font-size: 14px; color: #111;">📅 ${capitalizedDayItem}</strong>
                             <div style="font-size: 12px; opacity: 0.75; margin-top: 2px;">
                                 ${detailStr}${item.note ? ` • <i>${item.note}</i>` : ''}
                             </div>
@@ -5017,35 +5113,35 @@ function showWorkerView() {
         }
     } else {
         // ── Tab 2: Histórico de Pagamentos Liquidados ──
-        html += `<h3 style="font-size: 17px; margin: 0 0 14px 0; color: #333;">📜 Historial de Pagos Realizados</h3>`;
+        html += `<h3 style="font-size: 17px; margin: 0 0 14px 0; color: #333;">${isEs ? '📜 Historial de Pagos Realizados' : '📜 Histórico de Pagamentos Realizados'}</h3>`;
 
         if (settlementsList.length === 0) {
             html += `
                 <div style="text-align: center; padding: 35px 20px; border: 2px dashed rgba(0,0,0,0.1); border-radius: 14px; background: rgba(255,255,255,0.4);">
                     <span style="font-size: 38px;">📜</span>
-                    <div style="font-size: 15px; font-weight: bold; margin-top: 8px; color: #333;">Aún no hay pagos liquidados en el historial.</div>
+                    <div style="font-size: 15px; font-weight: bold; margin-top: 8px; color: #333;">${isEs ? 'Aún no hay pagos liquidados en el historial.' : 'Ainda não há pagamentos liquidados no histórico.'}</div>
                 </div>
             `;
         } else {
             html += `<div style="display: flex; flex-direction: column; gap: 16px;">`;
             settlementsList.forEach(settle => {
                 const sDate = parseDateKey(settle.settledDate);
-                const sDateLabel = sDate.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+                const sDateLabel = sDate.toLocaleDateString(isEs ? "es-ES" : "pt-PT", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
                 const sCapitalized = sDateLabel.charAt(0).toUpperCase() + sDateLabel.slice(1);
-                const formattedSettleAmount = settle.totalAmount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' });
+                const formattedSettleAmount = settle.totalAmount.toLocaleString(isEs ? 'es-ES' : 'pt-PT', { style: 'currency', currency: 'EUR' });
                 const formattedSettleHours = settle.totalHours.toString().replace('.', ',');
                 const items = settle.items || [];
 
                 let itemsRowsHtml = '';
                 items.forEach(it => {
                     const itDate = parseDateKey(it.dateKey);
-                    const itDateLabel = itDate.toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+                    const itDateLabel = itDate.toLocaleDateString(isEs ? "es-ES" : "pt-PT", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
                     const itHoursVal = parseFloat(it.hours) || 0;
                     const itMoneyVal = parseFloat(it.extraMoney) || 0;
                     const itAmountVal = it.amount !== undefined && !isNaN(it.amount)
                         ? it.amount
                         : ((itHoursVal * (settle.rate || 11)) + itMoneyVal);
-                    const itAmount = itAmountVal.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' });
+                    const itAmount = itAmountVal.toLocaleString(isEs ? 'es-ES' : 'pt-PT', { style: 'currency', currency: 'EUR' });
 
                     let itDetailTag = '';
                     if (itHoursVal !== 0 && itMoneyVal !== 0) {
@@ -5057,7 +5153,7 @@ function showWorkerView() {
                         itDetailTag = `<span style="font-weight: 600; color: #7c3aed;">${hStr} h</span>`;
                     } else {
                         const mStr = (itMoneyVal > 0 ? `+` : ``) + itMoneyVal.toString().replace('.', ',') + ` €`;
-                        itDetailTag = `<span style="font-weight: 600; color: #0284c7;">Ajuste (${mStr})</span>`;
+                        itDetailTag = `<span style="font-weight: 600; color: #0284c7;">${isEs ? 'Ajuste' : 'Ajuste'} (${mStr})</span>`;
                     }
 
                     itemsRowsHtml += `
@@ -5074,22 +5170,29 @@ function showWorkerView() {
                     `;
                 });
 
+                const badgeText = isEs ? 'PAGADO' : 'PAGO';
+                const sTitle = isEs ? `💰 Pago del ${sCapitalized}` : `💰 Pagamento de ${sCapitalized}`;
+                const daysSuffix = isEs ? (items.length !== 1 ? 'días' : 'día') : (items.length !== 1 ? 'dias' : 'dia');
+                const sSub = isEs
+                    ? `Total pagado: <strong style="color: #059669; font-size: 15px;">${formattedSettleAmount}</strong> • <strong>${formattedSettleHours}</strong> horas (${items.length} ${daysSuffix})`
+                    : `Total pago: <strong style="color: #059669; font-size: 15px;">${formattedSettleAmount}</strong> • <strong>${formattedSettleHours}</strong> horas (${items.length} ${daysSuffix})`;
+
                 html += `
                     <div style="border: 1.5px solid rgba(16,185,129,0.4); border-radius: 16px; padding: 18px; background: rgba(255,255,255,0.9); box-shadow: 0 4px 14px rgba(16,185,129,0.06); border-left: 6px solid #10b981;">
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
                             <div>
                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                    <span style="background: #10b981; color: white; padding: 2px 8px; border-radius: 8px; font-size: 12px; font-weight: bold;">PAGADO</span>
-                                    <strong style="font-size: 16px; color: #111;">💰 Pago del ${sCapitalized}</strong>
+                                    <span style="background: #10b981; color: white; padding: 2px 8px; border-radius: 8px; font-size: 12px; font-weight: bold;">${badgeText}</span>
+                                    <strong style="font-size: 16px; color: #111;">${sTitle}</strong>
                                 </div>
                                 <div style="font-size: 13px; color: #666; margin-top: 3px;">
-                                    Total pagado: <strong style="color: #059669; font-size: 15px;">${formattedSettleAmount}</strong> • <strong>${formattedSettleHours}</strong> horas (${items.length} día${items.length !== 1 ? 's' : ''})
+                                    ${sSub}
                                 </div>
                             </div>
                         </div>
 
                         <div style="background: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.06); border-radius: 12px; padding: 12px 14px; margin-top: 10px;">
-                            <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: #555; margin-bottom: 6px; letter-spacing: 0.5px;">Días incluidos en este pago:</div>
+                            <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: #555; margin-bottom: 6px; letter-spacing: 0.5px;">${isEs ? 'Días incluidos en este pago:' : 'Dias incluídos neste pagamento:'}</div>
                             ${itemsRowsHtml}
                         </div>
                     </div>
@@ -5102,12 +5205,6 @@ function showWorkerView() {
     html += `</div>`;
     result.innerHTML = html;
 }
-
-let showWorkerPaymentsHistory = false;
-window.toggleWorkerPaymentsTab = function(historyMode) {
-    showWorkerPaymentsHistory = !!historyMode;
-    showWorkerView();
-};
 
 loadCalendars();
 
