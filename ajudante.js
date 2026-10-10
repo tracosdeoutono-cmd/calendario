@@ -381,9 +381,20 @@ window.setWorkerLanguage = function(lang) {
     showWorkerView();
 };
 
-let showWorkerPaymentsHistory = false;
+let workerPaymentsTab = "hours"; // "hours" | "bolt" | "hours_history" | "bolt_history"
+window.setWorkerPaymentsTab = function(tab) {
+    workerPaymentsTab = tab;
+    showWorkerView();
+};
 window.toggleWorkerPaymentsTab = function(historyMode) {
-    showWorkerPaymentsHistory = !!historyMode;
+    workerPaymentsTab = historyMode ? "hours_history" : "hours";
+    showWorkerView();
+};
+
+let showWorkerBoltForm = false;
+window.toggleWorkerBoltForm = function(event) {
+    if (event) event.stopPropagation();
+    showWorkerBoltForm = !showWorkerBoltForm;
     showWorkerView();
 };
 
@@ -587,6 +598,61 @@ window.resetWorkerShift = async function() {
     await saveToCloudHistory(cloudHistory);
 };
 
+window.submitWorkerBolt = async function() {
+    const isEs = workerLanguage === "es";
+    const amtInput = document.getElementById("al-worker-bolt-amount");
+    const noteInput = document.getElementById("al-worker-bolt-note");
+    if (!amtInput) return;
+
+    let rawVal = amtInput.value.trim().replace(',', '.');
+    const val = parseFloat(rawVal);
+    if (isNaN(val) || val <= 0) {
+        alert(isEs ? "Por favor, introduce un importe válido en euros." : "Por favor, introduz um valor válido em euros.");
+        return;
+    }
+
+    const roundedVal = Math.round(val * 100) / 100;
+    const note = noteInput ? noteInput.value.trim() : "";
+    const amountFmt = roundedVal.toLocaleString(isEs ? 'es-ES' : 'pt-PT', { style: 'currency', currency: 'EUR' });
+
+    const confirmed = await workerConfirm({
+        icon: '🚗',
+        title: isEs ? `¿Confirmar gasto de Bolt de <strong>${amountFmt}</strong>?` : `Confirmar gasto de Bolt de <strong>${amountFmt}</strong>?`,
+        detail: note ? `Nota: <em>${note}</em>` : (isEs ? 'Se añadirá a tus pagos pendientes de Bolt.' : 'Será adicionado aos teus pagamentos pendentes de Bolt.'),
+        okLabel: isEs ? '✔ Sim, Guardar' : '✔ Sim, Gravar',
+        okColor: 'linear-gradient(135deg, #0284c7, #0369a1)',
+        okShadow: '0 6px 20px rgba(2,132,199,0.45)',
+        cancelLabel: isEs ? '✖ Cancelar' : '✖ Cancelar'
+    });
+    if (!confirmed) return;
+
+    const bData = getBoltData();
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const todayStr = formatDateKey(today);
+
+    const newBoltEntry = {
+        id: "bolt_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
+        dateKey: todayStr,
+        amount: roundedVal,
+        note: note,
+        byWorker: true,
+        createdAt: new Date().toISOString()
+    };
+
+    bData.pending.push(newBoltEntry);
+    bData.pending.sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+
+    cloudHistory["_bolt"] = bData;
+    try { localStorage.setItem("al_bolt_backup", JSON.stringify(bData)); } catch(e) {}
+    try { localStorage.setItem("al_cloud_history_backup", JSON.stringify(cloudHistory)); } catch(e) {}
+
+    showWorkerBoltForm = false;
+    workerPaymentsTab = "bolt"; // Abre logo o separador do Bolt para ver o registo
+    showWorkerView();
+    await saveToCloudHistory(cloudHistory);
+};
+
 // 4. Utilitários de Data e Calendário
 function parseDate(d) {
     return new Date(Number(d.substring(0,4)), Number(d.substring(4,6))-1, Number(d.substring(6,8)));
@@ -710,6 +776,61 @@ function getPayrollData() {
     return cloudHistory["_payroll"];
 }
 
+function getBoltData() {
+    if (!cloudHistory["_bolt"] || typeof cloudHistory["_bolt"] !== 'object' || Array.isArray(cloudHistory["_bolt"])) {
+        try {
+            cloudHistory["_bolt"] = JSON.parse(localStorage.getItem("al_bolt_backup") || 'null');
+        } catch(e) {}
+        if (!cloudHistory["_bolt"] || typeof cloudHistory["_bolt"] !== 'object' || Array.isArray(cloudHistory["_bolt"])) {
+            cloudHistory["_bolt"] = { pending: [], settlements: [] };
+        }
+    }
+    if (!Array.isArray(cloudHistory["_bolt"].pending)) cloudHistory["_bolt"].pending = [];
+    if (!Array.isArray(cloudHistory["_bolt"].settlements)) cloudHistory["_bolt"].settlements = [];
+    return cloudHistory["_bolt"];
+}
+
+function getBoltColorInfo(amount) {
+    const val = parseFloat(amount) || 0;
+    if (val <= 7) {
+        return {
+            textColor: '#047857',
+            bgColor: '#f0fdf4',
+            borderColor: '#10b981',
+            badgeBg: '#10b981',
+            badgeColor: '#ffffff',
+            tier: '≤ 7 €'
+        };
+    } else if (val <= 10) {
+        return {
+            textColor: '#a16207',
+            bgColor: '#fefce8',
+            borderColor: '#eab308',
+            badgeBg: '#fef08a',
+            badgeColor: '#854d0e',
+            tier: '7 € – 10 €'
+        };
+    } else if (val <= 15) {
+        return {
+            textColor: '#c2410c',
+            bgColor: '#fff7ed',
+            borderColor: '#f97316',
+            badgeBg: '#ffedd5',
+            badgeColor: '#9a3412',
+            tier: '10 € – 15 €'
+        };
+    } else {
+        return {
+            textColor: '#b91c1c',
+            bgColor: '#fef2f2',
+            borderColor: '#ef4444',
+            badgeBg: '#fee2e2',
+            badgeColor: '#991b1b',
+            tier: '> 15 €'
+        };
+    }
+}
+
 function formatWorkItemLabelPT(item) {
     const h = parseFloat(item.hours) || 0;
     const m = parseFloat(item.extraMoney) || 0;
@@ -779,6 +900,15 @@ async function fetchCloudHistory() {
                 if (localPayroll) cloudHistory["_payroll"] = localPayroll;
             } catch(e) {}
         }
+
+        if (cloudHistory["_bolt"] && typeof cloudHistory["_bolt"] === 'object') {
+            try { localStorage.setItem("al_bolt_backup", JSON.stringify(cloudHistory["_bolt"])); } catch(e) {}
+        } else {
+            try {
+                const localBolt = JSON.parse(localStorage.getItem("al_bolt_backup") || 'null');
+                if (localBolt) cloudHistory["_bolt"] = localBolt;
+            } catch(e) {}
+        }
     } catch (e) {
         console.warn("Aviso: Dados carregados em modo offline/cache.", e);
         try {
@@ -786,6 +916,10 @@ async function fetchCloudHistory() {
             if (!cloudHistory["_payroll"]) {
                 const localPayroll = JSON.parse(localStorage.getItem("al_payroll_backup") || 'null');
                 if (localPayroll) cloudHistory["_payroll"] = localPayroll;
+            }
+            if (!cloudHistory["_bolt"]) {
+                const localBolt = JSON.parse(localStorage.getItem("al_bolt_backup") || 'null');
+                if (localBolt) cloudHistory["_bolt"] = localBolt;
             }
         } catch(err) { cloudHistory = {}; }
     }
@@ -1291,6 +1425,60 @@ function showWorkerView() {
                 ${timeclockBodyHtml}
             </div>
         </div>
+
+        <!-- Secção 3.1: Registo de Gasto de Bolt / Transporte -->
+        <div style="border: 2px solid #0284c7; border-radius: 16px; padding: 18px 20px; margin-bottom: 22px; background: #f0f9ff; border-left: 6px solid #0284c7; box-shadow: 0 4px 14px rgba(2,132,199,0.08);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 24px;">🚗</span>
+                    <div>
+                        <h2 style="margin: 0; font-size: 18px; color: #0369a1;">${isEs ? 'Pagamento de Bolt / Transporte' : 'Pagamento de Bolt / Transporte'}</h2>
+                        <div style="font-size: 13px; color: #0284c7; opacity: 0.9; margin-top: 2px;">${isEs ? 'Añade el importe exacto del viaje en Bolt' : 'Regista o valor exato da viagem em Bolt'}</div>
+                    </div>
+                </div>
+                <button onclick="window.toggleWorkerBoltForm(event)"
+                    style="padding: 10px 18px; font-size: 14px; font-weight: 800; cursor: pointer; border-radius: 12px; border: none; background: linear-gradient(135deg, #0284c7, #0369a1); color: white; box-shadow: 0 4px 12px rgba(2,132,199,0.3); display: inline-flex; align-items: center; gap: 6px; transition: transform 0.15s ease;">
+                    <span>${showWorkerBoltForm ? '✖' : '➕'}</span>
+                    <span>${isEs ? (showWorkerBoltForm ? 'Cerrar' : 'Añadir Bolt') : (showWorkerBoltForm ? 'Fechar' : 'Registar Bolt')}</span>
+                </button>
+            </div>
+
+            ${showWorkerBoltForm ? `
+                <div style="background: #ffffff; border: 2px solid #0284c7; border-radius: 14px; padding: 16px; margin-top: 14px; box-shadow: 0 6px 20px rgba(0,0,0,0.06); animation: popupFadeIn 0.2s ease;">
+                    <div style="font-size: 13px; font-weight: 800; color: #0369a1; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">
+                        ${isEs ? 'Introduce el gasto del Bolt:' : 'Introduz o gasto do Bolt:'}
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <div>
+                            <label style="display: block; font-size: 12px; font-weight: 700; color: #0369a1; margin-bottom: 4px;">
+                                ${isEs ? '💶 Importe exacto (€):' : '💶 Valor exato (€):'}
+                            </label>
+                            <input type="text" id="al-worker-bolt-amount" placeholder="Ex: 8,50"
+                                onkeydown="if(event.key==='Enter') window.submitWorkerBolt()"
+                                style="padding: 11px 14px; border: 2px solid #0284c7; border-radius: 10px; font-size: 16px; font-weight: 800; width: 100%; box-sizing: border-box; color: #0369a1;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 12px; font-weight: 700; color: #555; margin-bottom: 4px;">
+                                ${isEs ? '📝 Trayecto / Nota (opcional):' : '📝 Trajeto / Nota (opcional):'}
+                            </label>
+                            <input type="text" id="al-worker-bolt-note" placeholder="${isEs ? 'Ej: Impasse -> Achada' : 'Ex: Impasse -> Achada'}"
+                                onkeydown="if(event.key==='Enter') window.submitWorkerBolt()"
+                                style="padding: 10px 14px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 13px; width: 100%; box-sizing: border-box;">
+                        </div>
+                        <div style="display: flex; gap: 8px; margin-top: 4px;">
+                            <button onclick="window.submitWorkerBolt()"
+                                style="flex: 1; padding: 12px 16px; font-size: 14px; font-weight: 800; cursor: pointer; border-radius: 10px; border: none; background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 3px 10px rgba(16,185,129,0.3);">
+                                ✓ ${isEs ? 'Guardar Bolt' : 'Gravar Bolt'}
+                            </button>
+                            <button onclick="window.toggleWorkerBoltForm()"
+                                style="padding: 12px 16px; font-size: 13px; font-weight: 700; cursor: pointer; border-radius: 10px; border: 1px solid #cbd5e1; background: #f8fafc; color: #64748b;">
+                                ${isEs ? 'Cancelar' : 'Cancelar'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            ` : ''}
+        </div>
     `;
 
     // ══════════════════════════════════════════════════
@@ -1367,7 +1555,7 @@ function showWorkerView() {
     `;
 
     // ══════════════════════════════════════════════════
-    // 3. PAGAMENTOS & HISTÓRICO (Sem cópia)
+    // 3. PAGAMENTOS & HISTÓRICO (Horas + Bolt)
     // ══════════════════════════════════════════════════
     const pData = getPayrollData();
     const pendingList = pData.pendingWork || [];
@@ -1380,43 +1568,79 @@ function showWorkerView() {
         return sum + itemAmt;
     }, 0);
 
+    const bData = getBoltData();
+    const pendingBoltList = bData.pending || [];
+    const settledBoltList = bData.settlements || [];
+    const totalPendingBolt = pendingBoltList.reduce((sum, b) => sum + (parseFloat(b.amount) || 0), 0);
+
+    const grandTotalPending = totalPendingAmount + totalPendingBolt;
+
     const formattedPendingAmount = totalPendingAmount.toLocaleString(isEs ? 'es-ES' : 'pt-PT', { style: 'currency', currency: 'EUR' });
     const formattedPendingHours = (Math.round(totalPendingHours * 100) / 100).toString().replace('.', ',');
+    const formattedPendingBolt = totalPendingBolt.toLocaleString(isEs ? 'es-ES' : 'pt-PT', { style: 'currency', currency: 'EUR' });
+    const formattedGrandTotal = grandTotalPending.toLocaleString(isEs ? 'es-ES' : 'pt-PT', { style: 'currency', currency: 'EUR' });
 
     html += `
         <div style="border: 1px solid #ddd; border-radius: 16px; padding: 20px; margin-top: 22px; background-color: #f8f9fa; border-left: 6px solid #8b5cf6; box-shadow: 0 4px 14px rgba(139,92,246,0.08);">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;">
                 <div>
                     <h2 style="margin: 0; font-size: 20px; color: #7c3aed;">${isEs ? '💶 Pagos y Horas de Trabajo' : '💶 Pagamentos & Horas de Trabalho'}</h2>
-                    <div style="font-size: 13px; opacity: 0.75; font-weight: 600; margin-top: 2px;">Tarifa: 11,00 € / hora</div>
+                    <div style="font-size: 13px; opacity: 0.75; font-weight: 600; margin-top: 2px;">Tarifa: 11,00 € / hora • Bolt em separado</div>
+                </div>
+            </div>
+
+            <!-- Resumo Global de Totais (Horas + Bolt + Total Geral) -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 18px;">
+                <div style="background: rgba(139,92,246,0.08); border: 1.5px solid #8b5cf6; border-radius: 12px; padding: 12px 14px;">
+                    <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #7c3aed;">${isEs ? '⏳ Horas por Pagar' : '⏳ Horas a Pagar'}</div>
+                    <div style="font-size: 20px; font-weight: 900; color: #7c3aed; margin-top: 2px;">${formattedPendingAmount}</div>
+                    <div style="font-size: 11px; opacity: 0.8; margin-top: 1px;">${formattedPendingHours} h acumuladas</div>
+                </div>
+                <div style="background: rgba(2,132,199,0.08); border: 1.5px solid #0284c7; border-radius: 12px; padding: 12px 14px;">
+                    <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #0284c7;">${isEs ? '🚗 Bolt por Pagar' : '🚗 Bolt a Pagar'}</div>
+                    <div style="font-size: 20px; font-weight: 900; color: #0284c7; margin-top: 2px;">${formattedPendingBolt}</div>
+                    <div style="font-size: 11px; opacity: 0.8; margin-top: 1px;">${pendingBoltList.length} ${isEs ? 'viajes' : 'viagens'}</div>
+                </div>
+                <div style="background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(5,150,105,0.08)); border: 2px solid #10b981; border-radius: 12px; padding: 12px 14px;">
+                    <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #059669;">${isEs ? '💰 Total a Recibir' : '💰 Total a Receber'}</div>
+                    <div style="font-size: 22px; font-weight: 900; color: #059669; margin-top: 2px;">${formattedGrandTotal}</div>
+                    <div style="font-size: 11px; opacity: 0.85; margin-top: 1px;">${isEs ? 'Horas + Bolt' : 'Horas + Bolt'}</div>
                 </div>
             </div>
 
             <!-- Separadores / Tabs de Pagamentos -->
             <div style="display: flex; gap: 8px; margin-bottom: 18px; border-bottom: 2px solid rgba(0,0,0,0.06); padding-bottom: 12px; flex-wrap: wrap;">
-                <button onclick="window.toggleWorkerPaymentsTab(false)"
-                    style="padding: 9px 16px; font-size: 13px; font-weight: bold; cursor: pointer; border-radius: 10px; border: none; transition: all 0.2s ease; ${!showWorkerPaymentsHistory ? 'background: #8b5cf6; color: white; box-shadow: 0 4px 12px rgba(139,92,246,0.35);' : 'background: rgba(0,0,0,0.05); color: #555;'}">
+                <button onclick="window.setWorkerPaymentsTab('hours')"
+                    style="padding: 9px 14px; font-size: 13px; font-weight: bold; cursor: pointer; border-radius: 10px; border: none; transition: all 0.2s ease; ${workerPaymentsTab === 'hours' ? 'background: #8b5cf6; color: white; box-shadow: 0 4px 12px rgba(139,92,246,0.35);' : 'background: rgba(0,0,0,0.05); color: #555;'}">
                     ${isEs ? '⏳ Horas por Pagar' : '⏳ Horas a Pagar'} (${pendingList.length})
                 </button>
-                <button onclick="window.toggleWorkerPaymentsTab(true)"
-                    style="padding: 9px 16px; font-size: 13px; font-weight: bold; cursor: pointer; border-radius: 10px; border: none; transition: all 0.2s ease; ${showWorkerPaymentsHistory ? 'background: #8b5cf6; color: white; box-shadow: 0 4px 12px rgba(139,92,246,0.35);' : 'background: rgba(0,0,0,0.05); color: #555;'}">
-                    ${isEs ? '📜 Historial de Pagos' : '📜 Histórico de Pagamentos'} (${settlementsList.length})
+                <button onclick="window.setWorkerPaymentsTab('bolt')"
+                    style="padding: 9px 14px; font-size: 13px; font-weight: bold; cursor: pointer; border-radius: 10px; border: none; transition: all 0.2s ease; ${workerPaymentsTab === 'bolt' ? 'background: #0284c7; color: white; box-shadow: 0 4px 12px rgba(2,132,199,0.35);' : 'background: rgba(0,0,0,0.05); color: #555;'}">
+                    ${isEs ? '🚗 Bolt por Pagar' : '🚗 Bolt a Pagar'} (${pendingBoltList.length})
+                </button>
+                <button onclick="window.setWorkerPaymentsTab('hours_history')"
+                    style="padding: 9px 14px; font-size: 13px; font-weight: bold; cursor: pointer; border-radius: 10px; border: none; transition: all 0.2s ease; ${workerPaymentsTab === 'hours_history' ? 'background: #8b5cf6; color: white; box-shadow: 0 4px 12px rgba(139,92,246,0.35);' : 'background: rgba(0,0,0,0.05); color: #555;'}">
+                    ${isEs ? '📜 Historial Horas' : '📜 Histórico Horas'} (${settlementsList.length})
+                </button>
+                <button onclick="window.setWorkerPaymentsTab('bolt_history')"
+                    style="padding: 9px 14px; font-size: 13px; font-weight: bold; cursor: pointer; border-radius: 10px; border: none; transition: all 0.2s ease; ${workerPaymentsTab === 'bolt_history' ? 'background: #0284c7; color: white; box-shadow: 0 4px 12px rgba(2,132,199,0.35);' : 'background: rgba(0,0,0,0.05); color: #555;'}">
+                    ${isEs ? '📜 Historial Bolt' : '📜 Histórico Bolt'} (${settledBoltList.length})
                 </button>
             </div>
     `;
 
-    if (!showWorkerPaymentsHistory) {
+    if (workerPaymentsTab === 'hours') {
         // ── Tab 1: Horas / Pagamentos Pendentes ──
         const statusLabel = isEs
-            ? (totalPendingAmount > 0 ? '⚠️ Total Pendiente de Pago' : '✅ Sin Pagos Pendientes')
-            : (totalPendingAmount > 0 ? '⚠️ Total a Pagar Acumulado' : '✅ Sem Pagamentos Pendentes');
+            ? (totalPendingAmount > 0 ? '⚠️ Total Pendiente de Horas' : '✅ Sin Horas Pendientes')
+            : (totalPendingAmount > 0 ? '⚠️ Total a Pagar em Horas' : '✅ Sem Horas Pendentes');
 
         const hoursDesc = isEs
             ? `<strong>${formattedPendingHours}</strong> horas de trabajo acumuladas (11,00 € / hora)`
             : `<strong>${formattedPendingHours}</strong> horas de trabalho acumuladas (11,00 € / hora)`;
 
         html += `
-            <!-- Cartão do Total Pendente -->
+            <!-- Cartão do Total Pendente de Horas -->
             <div style="background: linear-gradient(135deg, rgba(239,68,68,0.08), rgba(245,158,11,0.08)); border: 2px solid ${totalPendingAmount > 0 ? '#ef4444' : '#10b981'}; border-radius: 14px; padding: 16px; margin-bottom: 18px;">
                 <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: ${totalPendingAmount > 0 ? '#dc2626' : '#059669'};">
                     ${statusLabel}
@@ -1477,9 +1701,73 @@ function showWorkerView() {
             });
             html += `</div>`;
         }
-    } else {
-        // ── Tab 2: Histórico de Pagamentos Liquidados ──
-        html += `<h3 style="font-size: 17px; margin: 0 0 14px 0; color: #333;">${isEs ? '📜 Historial de Pagos Realizados' : '📜 Histórico de Pagamentos Realizados'}</h3>`;
+    } else if (workerPaymentsTab === 'bolt') {
+        // ── Tab 2: Bolt por Pagar ──
+        const statusLabel = isEs
+            ? (totalPendingBolt > 0 ? '🚗 Total Pendiente de Bolt' : '✅ Sin Pagos de Bolt Pendientes')
+            : (totalPendingBolt > 0 ? '🚗 Total a Pagar em Bolt' : '✅ Sem Pagamentos de Bolt Pendentes');
+
+        html += `
+            <!-- Cartão do Total Pendente de Bolt -->
+            <div style="background: linear-gradient(135deg, rgba(2,132,199,0.08), rgba(6,182,212,0.08)); border: 2px solid ${totalPendingBolt > 0 ? '#0284c7' : '#10b981'}; border-radius: 14px; padding: 16px; margin-bottom: 18px;">
+                <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: ${totalPendingBolt > 0 ? '#0284c7' : '#059669'};">
+                    ${statusLabel}
+                </div>
+                <div style="font-size: 30px; font-weight: 900; color: ${totalPendingBolt > 0 ? '#0284c7' : '#059669'}; margin: 4px 0 2px 0;">
+                    ${formattedPendingBolt}
+                </div>
+                <div style="font-size: 13px; opacity: 0.85;">
+                    <strong>${pendingBoltList.length}</strong> ${isEs ? 'viaje(s) registrado(s)' : 'viagem(ns) registada(s)'}
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                <h3 style="font-size: 16px; margin: 0; color: #333;">${isEs ? '🚗 Viajes de Bolt por Pagar:' : '🚗 Viagens de Bolt por Pagar:'}</h3>
+                <button onclick="window.toggleWorkerBoltForm(event)"
+                    style="padding: 6px 12px; font-size: 12px; font-weight: 800; cursor: pointer; border-radius: 8px; border: 1px solid #0284c7; background: #fff; color: #0284c7;">
+                    ➕ ${isEs ? 'Añadir Otro Bolt' : 'Registar Outro Bolt'}
+                </button>
+            </div>
+        `;
+
+        if (pendingBoltList.length === 0) {
+            html += `
+                <div style="padding: 25px 16px; text-align: center; border: 1.5px dashed rgba(0,0,0,0.12); border-radius: 12px; color: #666; font-size: 14px;">
+                    ${isEs ? '✨ No hay viajes de Bolt pendientes de pago.' : '✨ Não há viagens de Bolt pendentes de pagamento.'}
+                </div>
+            `;
+        } else {
+            html += `<div style="display: flex; flex-direction: column; gap: 10px;">`;
+            pendingBoltList.forEach(bItem => {
+                const cInfo = getBoltColorInfo(bItem.amount);
+                const d = parseDateKey(bItem.dateKey);
+                const dayLabel = d.toLocaleDateString(isEs ? "es-ES" : "pt-PT", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+                const capitalizedDayItem = dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1);
+                const itemAmount = parseFloat(bItem.amount) || 0;
+                const formattedItemAmount = itemAmount.toLocaleString(isEs ? 'es-ES' : 'pt-PT', { style: 'currency', currency: 'EUR' });
+
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: ${cInfo.bgColor}; border: 2px solid ${cInfo.borderColor}; border-radius: 12px; flex-wrap: wrap; gap: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+                        <div>
+                            <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 6px;">
+                                <strong style="font-size: 14px; color: ${cInfo.textColor};">📅 ${capitalizedDayItem}</strong>
+                                <span style="display: inline-block; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 6px; background: ${cInfo.badgeBg}; color: ${cInfo.badgeColor};">
+                                    🚗 Bolt (${cInfo.tier})
+                                </span>
+                            </div>
+                            ${bItem.note ? `<div style="font-size: 12px; opacity: 0.85; margin-top: 3px; color: #555;">📝 <i>${bItem.note}</i></div>` : ''}
+                        </div>
+                        <div style="font-size: 20px; font-weight: 900; color: ${cInfo.textColor};">
+                            ${formattedItemAmount}
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        }
+    } else if (workerPaymentsTab === 'hours_history') {
+        // ── Tab 3: Histórico de Pagamentos de Horas ──
+        html += `<h3 style="font-size: 17px; margin: 0 0 14px 0; color: #333;">${isEs ? '📜 Historial de Horas Pagadas' : '📜 Histórico de Horas Pagas'}</h3>`;
 
         if (settlementsList.length === 0) {
             html += `
@@ -1494,8 +1782,8 @@ function showWorkerView() {
                 const sDate = parseDateKey(settle.settledDate);
                 const sDateLabel = sDate.toLocaleDateString(isEs ? "es-ES" : "pt-PT", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
                 const sCapitalized = sDateLabel.charAt(0).toUpperCase() + sDateLabel.slice(1);
-                const formattedSettleAmount = settle.totalAmount.toLocaleString(isEs ? 'es-ES' : 'pt-PT', { style: 'currency', currency: 'EUR' });
-                const formattedSettleHours = settle.totalHours.toString().replace('.', ',');
+                const formattedSettleAmount = (parseFloat(settle.totalAmount) || 0).toLocaleString(isEs ? 'es-ES' : 'pt-PT', { style: 'currency', currency: 'EUR' });
+                const formattedSettleHours = (settle.totalHours || 0).toString().replace('.', ',');
                 const items = settle.items || [];
 
                 let itemsRowsHtml = '';
@@ -1566,7 +1854,80 @@ function showWorkerView() {
             });
             html += `</div>`;
         }
+    } else if (workerPaymentsTab === 'bolt_history') {
+        // ── Tab 4: Histórico de Pagamentos de Bolt ──
+        html += `<h3 style="font-size: 17px; margin: 0 0 14px 0; color: #0284c7;">${isEs ? '📜 Historial de Bolt Pagado' : '📜 Histórico de Bolt Pago'}</h3>`;
+
+        if (settledBoltList.length === 0) {
+            html += `
+                <div style="text-align: center; padding: 35px 20px; border: 2px dashed rgba(0,0,0,0.1); border-radius: 14px; background: rgba(255,255,255,0.4);">
+                    <span style="font-size: 38px;">🚗</span>
+                    <div style="font-size: 15px; font-weight: bold; margin-top: 8px; color: #333;">${isEs ? 'Aún no hay pagos de Bolt liquidados en el historial.' : 'Ainda não há pagamentos de Bolt liquidados no histórico.'}</div>
+                </div>
+            `;
+        } else {
+            html += `<div style="display: flex; flex-direction: column; gap: 16px;">`;
+            settledBoltList.forEach(settle => {
+                const sDate = parseDateKey(settle.settledDate);
+                const sDateLabel = sDate.toLocaleDateString(isEs ? "es-ES" : "pt-PT", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+                const sCapitalized = sDateLabel.charAt(0).toUpperCase() + sDateLabel.slice(1);
+                const formattedSettleAmount = (parseFloat(settle.totalAmount) || 0).toLocaleString(isEs ? 'es-ES' : 'pt-PT', { style: 'currency', currency: 'EUR' });
+                const items = settle.items || [];
+
+                let itemsRowsHtml = '';
+                items.forEach(it => {
+                    const cInfo = getBoltColorInfo(it.amount);
+                    const itDate = parseDateKey(it.dateKey);
+                    const itDateLabel = itDate.toLocaleDateString(isEs ? "es-ES" : "pt-PT", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+                    const itAmountVal = parseFloat(it.amount) || 0;
+                    const itAmount = itAmountVal.toLocaleString(isEs ? 'es-ES' : 'pt-PT', { style: 'currency', currency: 'EUR' });
+
+                    itemsRowsHtml += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 13px;">
+                            <div>
+                                <span>📅 ${itDateLabel}</span>
+                                <span style="display: inline-block; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px; background: ${cInfo.badgeBg}; color: ${cInfo.badgeColor}; margin-left: 6px;">
+                                    🚗 ${cInfo.tier}
+                                </span>
+                                ${it.note ? `<span style="color: #666; font-size: 12px; margin-left: 8px;">(${it.note})</span>` : ''}
+                            </div>
+                            <strong style="color: ${cInfo.textColor};">${itAmount}</strong>
+                        </div>
+                    `;
+                });
+
+                const badgeText = isEs ? 'PAGADO' : 'PAGO';
+                const sTitle = isEs ? `🚗 Pago de Bolt del ${sCapitalized}` : `🚗 Pagamento de Bolt de ${sCapitalized}`;
+                const ridesSuffix = isEs ? (items.length !== 1 ? 'viajes' : 'viaje') : (items.length !== 1 ? 'viagens' : 'viagem');
+
+                html += `
+                    <div style="border: 1.5px solid rgba(2,132,199,0.4); border-radius: 16px; padding: 18px; background: rgba(255,255,255,0.9); box-shadow: 0 4px 14px rgba(2,132,199,0.06); border-left: 6px solid #0284c7;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="background: #0284c7; color: white; padding: 2px 8px; border-radius: 8px; font-size: 12px; font-weight: bold;">${badgeText}</span>
+                                    <strong style="font-size: 16px; color: #111;">${sTitle}</strong>
+                                </div>
+                                <div style="font-size: 13px; color: #666; margin-top: 3px;">
+                                    Total pago: <strong style="color: #0284c7; font-size: 15px;">${formattedSettleAmount}</strong> • (${items.length} ${ridesSuffix})
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="background: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.06); border-radius: 12px; padding: 12px 14px; margin-top: 10px;">
+                            <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: #555; margin-bottom: 6px; letter-spacing: 0.5px;">${isEs ? 'Viajes incluidos en este pago:' : 'Viagens incluídas neste pagamento:'}</div>
+                            ${itemsRowsHtml}
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        }
     }
+
+    html += `</div>`;
+    result.innerHTML = html;
+}
 
     html += `</div>`;
     result.innerHTML = html;
