@@ -4125,6 +4125,12 @@ function getBoltColorInfo(amount) {
 
 let paymentsActiveTab = "hours"; // "hours" | "bolt" | "hours_history" | "bolt_history"
 let editingBoltId = null;
+let showWorkEntryForm = false;
+
+window.toggleWorkEntryForm = function() {
+    showWorkEntryForm = !showWorkEntryForm;
+    showPaymentsView();
+};
 
 window.togglePaymentsTab = function(tabOrHistory) {
     if (typeof tabOrHistory === 'string') {
@@ -4770,7 +4776,12 @@ function showPaymentsView() {
     const formattedPendingBolt = totalPendingBolt.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
     const formattedGrandTotal = grandTotalPending.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
 
-    // Cálculo da Média Mensal (Horas + Bolt)
+    // Cálculo da Média Mensal Realista (com projeção do mês atual até ao fim do mês)
+    const now = new Date();
+    const currentMonthKey = formatDateKey(now).substring(0, 7); // "YYYY-MM"
+    const currentDay = now.getDate();
+    const daysInCurrentMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+
     const monthlyTotals = {};
     settlementsList.forEach(s => {
         const m = (s.settledDate || "").substring(0, 7);
@@ -4797,9 +4808,40 @@ function showPaymentsView() {
         }
     });
 
-    const activeMonthsCount = Object.keys(monthlyTotals).length;
-    const totalAllEarnings = Object.values(monthlyTotals).reduce((sum, v) => sum + v, 0);
-    const monthlyAverage = activeMonthsCount > 0 ? (totalAllEarnings / activeMonthsCount) : 0;
+    const currentMonthSpent = monthlyTotals[currentMonthKey] || 0;
+    // Estimativa / Projeção do mês atual até ao fim do mês com base no ritmo diário decorrido
+    const projectedCurrentMonth = currentDay > 0 ? ((currentMonthSpent / currentDay) * daysInCurrentMonth) : currentMonthSpent;
+
+    const pastMonthKeys = Object.keys(monthlyTotals).filter(k => k !== currentMonthKey && k < currentMonthKey);
+    const pastMonthTotals = pastMonthKeys.map(k => monthlyTotals[k]);
+
+    let monthlyAverage = 0;
+    let monthlyAverageDetailText = '';
+    const currentSpentFmt = currentMonthSpent.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+    const projectedFmt = projectedCurrentMonth.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+
+    if (pastMonthTotals.length > 0 && currentMonthSpent > 0) {
+        const allMonthsValues = [...pastMonthTotals, projectedCurrentMonth];
+        monthlyAverage = allMonthsValues.reduce((sum, v) => sum + v, 0) / allMonthsValues.length;
+        monthlyAverageDetailText = `Prev. este mês: <strong>${projectedFmt}</strong> (dia ${currentDay}/${daysInCurrentMonth})`;
+    } else if (pastMonthTotals.length > 0 && currentMonthSpent === 0) {
+        monthlyAverage = pastMonthTotals.reduce((sum, v) => sum + v, 0) / pastMonthTotals.length;
+        monthlyAverageDetailText = `Baseado em <strong>${pastMonthTotals.length}</strong> mês(es) anteriores`;
+    } else if (currentMonthSpent > 0) {
+        monthlyAverage = projectedCurrentMonth;
+        monthlyAverageDetailText = `Acumulado dia ${currentDay}: <strong>${currentSpentFmt}</strong> (${daysInCurrentMonth} dias)`;
+    } else {
+        const allKeys = Object.keys(monthlyTotals);
+        if (allKeys.length > 0) {
+            const totalAll = Object.values(monthlyTotals).reduce((sum, v) => sum + v, 0);
+            monthlyAverage = totalAll / allKeys.length;
+            monthlyAverageDetailText = `Baseado em <strong>${allKeys.length}</strong> mês/meses`;
+        } else {
+            monthlyAverage = 0;
+            monthlyAverageDetailText = `Sem histórico de meses`;
+        }
+    }
+
     const formattedMonthlyAverage = monthlyAverage.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
 
     const textPT = buildPendingWorkTextPT(pendingList, totalPendingHours, totalPendingAmount);
@@ -4862,34 +4904,46 @@ function showPaymentsView() {
 
             <div style="background: rgba(255,255,255,0.7); border: 1px solid rgba(0,0,0,0.1); border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
                 <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #6d28d9;">
-                    📊 Média Mensal
+                    📊 Média / Previsão Mensal
                 </div>
                 <div style="font-size: 26px; font-weight: 900; color: #6d28d9; margin: 4px 0 2px 0;">
                     ${formattedMonthlyAverage}
                 </div>
-                <div style="font-size: 12px; opacity: 0.8;">
-                    Baseado em <strong>${activeMonthsCount || 1}</strong> mês/meses
+                <div style="font-size: 12px; opacity: 0.85;">
+                    ${monthlyAverageDetailText}
                 </div>
             </div>
         </div>
 
-        <!-- Separadores / Tabs -->
-        <div style="display: flex; gap: 8px; margin-bottom: 22px; border-bottom: 2px solid rgba(0,0,0,0.06); padding-bottom: 12px; flex-wrap: wrap;">
+        <!-- Separadores / Tabs Redesenhados -->
+        <div style="background: rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.07); border-radius: 16px; padding: 6px; display: inline-flex; gap: 6px; margin-bottom: 24px; flex-wrap: wrap; box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);">
             <button onclick="window.togglePaymentsTab('hours')"
-                style="padding: 10px 18px; font-size: 13px; font-weight: bold; cursor: pointer; border-radius: 10px; border: none; transition: all 0.2s ease; ${paymentsActiveTab === 'hours' ? 'background: #8b5cf6; color: white; box-shadow: 0 4px 12px rgba(139,92,246,0.35);' : 'background: rgba(0,0,0,0.05); color: #555;'}">
-                ⏳ Horas a Pagar (${pendingList.length})
+                style="padding: 10px 18px; font-size: 13px; font-weight: 700; cursor: pointer; border-radius: 12px; border: none; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 8px; ${paymentsActiveTab === 'hours' ? 'background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; box-shadow: 0 4px 12px rgba(124,58,237,0.35);' : 'background: transparent; color: #4b5563;'}">
+                <span>⏱️ Horas a Pagar</span>
+                <span style="font-size: 11px; padding: 2px 7px; border-radius: 10px; font-weight: 800; ${paymentsActiveTab === 'hours' ? 'background: rgba(255,255,255,0.25); color: white;' : 'background: rgba(0,0,0,0.08); color: #555;'}">
+                    ${pendingList.length}
+                </span>
             </button>
             <button onclick="window.togglePaymentsTab('bolt')"
-                style="padding: 10px 18px; font-size: 13px; font-weight: bold; cursor: pointer; border-radius: 10px; border: none; transition: all 0.2s ease; ${paymentsActiveTab === 'bolt' ? 'background: #0284c7; color: white; box-shadow: 0 4px 12px rgba(2,132,199,0.35);' : 'background: rgba(0,0,0,0.05); color: #555;'}">
-                🚗 Bolt a Pagar (${pendingBoltList.length})
+                style="padding: 10px 18px; font-size: 13px; font-weight: 700; cursor: pointer; border-radius: 12px; border: none; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 8px; ${paymentsActiveTab === 'bolt' ? 'background: linear-gradient(135deg, #0284c7, #0369a1); color: white; box-shadow: 0 4px 12px rgba(2,132,199,0.35);' : 'background: transparent; color: #4b5563;'}">
+                <span>🚗 Bolt a Pagar</span>
+                <span style="font-size: 11px; padding: 2px 7px; border-radius: 10px; font-weight: 800; ${paymentsActiveTab === 'bolt' ? 'background: rgba(255,255,255,0.25); color: white;' : 'background: rgba(0,0,0,0.08); color: #555;'}">
+                    ${pendingBoltList.length}
+                </span>
             </button>
             <button onclick="window.togglePaymentsTab('hours_history')"
-                style="padding: 10px 18px; font-size: 13px; font-weight: bold; cursor: pointer; border-radius: 10px; border: none; transition: all 0.2s ease; ${paymentsActiveTab === 'hours_history' ? 'background: #8b5cf6; color: white; box-shadow: 0 4px 12px rgba(139,92,246,0.35);' : 'background: rgba(0,0,0,0.05); color: #555;'}">
-                📜 Histórico Horas (${settlementsList.length})
+                style="padding: 10px 18px; font-size: 13px; font-weight: 700; cursor: pointer; border-radius: 12px; border: none; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 8px; ${paymentsActiveTab === 'hours_history' ? 'background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; box-shadow: 0 4px 12px rgba(79,70,229,0.35);' : 'background: transparent; color: #4b5563;'}">
+                <span>📜 Histórico Horas</span>
+                <span style="font-size: 11px; padding: 2px 7px; border-radius: 10px; font-weight: 800; ${paymentsActiveTab === 'hours_history' ? 'background: rgba(255,255,255,0.25); color: white;' : 'background: rgba(0,0,0,0.08); color: #555;'}">
+                    ${settlementsList.length}
+                </span>
             </button>
             <button onclick="window.togglePaymentsTab('bolt_history')"
-                style="padding: 10px 18px; font-size: 13px; font-weight: bold; cursor: pointer; border-radius: 10px; border: none; transition: all 0.2s ease; ${paymentsActiveTab === 'bolt_history' ? 'background: #0284c7; color: white; box-shadow: 0 4px 12px rgba(2,132,199,0.35);' : 'background: rgba(0,0,0,0.05); color: #555;'}">
-                🚗 Histórico Bolt (${settledBoltList.length})
+                style="padding: 10px 18px; font-size: 13px; font-weight: 700; cursor: pointer; border-radius: 12px; border: none; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 8px; ${paymentsActiveTab === 'bolt_history' ? 'background: linear-gradient(135deg, #0d9488, #0f766e); color: white; box-shadow: 0 4px 12px rgba(13,148,136,0.35);' : 'background: transparent; color: #4b5563;'}">
+                <span>🚕 Histórico Bolt</span>
+                <span style="font-size: 11px; padding: 2px 7px; border-radius: 10px; font-weight: 800; ${paymentsActiveTab === 'bolt_history' ? 'background: rgba(255,255,255,0.25); color: white;' : 'background: rgba(0,0,0,0.08); color: #555;'}">
+                    ${settledBoltList.length}
+                </span>
             </button>
         </div>
     `;
@@ -4899,68 +4953,81 @@ function showPaymentsView() {
         // TAB 1: REGISTO DE HORAS & PENDENTES
         // ═══════════════════════════════════════════════
         html += `
-            <!-- Formulário de Adicionar Dia de Trabalho -->
-            <div style="border: 2px solid #8b5cf6; border-radius: 16px; padding: 20px; margin-bottom: 26px; background: rgba(139,92,246,0.03); box-shadow: 0 4px 15px rgba(139,92,246,0.06);">
-                <div style="font-size: 16px; font-weight: bold; color: #7c3aed; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                    <span>➕ Registar Dia de Trabalho / Ajuste</span>
-                    <span style="font-size: 12px; font-weight: normal; color: #666;">(11 € / hora ou valor direto)</span>
+            <!-- Botão Retrátil / Formulário de Adicionar Dia de Trabalho -->
+            <div style="margin-bottom: 22px;">
+                <div style="display: flex; justify-content: flex-start; align-items: center; margin-bottom: ${showWorkEntryForm ? '12px' : '0'};">
+                    <button onclick="window.toggleWorkEntryForm()"
+                        style="padding: 10px 18px; font-size: 13px; font-weight: 700; cursor: pointer; border-radius: 12px; border: 1.5px solid #8b5cf6; background: ${showWorkEntryForm ? 'rgba(139,92,246,0.1)' : 'linear-gradient(135deg, #8b5cf6, #7c3aed)'}; color: ${showWorkEntryForm ? '#7c3aed' : 'white'}; display: inline-flex; align-items: center; gap: 8px; box-shadow: ${showWorkEntryForm ? 'none' : '0 3px 10px rgba(139,92,246,0.25)'}; transition: all 0.2s ease;">
+                        <span>${showWorkEntryForm ? '✖ Fechar Formulário' : '➕ Registar Dia de Trabalho / Ajuste'}</span>
+                    </button>
                 </div>
-                <div style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
-                    <div>
-                        <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #444;">📅 Data:</label>
-                        <input type="date" id="al-work-date-input" value="${todayStr}"
-                            style="padding: 10px 14px; border: 1.5px solid #ccc; border-radius: 10px; font-size: 14px; cursor: pointer;">
+
+                ${showWorkEntryForm ? `
+                    <div style="border: 2px solid #8b5cf6; border-radius: 16px; padding: 20px; background: rgba(139,92,246,0.03); box-shadow: 0 4px 15px rgba(139,92,246,0.06);">
+                        <div style="font-size: 15px; font-weight: bold; color: #7c3aed; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                            <span>➕ Novo Registo de Trabalho</span>
+                            <span style="font-size: 12px; font-weight: normal; color: #666;">(11 € / hora ou valor direto)</span>
+                        </div>
+                        <div style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
+                            <div>
+                                <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #444;">📅 Data:</label>
+                                <input type="date" id="al-work-date-input" value="${todayStr}"
+                                    style="padding: 10px 14px; border: 1.5px solid #ccc; border-radius: 10px; font-size: 14px; cursor: pointer;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #444;">⏱️ Horas (ex: 2,5 ou -2):</label>
+                                <input type="text" id="al-work-hours-input" placeholder="Ex: 2,5 ou -2"
+                                    oninput="window.onWorkCalcInput()"
+                                    onkeydown="if(event.key==='Enter') window.addWorkEntry()"
+                                    style="padding: 10px 14px; border: 1.5px solid #ccc; border-radius: 10px; font-size: 14px; width: 140px; font-weight: bold;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #444;">💶 Valor em € (ex: 20 ou -15):</label>
+                                <input type="text" id="al-work-money-input" placeholder="Ex: 20 ou -15"
+                                    oninput="window.onWorkCalcInput()"
+                                    onkeydown="if(event.key==='Enter') window.addWorkEntry()"
+                                    style="padding: 10px 14px; border: 1.5px solid #ccc; border-radius: 10px; font-size: 14px; width: 150px; font-weight: bold;">
+                            </div>
+                            <div style="flex-grow: 1; min-width: 180px;">
+                                <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #444;">📝 Notas / Descrição (opcional):</label>
+                                <input type="text" id="al-work-note-input" placeholder="Ex: Limpeza Achada 1, Adiantamento, etc."
+                                    onkeydown="if(event.key==='Enter') window.addWorkEntry()"
+                                    style="padding: 10px 14px; border: 1.5px solid #ccc; border-radius: 10px; font-size: 14px; width: 100%; box-sizing: border-box;">
+                            </div>
+                            <div>
+                                <button onclick="window.addWorkEntry()"
+                                    style="padding: 10px 22px; font-size: 14px; cursor: pointer; border-radius: 10px; border: none; background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; font-weight: bold; box-shadow: 0 4px 14px rgba(139,92,246,0.35);">
+                                    ➕ Adicionar
+                                </button>
+                            </div>
+                        </div>
+                        <div id="al-work-calc-preview" style="font-size: 13px; font-weight: 600; color: #7c3aed; margin-top: 10px; min-height: 18px;"></div>
                     </div>
-                    <div>
-                        <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #444;">⏱️ Horas (ex: 2,5 ou -2):</label>
-                        <input type="text" id="al-work-hours-input" placeholder="Ex: 2,5 ou -2"
-                            oninput="window.onWorkCalcInput()"
-                            onkeydown="if(event.key==='Enter') window.addWorkEntry()"
-                            style="padding: 10px 14px; border: 1.5px solid #ccc; border-radius: 10px; font-size: 14px; width: 140px; font-weight: bold;">
-                    </div>
-                    <div>
-                        <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #444;">💶 Valor em € (ex: 20 ou -15):</label>
-                        <input type="text" id="al-work-money-input" placeholder="Ex: 20 ou -15"
-                            oninput="window.onWorkCalcInput()"
-                            onkeydown="if(event.key==='Enter') window.addWorkEntry()"
-                            style="padding: 10px 14px; border: 1.5px solid #ccc; border-radius: 10px; font-size: 14px; width: 150px; font-weight: bold;">
-                    </div>
-                    <div style="flex-grow: 1; min-width: 180px;">
-                        <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #444;">📝 Notas / Descrição (opcional):</label>
-                        <input type="text" id="al-work-note-input" placeholder="Ex: Limpeza Achada 1, Adiantamento, etc."
-                            onkeydown="if(event.key==='Enter') window.addWorkEntry()"
-                            style="padding: 10px 14px; border: 1.5px solid #ccc; border-radius: 10px; font-size: 14px; width: 100%; box-sizing: border-box;">
-                    </div>
-                    <div>
-                        <button onclick="window.addWorkEntry()"
-                            style="padding: 10px 22px; font-size: 14px; cursor: pointer; border-radius: 10px; border: none; background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; font-weight: bold; box-shadow: 0 4px 14px rgba(139,92,246,0.35);">
-                            ➕ Adicionar
-                        </button>
-                    </div>
-                </div>
-                <div id="al-work-calc-preview" style="font-size: 13px; font-weight: 600; color: #7c3aed; margin-top: 10px; min-height: 18px;"></div>
+                ` : ''}
             </div>
 
-            <!-- Barra de Ações: Já Paguei Tudo & Copiar PT/ES -->
-            ${pendingList.length > 0 ? `
+            <!-- Barra de Ações Rápidas: Já Paguei Horas & Já Paguei Bolt -->
+            ${(pendingList.length > 0 || pendingBoltList.length > 0) ? `
                 <div style="margin-bottom: 22px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; background: rgba(16,185,129,0.06); border: 1.5px dashed #10b981; border-radius: 14px; padding: 16px 18px;">
                     <div>
-                        <strong style="font-size: 15px; color: #059669;">💰 Desejas enviar ou liquidar as contas de horas?</strong>
-                        <div style="font-size: 12px; color: #555;">Copia a mensagem com todos os dias e o total a pagar (${formattedPendingAmount}) ou marca tudo como liquidado.</div>
+                        <strong style="font-size: 15px; color: #059669;">💰 Liquidação de Valores</strong>
+                        <div style="font-size: 12px; color: #555;">Marca os valores pendentes como liquidados para arquivar no respetivo histórico.</div>
                     </div>
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-                        <button onclick="window.copyFromData(this, '${encodeURIComponent(textPT)}')"
-                            style="padding: 10px 16px; font-size: 13px; cursor: pointer; border-radius: 10px; border: 1.5px solid #007bff; background: linear-gradient(135deg, #007bff, #0056b3); color: white; font-weight: bold; box-shadow: 0 2px 8px rgba(0,123,255,0.25);">
-                            🇵🇹 Copiar PT (${formattedPendingAmount})
-                        </button>
-                        <button onclick="window.copyFromData(this, '${encodeURIComponent(textES)}')"
-                            style="padding: 10px 16px; font-size: 13px; cursor: pointer; border-radius: 10px; border: 1.5px solid #e11d48; background: linear-gradient(135deg, #e11d48, #be123c); color: white; font-weight: bold; box-shadow: 0 2px 8px rgba(225,29,72,0.25);">
-                            🇪🇸 Copiar ES (${formattedPendingAmount})
-                        </button>
-                        <button onclick="window.settleAllPayments()"
-                            style="padding: 10px 18px; font-size: 13px; cursor: pointer; border-radius: 10px; border: none; background: linear-gradient(135deg, #10b981, #059669); color: white; font-weight: bold; box-shadow: 0 3px 10px rgba(16,185,129,0.3);">
-                            ✓ Já Paguei Horas (${formattedPendingAmount})
-                        </button>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                        ${pendingList.length > 0 ? `
+                            <button onclick="window.settleAllPayments()"
+                                style="padding: 10px 18px; font-size: 13px; cursor: pointer; border-radius: 10px; border: none; background: linear-gradient(135deg, #10b981, #059669); color: white; font-weight: bold; box-shadow: 0 3px 10px rgba(16,185,129,0.3); display: inline-flex; align-items: center; gap: 6px;">
+                                <span>✓ Já Paguei Horas</span>
+                                <span style="background: rgba(255,255,255,0.25); padding: 2px 7px; border-radius: 8px; font-size: 12px;">${formattedPendingAmount}</span>
+                            </button>
+                        ` : ''}
+                        ${pendingBoltList.length > 0 ? `
+                            <button onclick="window.settleAllBolt()"
+                                style="padding: 10px 18px; font-size: 13px; cursor: pointer; border-radius: 10px; border: none; background: linear-gradient(135deg, #0284c7, #0369a1); color: white; font-weight: bold; box-shadow: 0 3px 10px rgba(2,132,199,0.3); display: inline-flex; align-items: center; gap: 6px;">
+                                <span>✓ Já Paguei Bolt</span>
+                                <span style="background: rgba(255,255,255,0.25); padding: 2px 7px; border-radius: 8px; font-size: 12px;">${formattedPendingBolt}</span>
+                            </button>
+                        ` : ''}
                     </div>
                 </div>
             ` : ''}
@@ -5125,25 +5192,18 @@ function showPaymentsView() {
                 </div>
             </div>
 
-            <!-- Barra de Ações: Já Paguei Todos os Bolt & Copiar PT/ES -->
+            <!-- Barra de Ações: Já Paguei Todos os Bolt -->
             ${pendingBoltList.length > 0 ? `
                 <div style="margin-bottom: 22px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; background: rgba(2,132,199,0.06); border: 1.5px dashed #0284c7; border-radius: 14px; padding: 16px 18px;">
                     <div>
-                        <strong style="font-size: 15px; color: #0369a1;">🚗 Desejas enviar ou liquidar as viagens de Bolt?</strong>
-                        <div style="font-size: 12px; color: #555;">Copia a mensagem com os detalhes do Bolt ou marca como liquidado (${formattedPendingBolt}).</div>
+                        <strong style="font-size: 15px; color: #0369a1;">🚗 Liquidação de Bolt</strong>
+                        <div style="font-size: 12px; color: #555;">Marca as viagens de Bolt como liquidadas para arquivar no histórico (${formattedPendingBolt}).</div>
                     </div>
                     <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-                        <button onclick="window.copyFromData(this, '${encodeURIComponent(textBoltPT)}')"
-                            style="padding: 10px 16px; font-size: 13px; cursor: pointer; border-radius: 10px; border: 1.5px solid #007bff; background: linear-gradient(135deg, #007bff, #0056b3); color: white; font-weight: bold; box-shadow: 0 2px 8px rgba(0,123,255,0.25);">
-                            🇵🇹 Copiar Bolt PT (${formattedPendingBolt})
-                        </button>
-                        <button onclick="window.copyFromData(this, '${encodeURIComponent(textBoltES)}')"
-                            style="padding: 10px 16px; font-size: 13px; cursor: pointer; border-radius: 10px; border: 1.5px solid #e11d48; background: linear-gradient(135deg, #e11d48, #be123c); color: white; font-weight: bold; box-shadow: 0 2px 8px rgba(225,29,72,0.25);">
-                            🇪🇸 Copiar Bolt ES (${formattedPendingBolt})
-                        </button>
                         <button onclick="window.settleAllBolt()"
-                            style="padding: 10px 18px; font-size: 13px; cursor: pointer; border-radius: 10px; border: none; background: linear-gradient(135deg, #0284c7, #0369a1); color: white; font-weight: bold; box-shadow: 0 3px 10px rgba(2,132,199,0.3);">
-                            ✓ Já Paguei Todos os Bolt (${formattedPendingBolt})
+                            style="padding: 10px 18px; font-size: 13px; cursor: pointer; border-radius: 10px; border: none; background: linear-gradient(135deg, #0284c7, #0369a1); color: white; font-weight: bold; box-shadow: 0 3px 10px rgba(2,132,199,0.3); display: inline-flex; align-items: center; gap: 6px;">
+                            <span>✓ Já Paguei Todos os Bolt</span>
+                            <span style="background: rgba(255,255,255,0.25); padding: 2px 7px; border-radius: 8px; font-size: 12px;">${formattedPendingBolt}</span>
                         </button>
                     </div>
                 </div>
