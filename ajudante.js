@@ -1929,10 +1929,6 @@ function showWorkerView() {
     result.innerHTML = html;
 }
 
-    html += `</div>`;
-    result.innerHTML = html;
-}
-
 // 5. Inicialização
 async function loadCalendars() {
     const isEs = workerLanguage === "es";
