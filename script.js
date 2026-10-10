@@ -1867,6 +1867,16 @@ async function fetchCloudHistory() {
             } catch(e) {}
         }
 
+        // Sincroniza dados de Bolt da cloud
+        if (cloudHistory["_bolt"] && typeof cloudHistory["_bolt"] === 'object') {
+            try { localStorage.setItem("al_bolt_backup", JSON.stringify(cloudHistory["_bolt"])); } catch(e) {}
+        } else {
+            try {
+                const localBolt = JSON.parse(localStorage.getItem("al_bolt_backup") || 'null');
+                if (localBolt) cloudHistory["_bolt"] = localBolt;
+            } catch(e) {}
+        }
+
         // Sincroniza limpezas específicas da cloud + local
         let mergedCustom = new Map();
         customCleanings.forEach(c => {
@@ -1923,6 +1933,10 @@ async function fetchCloudHistory() {
             if (!cloudHistory["_payroll"]) {
                 const localPayroll = JSON.parse(localStorage.getItem("al_payroll_backup") || 'null');
                 if (localPayroll) cloudHistory["_payroll"] = localPayroll;
+            }
+            if (!cloudHistory["_bolt"]) {
+                const localBolt = JSON.parse(localStorage.getItem("al_bolt_backup") || 'null');
+                if (localBolt) cloudHistory["_bolt"] = localBolt;
             }
             if (Array.isArray(cloudHistory["_customCleanings"])) {
                 let mergedCustom = new Map();
@@ -4055,6 +4069,73 @@ function getPayrollData() {
     return cloudHistory["_payroll"];
 }
 
+function getBoltData() {
+    if (!cloudHistory["_bolt"] || typeof cloudHistory["_bolt"] !== 'object' || Array.isArray(cloudHistory["_bolt"])) {
+        try {
+            cloudHistory["_bolt"] = JSON.parse(localStorage.getItem("al_bolt_backup") || '{"pending":[],"settlements":[]}');
+        } catch(e) {
+            cloudHistory["_bolt"] = { pending: [], settlements: [] };
+        }
+    }
+    if (!Array.isArray(cloudHistory["_bolt"].pending)) cloudHistory["_bolt"].pending = [];
+    if (!Array.isArray(cloudHistory["_bolt"].settlements)) cloudHistory["_bolt"].settlements = [];
+    return cloudHistory["_bolt"];
+}
+
+function getBoltColorInfo(amount) {
+    const val = parseFloat(amount) || 0;
+    if (val <= 7) {
+        return {
+            textColor: '#047857',
+            bgColor: '#f0fdf4',
+            borderColor: '#10b981',
+            badgeBg: '#10b981',
+            badgeColor: '#ffffff',
+            tier: '≤ 7 €'
+        };
+    } else if (val <= 10) {
+        return {
+            textColor: '#a16207',
+            bgColor: '#fefce8',
+            borderColor: '#eab308',
+            badgeBg: '#fef08a',
+            badgeColor: '#854d0e',
+            tier: '7 € – 10 €'
+        };
+    } else if (val <= 15) {
+        return {
+            textColor: '#c2410c',
+            bgColor: '#fff7ed',
+            borderColor: '#f97316',
+            badgeBg: '#ffedd5',
+            badgeColor: '#9a3412',
+            tier: '10 € – 15 €'
+        };
+    } else {
+        return {
+            textColor: '#b91c1c',
+            bgColor: '#fef2f2',
+            borderColor: '#ef4444',
+            badgeBg: '#fee2e2',
+            badgeColor: '#991b1b',
+            tier: '> 15 €'
+        };
+    }
+}
+
+let paymentsActiveTab = "hours"; // "hours" | "bolt" | "hours_history" | "bolt_history"
+let editingBoltId = null;
+
+window.togglePaymentsTab = function(tabOrHistory) {
+    if (typeof tabOrHistory === 'string') {
+        paymentsActiveTab = tabOrHistory;
+    } else {
+        paymentsActiveTab = tabOrHistory ? "hours_history" : "hours";
+    }
+    showPaymentsHistory = (paymentsActiveTab === "hours_history");
+    showPaymentsView();
+};
+
 window.addWorkEntry = function() {
     const dateInput = document.getElementById('al-work-date-input');
     const hoursInput = document.getElementById('al-work-hours-input');
@@ -4270,6 +4351,7 @@ window.settleAllPayments = function() {
     try { localStorage.setItem("al_payroll_backup", JSON.stringify(pData)); } catch(e) {}
     if (historyLoadedOk) saveToCloudHistory(cloudHistory);
 
+    paymentsActiveTab = "hours_history";
     showPaymentsHistory = true;
     showPaymentsView();
 };
@@ -4289,6 +4371,7 @@ window.reopenSettlement = function(settleId) {
     try { localStorage.setItem("al_payroll_backup", JSON.stringify(pData)); } catch(e) {}
     if (historyLoadedOk) saveToCloudHistory(cloudHistory);
 
+    paymentsActiveTab = "hours";
     showPaymentsHistory = false;
     showPaymentsView();
 };
@@ -4303,10 +4386,218 @@ window.deleteSettlement = function(settleId) {
     showPaymentsView();
 };
 
-window.togglePaymentsTab = function(historyMode) {
-    showPaymentsHistory = !!historyMode;
+// ── Gestão de Bolt (Admin) ──
+window.addBoltEntry = function() {
+    const dateInput = document.getElementById('al-bolt-date-input');
+    const amountInput = document.getElementById('al-bolt-amount-input');
+    const noteInput = document.getElementById('al-bolt-note-input');
+    if (!dateInput) return;
+
+    const dk = dateInput.value;
+    if (!dk) {
+        alert("Por favor, seleciona a data da viagem de Bolt.");
+        return;
+    }
+
+    const rawAmt = amountInput ? amountInput.value.replace(',', '.').trim() : '';
+    const amt = parseFloat(rawAmt);
+    if (rawAmt === '' || isNaN(amt) || amt <= 0) {
+        alert("Por favor, introduz um valor válido em euros (ex: 8,50).");
+        return;
+    }
+
+    const note = noteInput ? noteInput.value.trim() : "";
+    const bData = getBoltData();
+    const roundedAmt = Math.round(amt * 100) / 100;
+
+    const newEntry = {
+        id: "bolt_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
+        dateKey: dk,
+        amount: roundedAmt,
+        note: note,
+        byWorker: false,
+        createdAt: new Date().toISOString()
+    };
+
+    bData.pending.push(newEntry);
+    bData.pending.sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+
+    try { localStorage.setItem("al_bolt_backup", JSON.stringify(bData)); } catch(e) {}
+    try { localStorage.setItem("al_cloud_history_backup", JSON.stringify(cloudHistory)); } catch(e) {}
+    if (historyLoadedOk) saveToCloudHistory(cloudHistory);
+
     showPaymentsView();
 };
+
+window.startEditBolt = function(boltId) {
+    editingBoltId = boltId;
+    showPaymentsView();
+};
+
+window.cancelEditBolt = function() {
+    editingBoltId = null;
+    showPaymentsView();
+};
+
+window.saveBoltEntry = function(boltId) {
+    const dateInput = document.getElementById(`al-edit-bolt-date-${boltId}`);
+    const amountInput = document.getElementById(`al-edit-bolt-amount-${boltId}`);
+    const noteInput = document.getElementById(`al-edit-bolt-note-${boltId}`);
+    if (!dateInput || !amountInput) return;
+
+    const dk = dateInput.value;
+    const rawAmt = amountInput.value.replace(',', '.').trim();
+    const amt = parseFloat(rawAmt);
+    if (!dk || isNaN(amt) || amt <= 0) {
+        alert("Por favor, introduz uma data e um valor de Bolt válido.");
+        return;
+    }
+
+    const note = noteInput ? noteInput.value.trim() : "";
+    const bData = getBoltData();
+    const item = bData.pending.find(b => b.id === boltId);
+    if (item) {
+        item.dateKey = dk;
+        item.amount = Math.round(amt * 100) / 100;
+        item.note = note;
+        bData.pending.sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+    }
+
+    editingBoltId = null;
+    try { localStorage.setItem("al_bolt_backup", JSON.stringify(bData)); } catch(e) {}
+    try { localStorage.setItem("al_cloud_history_backup", JSON.stringify(cloudHistory)); } catch(e) {}
+    if (historyLoadedOk) saveToCloudHistory(cloudHistory);
+
+    showPaymentsView();
+};
+
+window.deleteBoltEntry = function(boltId) {
+    if (!confirm("Tens a certeza de que queres apagar este registo de Bolt?")) return;
+    const bData = getBoltData();
+    bData.pending = bData.pending.filter(b => b.id !== boltId);
+
+    try { localStorage.setItem("al_bolt_backup", JSON.stringify(bData)); } catch(e) {}
+    try { localStorage.setItem("al_cloud_history_backup", JSON.stringify(cloudHistory)); } catch(e) {}
+    if (historyLoadedOk) saveToCloudHistory(cloudHistory);
+
+    showPaymentsView();
+};
+
+window.settleAllBolt = function() {
+    const bData = getBoltData();
+    if (bData.pending.length === 0) {
+        alert("Não existem viagens de Bolt pendentes para liquidar.");
+        return;
+    }
+
+    const totalAmount = bData.pending.reduce((sum, b) => sum + (parseFloat(b.amount) || 0), 0);
+    const formattedAmount = totalAmount.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+
+    if (!confirm(`Confirmas a liquidação total de ${formattedAmount} correspondente a ${bData.pending.length} viagem(ns) de Bolt acumuladas?\n\nEste lote será arquivado no Histórico de Bolt com todas as viagens detalhadas.`)) {
+        return;
+    }
+
+    const now = new Date();
+    const newSettlement = {
+        id: "bolt_settle_" + Date.now(),
+        settledDate: formatDateKey(now),
+        settledTimestamp: now.toISOString(),
+        totalAmount: Math.round(totalAmount * 100) / 100,
+        items: [...bData.pending]
+    };
+
+    bData.settlements.unshift(newSettlement);
+    bData.pending = [];
+
+    try { localStorage.setItem("al_bolt_backup", JSON.stringify(bData)); } catch(e) {}
+    try { localStorage.setItem("al_cloud_history_backup", JSON.stringify(cloudHistory)); } catch(e) {}
+    if (historyLoadedOk) saveToCloudHistory(cloudHistory);
+
+    paymentsActiveTab = "bolt_history";
+    showPaymentsView();
+};
+
+window.reopenBoltSettlement = function(settleId) {
+    if (!confirm("Queres reabrir este pagamento de Bolt? Todas as viagens deste pagamento voltarão para o Bolt pendente.")) return;
+    const bData = getBoltData();
+    const settle = bData.settlements.find(s => s.id === settleId);
+    if (!settle) return;
+
+    if (Array.isArray(settle.items)) {
+        bData.pending.push(...settle.items);
+        bData.pending.sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+    }
+    bData.settlements = bData.settlements.filter(s => s.id !== settleId);
+
+    try { localStorage.setItem("al_bolt_backup", JSON.stringify(bData)); } catch(e) {}
+    try { localStorage.setItem("al_cloud_history_backup", JSON.stringify(cloudHistory)); } catch(e) {}
+    if (historyLoadedOk) saveToCloudHistory(cloudHistory);
+
+    paymentsActiveTab = "bolt";
+    showPaymentsView();
+};
+
+window.deleteBoltSettlement = function(settleId) {
+    if (!confirm("Tens a certeza de que queres apagar permanentemente este registo histórico de Bolt?")) return;
+    const bData = getBoltData();
+    bData.settlements = bData.settlements.filter(s => s.id !== settleId);
+
+    try { localStorage.setItem("al_bolt_backup", JSON.stringify(bData)); } catch(e) {}
+    try { localStorage.setItem("al_cloud_history_backup", JSON.stringify(cloudHistory)); } catch(e) {}
+    if (historyLoadedOk) saveToCloudHistory(cloudHistory);
+
+    showPaymentsView();
+};
+
+function buildPendingBoltTextPT(pendingBoltList, totalAmount) {
+    if (pendingBoltList.length === 0) return "Sem viagens de Bolt acumuladas.";
+
+    const lines = [];
+    lines.push("🚗 *Gasto de Transporte (Bolt) — Casas do Martim*");
+    lines.push("");
+
+    const sorted = [...pendingBoltList].sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+    sorted.forEach(item => {
+        const d = parseDateKey(item.dateKey);
+        const dayLabel = d.toLocaleDateString("pt-PT", { weekday: "long", day: "numeric", month: "long" });
+        const capitalizedDay = dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1);
+        const amtStr = (parseFloat(item.amount) || 0).toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+        const noteStr = item.note ? ` (${item.note})` : '';
+
+        lines.push(`📅 ${capitalizedDay}: ${amtStr}${noteStr}`);
+    });
+
+    const valTotalStr = totalAmount.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+    lines.push("");
+    lines.push(`💰 *TOTAL BOLT A PAGAR:* ${valTotalStr}`);
+
+    return lines.join("\n");
+}
+
+function buildPendingBoltTextES(pendingBoltList, totalAmount) {
+    if (pendingBoltList.length === 0) return "Sin viajes de Bolt acumulados.";
+
+    const lines = [];
+    lines.push("🚗 *Gasto de Transporte (Bolt) — Casas do Martim*");
+    lines.push("");
+
+    const sorted = [...pendingBoltList].sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+    sorted.forEach(item => {
+        const d = parseDateKey(item.dateKey);
+        const dayLabel = d.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" });
+        const capitalizedDay = dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1);
+        const amtStr = (parseFloat(item.amount) || 0).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' });
+        const noteStr = item.note ? ` (${item.note})` : '';
+
+        lines.push(`📅 ${capitalizedDay}: ${amtStr}${noteStr}`);
+    });
+
+    const valTotalStr = totalAmount.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' });
+    lines.push("");
+    lines.push(`💰 *TOTAL BOLT A PAGAR:* ${valTotalStr}`);
+
+    return lines.join("\n");
+}
 
 window.onWorkCalcInput = function() {
     const preview = document.getElementById('al-work-calc-preview');
@@ -4467,10 +4758,19 @@ function showPaymentsView() {
         return sum + itemAmt;
     }, 0);
 
+    const bData = getBoltData();
+    const pendingBoltList = bData.pending || [];
+    const settledBoltList = bData.settlements || [];
+    const totalPendingBolt = pendingBoltList.reduce((sum, b) => sum + (parseFloat(b.amount) || 0), 0);
+
+    const grandTotalPending = totalPendingAmount + totalPendingBolt;
+
     const formattedPendingAmount = totalPendingAmount.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
     const formattedPendingHours = (Math.round(totalPendingHours * 100) / 100).toString().replace('.', ',');
+    const formattedPendingBolt = totalPendingBolt.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+    const formattedGrandTotal = grandTotalPending.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
 
-    // Cálculo da Média Mensal
+    // Cálculo da Média Mensal (Horas + Bolt)
     const monthlyTotals = {};
     settlementsList.forEach(s => {
         const m = (s.settledDate || "").substring(0, 7);
@@ -4484,6 +4784,18 @@ function showPaymentsView() {
             monthlyTotals[m] = (monthlyTotals[m] || 0) + (parseFloat(w.amount) || 0);
         }
     });
+    settledBoltList.forEach(s => {
+        const m = (s.settledDate || "").substring(0, 7);
+        if (m) {
+            monthlyTotals[m] = (monthlyTotals[m] || 0) + (parseFloat(s.totalAmount) || 0);
+        }
+    });
+    pendingBoltList.forEach(b => {
+        const m = (b.dateKey || "").substring(0, 7);
+        if (m) {
+            monthlyTotals[m] = (monthlyTotals[m] || 0) + (parseFloat(b.amount) || 0);
+        }
+    });
 
     const activeMonthsCount = Object.keys(monthlyTotals).length;
     const totalAllEarnings = Object.values(monthlyTotals).reduce((sum, v) => sum + v, 0);
@@ -4492,6 +4804,8 @@ function showPaymentsView() {
 
     const textPT = buildPendingWorkTextPT(pendingList, totalPendingHours, totalPendingAmount);
     const textES = buildPendingWorkTextES(pendingList, totalPendingHours, totalPendingAmount);
+    const textBoltPT = buildPendingBoltTextPT(pendingBoltList, totalPendingBolt);
+    const textBoltES = buildPendingBoltTextES(pendingBoltList, totalPendingBolt);
 
     const todayStr = formatDateKey(new Date());
 
@@ -4500,55 +4814,87 @@ function showPaymentsView() {
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 6px;">
                 <h1 style="margin: 0; font-size: 26px;">💶 Gestão de Pagamentos & Horas</h1>
                 <div style="background: rgba(139,92,246,0.1); border: 1.5px solid rgba(139,92,246,0.3); padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; color: #7c3aed;">
-                    Tarifa: <strong>11,00 € / hora</strong>
+                    Tarifa: <strong>11,00 € / hora</strong> • Bolt em separado
                 </div>
             </div>
             <div style="font-size: 13px; color: #666;">
-                Registo de horas de trabalho, cálculo automático de valores a pagar e histórico de liquidações.
+                Registo de horas de trabalho, viagens de Bolt, cálculo automático de valores e histórico de liquidações.
             </div>
         </div>
 
-        <!-- Cartões de Resumo no Topo -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 24px;">
-            <div style="background: linear-gradient(135deg, rgba(239,68,68,0.08), rgba(245,158,11,0.08)); border: 2px solid ${totalPendingAmount > 0 ? '#ef4444' : (totalPendingAmount < 0 ? '#3b82f6' : '#10b981')}; border-radius: 16px; padding: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.04);">
-                <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: ${totalPendingAmount > 0 ? '#dc2626' : (totalPendingAmount < 0 ? '#2563eb' : '#059669')};">
-                    ${totalPendingAmount > 0 ? '⚠️ Total a Dever (Pendente)' : (totalPendingAmount < 0 ? 'ℹ️ Saldo a Favor (Crédito)' : '✅ Sem Valores a Dever')}
+        <!-- Cartões de Resumo no Topo (Horas, Bolt, Total Geral, Média) -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 24px;">
+            <div style="background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(124,58,237,0.04)); border: 2px solid ${totalPendingAmount > 0 ? '#8b5cf6' : '#10b981'}; border-radius: 16px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: ${totalPendingAmount > 0 ? '#7c3aed' : '#059669'};">
+                    ${totalPendingAmount > 0 ? '⏳ Horas a Pagar' : '✅ Horas em Dia'}
                 </div>
-                <div style="font-size: 30px; font-weight: 900; color: ${totalPendingAmount > 0 ? '#dc2626' : (totalPendingAmount < 0 ? '#2563eb' : '#059669')}; margin: 6px 0 2px 0;">
+                <div style="font-size: 26px; font-weight: 900; color: #7c3aed; margin: 4px 0 2px 0;">
                     ${formattedPendingAmount}
                 </div>
-                <div style="font-size: 13px; opacity: 0.8;">
-                    <strong>${formattedPendingHours}</strong> horas de trabalho acumuladas
+                <div style="font-size: 12px; opacity: 0.8;">
+                    <strong>${formattedPendingHours}</strong> h acumuladas
                 </div>
             </div>
 
-            <div style="background: rgba(255,255,255,0.7); border: 1px solid rgba(0,0,0,0.1); border-radius: 16px; padding: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
-                <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #6d28d9;">
+            <div style="background: linear-gradient(135deg, rgba(2,132,199,0.08), rgba(6,182,212,0.04)); border: 2px solid ${totalPendingBolt > 0 ? '#0284c7' : '#10b981'}; border-radius: 16px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: ${totalPendingBolt > 0 ? '#0284c7' : '#059669'};">
+                    ${totalPendingBolt > 0 ? '🚗 Bolt a Pagar' : '✅ Bolt em Dia'}
+                </div>
+                <div style="font-size: 26px; font-weight: 900; color: #0284c7; margin: 4px 0 2px 0;">
+                    ${formattedPendingBolt}
+                </div>
+                <div style="font-size: 12px; opacity: 0.8;">
+                    <strong>${pendingBoltList.length}</strong> viagem(ns) pendente(s)
+                </div>
+            </div>
+
+            <div style="background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(5,150,105,0.06)); border: 2px solid #10b981; border-radius: 16px; padding: 16px; box-shadow: 0 4px 12px rgba(16,185,129,0.1);">
+                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #059669;">
+                    💰 Total Geral a Dever
+                </div>
+                <div style="font-size: 26px; font-weight: 900; color: #059669; margin: 4px 0 2px 0;">
+                    ${formattedGrandTotal}
+                </div>
+                <div style="font-size: 12px; opacity: 0.85;">
+                    Horas + Bolt
+                </div>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.7); border: 1px solid rgba(0,0,0,0.1); border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #6d28d9;">
                     📊 Média Mensal
                 </div>
-                <div style="font-size: 30px; font-weight: 900; color: #6d28d9; margin: 6px 0 2px 0;">
-                    ${formattedMonthlyAverage} <span style="font-size: 16px; font-weight: 600; opacity: 0.7;">/ mês</span>
+                <div style="font-size: 26px; font-weight: 900; color: #6d28d9; margin: 4px 0 2px 0;">
+                    ${formattedMonthlyAverage}
                 </div>
-                <div style="font-size: 13px; opacity: 0.8;">
-                    Calculada com base em <strong>${activeMonthsCount || 1}</strong> ${activeMonthsCount === 1 ? 'mês' : 'meses'} registado${activeMonthsCount === 1 ? '' : 's'}
+                <div style="font-size: 12px; opacity: 0.8;">
+                    Baseado em <strong>${activeMonthsCount || 1}</strong> mês/meses
                 </div>
             </div>
         </div>
 
         <!-- Separadores / Tabs -->
-        <div style="display: flex; gap: 10px; margin-bottom: 22px; border-bottom: 2px solid rgba(0,0,0,0.06); padding-bottom: 12px; flex-wrap: wrap;">
-            <button onclick="window.togglePaymentsTab(false)"
-                style="padding: 10px 20px; font-size: 14px; font-weight: bold; cursor: pointer; border-radius: 10px; border: none; transition: all 0.2s ease; ${!showPaymentsHistory ? 'background: #8b5cf6; color: white; box-shadow: 0 4px 12px rgba(139,92,246,0.35);' : 'background: rgba(0,0,0,0.05); color: #555;'}">
+        <div style="display: flex; gap: 8px; margin-bottom: 22px; border-bottom: 2px solid rgba(0,0,0,0.06); padding-bottom: 12px; flex-wrap: wrap;">
+            <button onclick="window.togglePaymentsTab('hours')"
+                style="padding: 10px 18px; font-size: 13px; font-weight: bold; cursor: pointer; border-radius: 10px; border: none; transition: all 0.2s ease; ${paymentsActiveTab === 'hours' ? 'background: #8b5cf6; color: white; box-shadow: 0 4px 12px rgba(139,92,246,0.35);' : 'background: rgba(0,0,0,0.05); color: #555;'}">
                 ⏳ Horas a Pagar (${pendingList.length})
             </button>
-            <button onclick="window.togglePaymentsTab(true)"
-                style="padding: 10px 20px; font-size: 14px; font-weight: bold; cursor: pointer; border-radius: 10px; border: none; transition: all 0.2s ease; ${showPaymentsHistory ? 'background: #8b5cf6; color: white; box-shadow: 0 4px 12px rgba(139,92,246,0.35);' : 'background: rgba(0,0,0,0.05); color: #555;'}">
-                📜 Histórico de Pagamentos (${settlementsList.length})
+            <button onclick="window.togglePaymentsTab('bolt')"
+                style="padding: 10px 18px; font-size: 13px; font-weight: bold; cursor: pointer; border-radius: 10px; border: none; transition: all 0.2s ease; ${paymentsActiveTab === 'bolt' ? 'background: #0284c7; color: white; box-shadow: 0 4px 12px rgba(2,132,199,0.35);' : 'background: rgba(0,0,0,0.05); color: #555;'}">
+                🚗 Bolt a Pagar (${pendingBoltList.length})
+            </button>
+            <button onclick="window.togglePaymentsTab('hours_history')"
+                style="padding: 10px 18px; font-size: 13px; font-weight: bold; cursor: pointer; border-radius: 10px; border: none; transition: all 0.2s ease; ${paymentsActiveTab === 'hours_history' ? 'background: #8b5cf6; color: white; box-shadow: 0 4px 12px rgba(139,92,246,0.35);' : 'background: rgba(0,0,0,0.05); color: #555;'}">
+                📜 Histórico Horas (${settlementsList.length})
+            </button>
+            <button onclick="window.togglePaymentsTab('bolt_history')"
+                style="padding: 10px 18px; font-size: 13px; font-weight: bold; cursor: pointer; border-radius: 10px; border: none; transition: all 0.2s ease; ${paymentsActiveTab === 'bolt_history' ? 'background: #0284c7; color: white; box-shadow: 0 4px 12px rgba(2,132,199,0.35);' : 'background: rgba(0,0,0,0.05); color: #555;'}">
+                🚗 Histórico Bolt (${settledBoltList.length})
             </button>
         </div>
     `;
 
-    if (!showPaymentsHistory) {
+    if (paymentsActiveTab === 'hours') {
         // ═══════════════════════════════════════════════
         // TAB 1: REGISTO DE HORAS & PENDENTES
         // ═══════════════════════════════════════════════
@@ -4599,7 +4945,7 @@ function showPaymentsView() {
             ${pendingList.length > 0 ? `
                 <div style="margin-bottom: 22px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; background: rgba(16,185,129,0.06); border: 1.5px dashed #10b981; border-radius: 14px; padding: 16px 18px;">
                     <div>
-                        <strong style="font-size: 15px; color: #059669;">💰 Desejas enviar ou liquidar as contas?</strong>
+                        <strong style="font-size: 15px; color: #059669;">💰 Desejas enviar ou liquidar as contas de horas?</strong>
                         <div style="font-size: 12px; color: #555;">Copia a mensagem com todos os dias e o total a pagar (${formattedPendingAmount}) ou marca tudo como liquidado.</div>
                     </div>
                     <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
@@ -4613,7 +4959,7 @@ function showPaymentsView() {
                         </button>
                         <button onclick="window.settleAllPayments()"
                             style="padding: 10px 18px; font-size: 13px; cursor: pointer; border-radius: 10px; border: none; background: linear-gradient(135deg, #10b981, #059669); color: white; font-weight: bold; box-shadow: 0 3px 10px rgba(16,185,129,0.3);">
-                            ✓ Já Paguei Tudo (${formattedPendingAmount})
+                            ✓ Já Paguei Horas (${formattedPendingAmount})
                         </button>
                     </div>
                 </div>
@@ -4742,18 +5088,183 @@ function showPaymentsView() {
             });
             html += `</div>`;
         }
-    } else {
+    } else if (paymentsActiveTab === 'bolt') {
         // ═══════════════════════════════════════════════
-        // TAB 2: HISTÓRICO DE PAGAMENTOS LIQUIDADOS (GRUPOS)
+        // TAB 2: BOLT A PAGAR
         // ═══════════════════════════════════════════════
-        html += `<h2 style="font-size: 19px; margin: 0 0 14px 0; color: #333;">📜 Histórico de Pagamentos Realizados</h2>`;
+        html += `
+            <!-- Formulário de Registar Bolt (Admin) -->
+            <div style="border: 2px solid #0284c7; border-radius: 16px; padding: 20px; margin-bottom: 26px; background: rgba(2,132,199,0.03); box-shadow: 0 4px 15px rgba(2,132,199,0.06);">
+                <div style="font-size: 16px; font-weight: bold; color: #0369a1; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                    <span>🚗 Registar Gasto de Bolt / Transporte</span>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #444;">📅 Data:</label>
+                        <input type="date" id="al-bolt-date-input" value="${todayStr}"
+                            style="padding: 10px 14px; border: 1.5px solid #ccc; border-radius: 10px; font-size: 14px; cursor: pointer;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #444;">💶 Valor em € (ex: 8,50):</label>
+                        <input type="text" id="al-bolt-amount-input" placeholder="Ex: 8,50"
+                            onkeydown="if(event.key==='Enter') window.addBoltEntry()"
+                            style="padding: 10px 14px; border: 2px solid #0284c7; border-radius: 10px; font-size: 14px; width: 140px; font-weight: bold; color: #0369a1;">
+                    </div>
+                    <div style="flex-grow: 1; min-width: 180px;">
+                        <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #444;">📝 Trajeto / Notas (opcional):</label>
+                        <input type="text" id="al-bolt-note-input" placeholder="Ex: Impasse -> Achada"
+                            onkeydown="if(event.key==='Enter') window.addBoltEntry()"
+                            style="padding: 10px 14px; border: 1.5px solid #ccc; border-radius: 10px; font-size: 14px; width: 100%; box-sizing: border-box;">
+                    </div>
+                    <div>
+                        <button onclick="window.addBoltEntry()"
+                            style="padding: 10px 22px; font-size: 14px; cursor: pointer; border-radius: 10px; border: none; background: linear-gradient(135deg, #0284c7, #0369a1); color: white; font-weight: bold; box-shadow: 0 4px 14px rgba(2,132,199,0.35);">
+                            ➕ Adicionar Bolt
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Barra de Ações: Já Paguei Todos os Bolt & Copiar PT/ES -->
+            ${pendingBoltList.length > 0 ? `
+                <div style="margin-bottom: 22px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; background: rgba(2,132,199,0.06); border: 1.5px dashed #0284c7; border-radius: 14px; padding: 16px 18px;">
+                    <div>
+                        <strong style="font-size: 15px; color: #0369a1;">🚗 Desejas enviar ou liquidar as viagens de Bolt?</strong>
+                        <div style="font-size: 12px; color: #555;">Copia a mensagem com os detalhes do Bolt ou marca como liquidado (${formattedPendingBolt}).</div>
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                        <button onclick="window.copyFromData(this, '${encodeURIComponent(textBoltPT)}')"
+                            style="padding: 10px 16px; font-size: 13px; cursor: pointer; border-radius: 10px; border: 1.5px solid #007bff; background: linear-gradient(135deg, #007bff, #0056b3); color: white; font-weight: bold; box-shadow: 0 2px 8px rgba(0,123,255,0.25);">
+                            🇵🇹 Copiar Bolt PT (${formattedPendingBolt})
+                        </button>
+                        <button onclick="window.copyFromData(this, '${encodeURIComponent(textBoltES)}')"
+                            style="padding: 10px 16px; font-size: 13px; cursor: pointer; border-radius: 10px; border: 1.5px solid #e11d48; background: linear-gradient(135deg, #e11d48, #be123c); color: white; font-weight: bold; box-shadow: 0 2px 8px rgba(225,29,72,0.25);">
+                            🇪🇸 Copiar Bolt ES (${formattedPendingBolt})
+                        </button>
+                        <button onclick="window.settleAllBolt()"
+                            style="padding: 10px 18px; font-size: 13px; cursor: pointer; border-radius: 10px; border: none; background: linear-gradient(135deg, #0284c7, #0369a1); color: white; font-weight: bold; box-shadow: 0 3px 10px rgba(2,132,199,0.3);">
+                            ✓ Já Paguei Todos os Bolt (${formattedPendingBolt})
+                        </button>
+                    </div>
+                </div>
+            ` : ''}
+
+            <!-- Legenda das Cores de Bolt -->
+            <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; font-size: 12px; font-weight: 700;">
+                <span style="color: #666;">Escala de valores:</span>
+                <span style="background: #f0fdf4; border: 1px solid #10b981; color: #047857; padding: 2px 8px; border-radius: 6px;">🟢 Até 7 €</span>
+                <span style="background: #fefce8; border: 1px solid #eab308; color: #a16207; padding: 2px 8px; border-radius: 6px;">🟡 7 € a 10 €</span>
+                <span style="background: #fff7ed; border: 1px solid #f97316; color: #c2410c; padding: 2px 8px; border-radius: 6px;">🟠 10 € a 15 €</span>
+                <span style="background: #fef2f2; border: 1px solid #ef4444; color: #b91c1c; padding: 2px 8px; border-radius: 6px;">🔴 Acima de 15 €</span>
+            </div>
+
+            <h2 style="font-size: 19px; margin: 0 0 14px 0; color: #333;">🚗 Viagens de Bolt Acumuladas (Por Pagar)</h2>
+        `;
+
+        if (pendingBoltList.length === 0) {
+            html += `
+                <div style="text-align: center; padding: 40px 20px; border: 2px dashed rgba(0,0,0,0.1); border-radius: 16px; background: rgba(255,255,255,0.4); margin-bottom: 25px;">
+                    <span style="font-size: 42px;">🚗</span>
+                    <div style="font-size: 16px; font-weight: bold; margin-top: 8px; color: #333;">Sem viagens de Bolt pendentes de pagamento!</div>
+                    <div style="font-size: 13px; color: #666; margin-top: 4px;">Podes registar novos valores de Bolt no formulário acima.</div>
+                </div>
+            `;
+        } else {
+            html += `<div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px;">`;
+            pendingBoltList.forEach(item => {
+                const isEditing = editingBoltId === item.id;
+                const d = parseDateKey(item.dateKey);
+                const dayLabel = d.toLocaleDateString("pt-PT", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+                const capitalizedDay = dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1);
+                const itemAmount = parseFloat(item.amount) || 0;
+                const formattedItemAmount = itemAmount.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+                const cInfo = getBoltColorInfo(itemAmount);
+
+                if (isEditing) {
+                    html += `
+                        <div style="border: 2px solid #0284c7; border-radius: 14px; padding: 16px 18px; background: #fff; box-shadow: 0 4px 15px rgba(2,132,199,0.15);">
+                            <div style="font-size: 14px; font-weight: bold; color: #0369a1; margin-bottom: 12px;">
+                                ✏️ Editar Viagem de Bolt
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 12px;">
+                                <div>
+                                    <label style="display: block; font-size: 11px; font-weight: 700; color: #555; margin-bottom: 3px;">📅 Data:</label>
+                                    <input type="date" id="al-edit-bolt-date-${item.id}" value="${item.dateKey}"
+                                        style="padding: 8px 10px; border: 1.5px solid #ccc; border-radius: 8px; font-size: 13px; width: 100%; box-sizing: border-box;">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 11px; font-weight: 700; color: #0284c7; margin-bottom: 3px;">💶 Valor em €:</label>
+                                    <input type="text" id="al-edit-bolt-amount-${item.id}" value="${item.amount ? item.amount.toString().replace('.', ',') : ''}"
+                                        style="padding: 8px 10px; border: 2px solid #0284c7; border-radius: 8px; font-size: 13px; width: 100%; box-sizing: border-box; font-weight: bold; color: #0369a1;">
+                                </div>
+                                <div style="grid-column: 1 / -1;">
+                                    <label style="display: block; font-size: 11px; font-weight: 700; color: #555; margin-bottom: 3px;">📝 Trajeto / Notas:</label>
+                                    <input type="text" id="al-edit-bolt-note-${item.id}" value="${item.note || ''}" placeholder="Ex: Impasse -> Achada"
+                                        style="padding: 8px 12px; border: 1.5px solid #ccc; border-radius: 8px; font-size: 13px; width: 100%; box-sizing: border-box;">
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button onclick="window.saveBoltEntry('${item.id}')"
+                                    style="padding: 8px 18px; font-size: 13px; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #10b981, #059669); color: white; font-weight: bold; box-shadow: 0 2px 6px rgba(16,185,129,0.3);">
+                                    💾 Guardar Alterações
+                                </button>
+                                <button onclick="window.cancelEditBolt()"
+                                    style="padding: 8px 14px; font-size: 13px; cursor: pointer; border-radius: 8px; border: 1px solid #ccc; background: #f8f9fa; color: #555;">
+                                    Cancelar
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div style="background: ${cInfo.bgColor}; border: 2px solid ${cInfo.borderColor}; border-radius: 14px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                    <strong style="font-size: 15px; color: ${cInfo.textColor};">📅 ${capitalizedDay}</strong>
+                                    <span style="background: ${cInfo.badgeBg}; color: ${cInfo.badgeColor}; padding: 2px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px;">
+                                        🚗 Bolt (${cInfo.tier})
+                                    </span>
+                                    ${item.byWorker ? `
+                                        <span style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 2px 10px; border-radius: 8px; font-size: 11px; font-weight: 800;">
+                                            👤 Marcado pela Ajudante
+                                        </span>
+                                    ` : ''}
+                                </div>
+                                ${item.note ? `<div style="font-size: 12px; color: #555; margin-top: 4px; font-style: italic;">📝 ${item.note}</div>` : ''}
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="font-size: 20px; font-weight: 900; color: ${cInfo.textColor};">
+                                    ${formattedItemAmount}
+                                </div>
+                                <div style="display: flex; gap: 6px;">
+                                    <button onclick="window.startEditBolt('${item.id}')" title="Corrigir este registo de Bolt"
+                                        style="padding: 6px 12px; font-size: 12px; cursor: pointer; border-radius: 8px; border: 1px solid #6c757d; background: #fff; color: #495057; font-weight: bold;">
+                                        ✏️ Corrigir
+                                    </button>
+                                    <button onclick="window.deleteBoltEntry('${item.id}')" title="Apagar este registo"
+                                        style="padding: 6px 12px; font-size: 12px; cursor: pointer; border-radius: 8px; border: 1px solid #dc3545; background: #fff; color: #dc3545; font-weight: bold;">
+                                        🗑️ Apagar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            html += `</div>`;
+        }
+    } else if (paymentsActiveTab === 'hours_history') {
+        // ═══════════════════════════════════════════════
+        // TAB 3: HISTÓRICO DE HORAS LIQUIDADAS
+        // ═══════════════════════════════════════════════
+        html += `<h2 style="font-size: 19px; margin: 0 0 14px 0; color: #333;">📜 Histórico de Pagamentos de Horas</h2>`;
 
         if (settlementsList.length === 0) {
             html += `
                 <div style="text-align: center; padding: 40px 20px; border: 2px dashed rgba(0,0,0,0.1); border-radius: 16px; background: rgba(255,255,255,0.4); margin-bottom: 25px;">
                     <span style="font-size: 42px;">📜</span>
-                    <div style="font-size: 16px; font-weight: bold; margin-top: 8px; color: #333;">Ainda não foram arquivados pagamentos totais.</div>
-                    <div style="font-size: 13px; color: #666; margin-top: 4px;">Quando clicares em "Já Paguei Tudo" nas horas a pagar, o grupo liquidado aparecerá aqui.</div>
+                    <div style="font-size: 16px; font-weight: bold; margin-top: 8px; color: #333;">Ainda não foram arquivados pagamentos de horas.</div>
+                    <div style="font-size: 13px; color: #666; margin-top: 4px;">Quando clicares em "Já Paguei Horas", o grupo liquidado aparecerá aqui.</div>
                 </div>
             `;
         } else {
@@ -4762,8 +5273,8 @@ function showPaymentsView() {
                 const sDate = parseDateKey(settle.settledDate);
                 const sDateLabel = sDate.toLocaleDateString("pt-PT", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
                 const sCapitalized = sDateLabel.charAt(0).toUpperCase() + sDateLabel.slice(1);
-                const formattedSettleAmount = settle.totalAmount.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
-                const formattedSettleHours = settle.totalHours.toString().replace('.', ',');
+                const formattedSettleAmount = (parseFloat(settle.totalAmount) || 0).toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+                const formattedSettleHours = (settle.totalHours || 0).toString().replace('.', ',');
                 const items = settle.items || [];
 
                 let itemsRowsHtml = '';
@@ -4830,6 +5341,84 @@ function showPaymentsView() {
 
                         <div style="background: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.06); border-radius: 12px; padding: 12px 14px; margin-top: 10px;">
                             <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: #555; margin-bottom: 6px; letter-spacing: 0.5px;">Dias incluídos neste pagamento:</div>
+                            ${itemsRowsHtml}
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        }
+    } else if (paymentsActiveTab === 'bolt_history') {
+        // ═══════════════════════════════════════════════
+        // TAB 4: HISTÓRICO DE BOLT LIQUIDADO
+        // ═══════════════════════════════════════════════
+        html += `<h2 style="font-size: 19px; margin: 0 0 14px 0; color: #0284c7;">🚗 Histórico de Pagamentos de Bolt</h2>`;
+
+        if (settledBoltList.length === 0) {
+            html += `
+                <div style="text-align: center; padding: 40px 20px; border: 2px dashed rgba(0,0,0,0.1); border-radius: 16px; background: rgba(255,255,255,0.4); margin-bottom: 25px;">
+                    <span style="font-size: 42px;">🚗</span>
+                    <div style="font-size: 16px; font-weight: bold; margin-top: 8px; color: #333;">Ainda não foram arquivados pagamentos de Bolt.</div>
+                    <div style="font-size: 13px; color: #666; margin-top: 4px;">Quando clicares em "Já Paguei Todos os Bolt", o lote liquidado aparecerá aqui.</div>
+                </div>
+            `;
+        } else {
+            html += `<div style="display: flex; flex-direction: column; gap: 18px; margin-bottom: 25px;">`;
+            settledBoltList.forEach(settle => {
+                const sDate = parseDateKey(settle.settledDate);
+                const sDateLabel = sDate.toLocaleDateString("pt-PT", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+                const sCapitalized = sDateLabel.charAt(0).toUpperCase() + sDateLabel.slice(1);
+                const formattedSettleAmount = (parseFloat(settle.totalAmount) || 0).toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+                const items = settle.items || [];
+
+                let itemsRowsHtml = '';
+                items.forEach(it => {
+                    const cInfo = getBoltColorInfo(it.amount);
+                    const itDate = parseDateKey(it.dateKey);
+                    const itDateLabel = itDate.toLocaleDateString("pt-PT", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+                    const itAmountVal = parseFloat(it.amount) || 0;
+                    const itAmount = itAmountVal.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+
+                    itemsRowsHtml += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 13px;">
+                            <div>
+                                <span>📅 ${itDateLabel}</span>
+                                <span style="display: inline-block; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px; background: ${cInfo.badgeBg}; color: ${cInfo.badgeColor}; margin-left: 6px;">
+                                    🚗 ${cInfo.tier}
+                                </span>
+                                ${it.note ? `<span style="color: #666; font-size: 12px; margin-left: 8px;">(${it.note})</span>` : ''}
+                            </div>
+                            <strong style="color: ${cInfo.textColor};">${itAmount}</strong>
+                        </div>
+                    `;
+                });
+
+                html += `
+                    <div style="border: 1.5px solid rgba(2,132,199,0.4); border-radius: 16px; padding: 18px; background: rgba(255,255,255,0.9); box-shadow: 0 4px 14px rgba(2,132,199,0.06); border-left: 6px solid #0284c7;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="background: #0284c7; color: white; padding: 2px 8px; border-radius: 8px; font-size: 12px; font-weight: bold;">PAGO</span>
+                                    <strong style="font-size: 16px; color: #111;">🚗 Pagamento de Bolt de ${sCapitalized}</strong>
+                                </div>
+                                <div style="font-size: 13px; color: #666; margin-top: 3px;">
+                                    Total pago: <strong style="color: #0284c7; font-size: 15px;">${formattedSettleAmount}</strong> • (${items.length} viagem${items.length !== 1 ? 'ns' : ''})
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 6px;">
+                                <button onclick="window.reopenBoltSettlement('${settle.id}')" title="Reabrir este lote e devolver as viagens para o Bolt pendente"
+                                    style="padding: 6px 12px; font-size: 12px; cursor: pointer; border-radius: 8px; border: 1px solid #0284c7; background: rgba(2,132,199,0.08); color: #0284c7; font-weight: bold;">
+                                    ↩️ Reabrir Bolt
+                                </button>
+                                <button onclick="window.deleteBoltSettlement('${settle.id}')" title="Remover este registo histórico"
+                                    style="padding: 6px 12px; font-size: 12px; cursor: pointer; border-radius: 8px; border: 1px solid #dc3545; background: transparent; color: #dc3545; font-weight: bold;">
+                                    🗑️ Apagar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div style="background: rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.06); border-radius: 12px; padding: 12px 14px; margin-top: 10px;">
+                            <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: #555; margin-bottom: 6px; letter-spacing: 0.5px;">Viagens incluídas neste pagamento:</div>
                             ${itemsRowsHtml}
                         </div>
                     </div>
