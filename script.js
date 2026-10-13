@@ -5588,9 +5588,8 @@ window.recordWorkerCheckOut = async function(minutesAgo) {
         return;
     }
 
-    const diffMinutes = Math.round(diffMs / (60 * 1000));
-    let hours = Math.round((diffMinutes / 60) * 100) / 100;
-    if (hours < 0.1) hours = 0.1;
+    const diffMinutes = diffMs / (60 * 1000);
+    const hours = Math.round((diffMinutes / 60) * 100) / 100;
     const hoursFormatted = hours.toString().replace('.', ',');
     const totalAmount = Math.round(hours * 11 * 100) / 100;
     const amountFormatted = totalAmount.toLocaleString(isEs ? 'es-ES' : 'pt-PT', { style: 'currency', currency: 'EUR' });
@@ -5600,6 +5599,19 @@ window.recordWorkerCheckOut = async function(minutesAgo) {
         : `Confirmas que queres finalizar o dia às ${outTimeStr}?\n\n⏱️ Total: ${hoursFormatted} horas\n💰 Valor calculado: ${amountFormatted}`;
 
     if (!confirm(msg)) return;
+
+    // Recarrega payroll mais fresco da cloud antes de alterar, para preservar liquidações feitas pelo admin
+    try {
+        const freshRes = await fetchWithTimeout(`${WORKER_BASE_URL}?action=getHistory`, {}, 5000);
+        if (freshRes.ok) {
+            const freshData = await freshRes.json();
+            const freshHist = typeof freshData === 'string' ? JSON.parse(freshData) : freshData;
+            if (freshHist && typeof freshHist === 'object') {
+                if (freshHist["_payroll"]) cloudHistory["_payroll"] = freshHist["_payroll"];
+                if (freshHist["_bolt"]) cloudHistory["_bolt"] = freshHist["_bolt"];
+            }
+        }
+    } catch(e) {}
 
     const pData = getPayrollData();
     const newWorkId = "work_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
