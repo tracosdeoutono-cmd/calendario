@@ -525,6 +525,19 @@ window.recordWorkerCheckOut = async function(minutesAgo) {
     });
     if (!confirmed) return;
 
+    // Recarrega payroll mais fresco da cloud antes de alterar, para preservar liquidações feitas pelo admin
+    try {
+        const freshRes = await fetchWithTimeout(`${WORKER_BASE_URL}?action=getHistory`, {}, 5000);
+        if (freshRes.ok) {
+            const freshData = await freshRes.json();
+            const freshHist = typeof freshData === 'string' ? JSON.parse(freshData) : freshData;
+            if (freshHist && typeof freshHist === 'object') {
+                if (freshHist["_payroll"]) cloudHistory["_payroll"] = freshHist["_payroll"];
+                if (freshHist["_bolt"]) cloudHistory["_bolt"] = freshHist["_bolt"];
+            }
+        }
+    } catch(e) {}
+
     const pData = getPayrollData();
     const newWorkId = "work_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
     const newWorkEntry = {
@@ -598,10 +611,11 @@ window.resetWorkerShift = async function() {
     await saveToCloudHistory(cloudHistory);
 };
 
+let editingWorkerBoltId = null;
+
 window.submitWorkerBolt = async function() {
     const isEs = workerLanguage === "es";
     const amtInput = document.getElementById("al-worker-bolt-amount");
-    const noteInput = document.getElementById("al-worker-bolt-note");
     if (!amtInput) return;
 
     let rawVal = amtInput.value.trim().replace(',', '.');
@@ -612,19 +626,30 @@ window.submitWorkerBolt = async function() {
     }
 
     const roundedVal = Math.round(val * 100) / 100;
-    const note = noteInput ? noteInput.value.trim() : "";
     const amountFmt = roundedVal.toLocaleString(isEs ? 'es-ES' : 'pt-PT', { style: 'currency', currency: 'EUR' });
 
     const confirmed = await workerConfirm({
         icon: '🚗',
         title: isEs ? `¿Confirmar gasto de Bolt de <strong>${amountFmt}</strong>?` : `Confirmar gasto de Bolt de <strong>${amountFmt}</strong>?`,
-        detail: note ? `Nota: <em>${note}</em>` : (isEs ? 'Se añadirá a tus pagos pendientes de Bolt.' : 'Será adicionado aos teus pagamentos pendentes de Bolt.'),
+        detail: isEs ? 'Se añadirá a tus pagos pendientes de Bolt.' : 'Será adicionado aos teus pagamentos pendentes de Bolt.',
         okLabel: isEs ? '✔ Sim, Guardar' : '✔ Sim, Gravar',
         okColor: 'linear-gradient(135deg, #0284c7, #0369a1)',
         okShadow: '0 6px 20px rgba(2,132,199,0.45)',
         cancelLabel: isEs ? '✖ Cancelar' : '✖ Cancelar'
     });
     if (!confirmed) return;
+
+    // Recarrega bolt atualizado da cloud antes de alterar
+    try {
+        const freshRes = await fetchWithTimeout(`${WORKER_BASE_URL}?action=getHistory`, {}, 5000);
+        if (freshRes.ok) {
+            const freshData = await freshRes.json();
+            const freshHist = typeof freshData === 'string' ? JSON.parse(freshData) : freshData;
+            if (freshHist && typeof freshHist === 'object' && freshHist["_bolt"]) {
+                cloudHistory["_bolt"] = freshHist["_bolt"];
+            }
+        }
+    } catch(e) {}
 
     const bData = getBoltData();
     const today = new Date();
@@ -635,7 +660,7 @@ window.submitWorkerBolt = async function() {
         id: "bolt_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
         dateKey: todayStr,
         amount: roundedVal,
-        note: note,
+        note: "",
         byWorker: true,
         createdAt: new Date().toISOString()
     };
@@ -649,6 +674,57 @@ window.submitWorkerBolt = async function() {
 
     showWorkerBoltForm = false;
     workerPaymentsTab = "bolt"; // Abre logo o separador do Bolt para ver o registo
+    showWorkerView();
+    await saveToCloudHistory(cloudHistory);
+};
+
+window.startEditWorkerBolt = function(boltId) {
+    editingWorkerBoltId = boltId;
+    showWorkerView();
+};
+
+window.cancelEditWorkerBolt = function() {
+    editingWorkerBoltId = null;
+    showWorkerView();
+};
+
+window.saveEditWorkerBolt = async function(boltId) {
+    const isEs = workerLanguage === "es";
+    const input = document.getElementById(`al-worker-edit-bolt-${boltId}`);
+    if (!input) return;
+
+    let rawVal = input.value.trim().replace(',', '.');
+    const val = parseFloat(rawVal);
+    if (isNaN(val) || val <= 0) {
+        alert(isEs ? "Por favor, introduce un importe válido en euros." : "Por favor, introduz um valor válido em euros.");
+        return;
+    }
+
+    const roundedVal = Math.round(val * 100) / 100;
+
+    // Recarrega dados atualizados da cloud antes de alterar
+    try {
+        const freshRes = await fetchWithTimeout(`${WORKER_BASE_URL}?action=getHistory`, {}, 5000);
+        if (freshRes.ok) {
+            const freshData = await freshRes.json();
+            const freshHist = typeof freshData === 'string' ? JSON.parse(freshData) : freshData;
+            if (freshHist && typeof freshHist === 'object' && freshHist["_bolt"]) {
+                cloudHistory["_bolt"] = freshHist["_bolt"];
+            }
+        }
+    } catch(e) {}
+
+    const bData = getBoltData();
+    const item = (bData.pending || []).find(b => b.id === boltId);
+    if (item) {
+        item.amount = roundedVal;
+    }
+
+    editingWorkerBoltId = null;
+    cloudHistory["_bolt"] = bData;
+    try { localStorage.setItem("al_bolt_backup", JSON.stringify(bData)); } catch(e) {}
+    try { localStorage.setItem("al_cloud_history_backup", JSON.stringify(cloudHistory)); } catch(e) {}
+
     showWorkerView();
     await saveToCloudHistory(cloudHistory);
 };
@@ -1453,17 +1529,9 @@ function showWorkerView() {
                             <label style="display: block; font-size: 12px; font-weight: 700; color: #0369a1; margin-bottom: 4px;">
                                 ${isEs ? '💶 Importe exacto (€):' : '💶 Valor exato (€):'}
                             </label>
-                            <input type="text" id="al-worker-bolt-amount" placeholder="Ex: 8,50"
+                            <input type="text" inputmode="decimal" id="al-worker-bolt-amount" placeholder=""
                                 onkeydown="if(event.key==='Enter') window.submitWorkerBolt()"
-                                style="padding: 11px 14px; border: 2px solid #0284c7; border-radius: 10px; font-size: 16px; font-weight: 800; width: 100%; box-sizing: border-box; color: #0369a1;">
-                        </div>
-                        <div>
-                            <label style="display: block; font-size: 12px; font-weight: 700; color: #555; margin-bottom: 4px;">
-                                ${isEs ? '📝 Trayecto / Nota (opcional):' : '📝 Trajeto / Nota (opcional):'}
-                            </label>
-                            <input type="text" id="al-worker-bolt-note" placeholder="${isEs ? 'Ej: Impasse -> Achada' : 'Ex: Impasse -> Achada'}"
-                                onkeydown="if(event.key==='Enter') window.submitWorkerBolt()"
-                                style="padding: 10px 14px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 13px; width: 100%; box-sizing: border-box;">
+                                style="padding: 11px 14px; border: 2px solid #0284c7; border-radius: 10px; font-size: 18px; font-weight: 800; width: 100%; box-sizing: border-box; color: #0369a1;">
                         </div>
                         <div style="display: flex; gap: 8px; margin-top: 4px;">
                             <button onclick="window.submitWorkerBolt()"
@@ -1745,23 +1813,57 @@ function showWorkerView() {
                 const capitalizedDayItem = dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1);
                 const itemAmount = parseFloat(bItem.amount) || 0;
                 const formattedItemAmount = itemAmount.toLocaleString(isEs ? 'es-ES' : 'pt-PT', { style: 'currency', currency: 'EUR' });
+                const isTodayEntry = bItem.dateKey === todayStr;
+                const isEditing = editingWorkerBoltId === bItem.id;
 
-                html += `
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: ${cInfo.bgColor}; border: 2px solid ${cInfo.borderColor}; border-radius: 12px; flex-wrap: wrap; gap: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
-                        <div>
-                            <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 6px;">
-                                <strong style="font-size: 14px; color: ${cInfo.textColor};">📅 ${capitalizedDayItem}</strong>
-                                <span style="display: inline-block; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 6px; background: ${cInfo.badgeBg}; color: ${cInfo.badgeColor};">
-                                    🚗 Bolt (${cInfo.tier})
-                                </span>
+                if (isEditing) {
+                    html += `
+                        <div style="background: #ffffff; border: 2px solid #0284c7; border-radius: 12px; padding: 14px; box-shadow: 0 4px 14px rgba(2,132,199,0.15);">
+                            <div style="font-size: 13px; font-weight: 800; color: #0284c7; margin-bottom: 8px;">
+                                ✏️ ${isEs ? 'Modificar importe de Bolt de hoy' : 'Alterar valor do Bolt de hoje'}:
                             </div>
-                            ${bItem.note ? `<div style="font-size: 12px; opacity: 0.85; margin-top: 3px; color: #555;">📝 <i>${bItem.note}</i></div>` : ''}
+                            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                <input type="text" inputmode="decimal" id="al-worker-edit-bolt-${bItem.id}" value="${itemAmount.toString().replace('.', ',')}"
+                                    onkeydown="if(event.key==='Enter') window.saveEditWorkerBolt('${bItem.id}')"
+                                    style="padding: 10px 14px; border: 2px solid #0284c7; border-radius: 10px; font-size: 16px; font-weight: 800; color: #0369a1; width: 130px; box-sizing: border-box;">
+                                <button onclick="window.saveEditWorkerBolt('${bItem.id}')"
+                                    style="padding: 10px 16px; font-size: 13px; font-weight: 800; cursor: pointer; border-radius: 10px; border: none; background: linear-gradient(135deg, #10b981, #059669); color: white;">
+                                    ✓ ${isEs ? 'Guardar' : 'Gravar'}
+                                </button>
+                                <button onclick="window.cancelEditWorkerBolt()"
+                                    style="padding: 10px 14px; font-size: 13px; font-weight: 700; cursor: pointer; border-radius: 10px; border: 1px solid #cbd5e1; background: #f8fafc; color: #64748b;">
+                                    ${isEs ? 'Cancelar' : 'Cancelar'}
+                                </button>
+                            </div>
                         </div>
-                        <div style="font-size: 20px; font-weight: 900; color: ${cInfo.textColor};">
-                            ${formattedItemAmount}
+                    `;
+                } else {
+                    html += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: ${cInfo.bgColor}; border: 2px solid ${cInfo.borderColor}; border-radius: 12px; flex-wrap: wrap; gap: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+                            <div>
+                                <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 6px;">
+                                    <strong style="font-size: 14px; color: ${cInfo.textColor};">📅 ${capitalizedDayItem}</strong>
+                                    <span style="display: inline-block; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 6px; background: ${cInfo.badgeBg}; color: ${cInfo.badgeColor};">
+                                        🚗 Bolt (${cInfo.tier})
+                                    </span>
+                                </div>
+                                ${bItem.note ? `<div style="font-size: 12px; opacity: 0.85; margin-top: 3px; color: #555;">📝 <i>${bItem.note}</i></div>` : ''}
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="font-size: 20px; font-weight: 900; color: ${cInfo.textColor};">
+                                    ${formattedItemAmount}
+                                </div>
+                                ${isTodayEntry ? `
+                                    <button onclick="window.startEditWorkerBolt('${bItem.id}')"
+                                        title="${isEs ? 'Modificar importe de hoy' : 'Alterar valor de hoje'}"
+                                        style="padding: 6px 10px; font-size: 12px; font-weight: 800; cursor: pointer; border-radius: 8px; border: 1px solid #0284c7; background: #ffffff; color: #0284c7; display: inline-flex; align-items: center; gap: 4px;">
+                                        ✏️ ${isEs ? 'Editar' : 'Alterar'}
+                                    </button>
+                                ` : ''}
+                            </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                }
             });
             html += `</div>`;
         }
