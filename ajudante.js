@@ -729,6 +729,45 @@ window.saveEditWorkerBolt = async function(boltId) {
     await saveToCloudHistory(cloudHistory);
 };
 
+window.deleteWorkerBolt = async function(boltId) {
+    const isEs = workerLanguage === "es";
+    const confirmed = await workerConfirm({
+        icon: '🗑️',
+        title: isEs ? '¿Eliminar viaje de Bolt?' : 'Apagar viagem de Bolt?',
+        detail: isEs ? 'Esta acción eliminará el viaje de Bolt registrado hoy.' : 'Esta ação vai apagar a viagem de Bolt registada hoje.',
+        okLabel: isEs ? '🗑️ Sí, eliminar' : '🗑️ Sim, apagar',
+        okColor: 'linear-gradient(135deg, #ef4444, #dc2626)',
+        okShadow: '0 6px 20px rgba(239,68,68,0.4)',
+        cancelLabel: isEs ? 'Cancelar' : 'Cancelar'
+    });
+    if (!confirmed) return;
+
+    // Recarrega dados atualizados da cloud antes de apagar
+    try {
+        const freshRes = await fetchWithTimeout(`${WORKER_BASE_URL}?action=getHistory`, {}, 5000);
+        if (freshRes.ok) {
+            const freshData = await freshRes.json();
+            const freshHist = typeof freshData === 'string' ? JSON.parse(freshData) : freshData;
+            if (freshHist && typeof freshHist === 'object' && freshHist["_bolt"]) {
+                cloudHistory["_bolt"] = freshHist["_bolt"];
+            }
+        }
+    } catch(e) {}
+
+    const bData = getBoltData();
+    bData.pending = (bData.pending || []).filter(b => b.id !== boltId);
+
+    if (editingWorkerBoltId === boltId) {
+        editingWorkerBoltId = null;
+    }
+    cloudHistory["_bolt"] = bData;
+    try { localStorage.setItem("al_bolt_backup", JSON.stringify(bData)); } catch(e) {}
+    try { localStorage.setItem("al_cloud_history_backup", JSON.stringify(cloudHistory)); } catch(e) {}
+
+    showWorkerView();
+    await saveToCloudHistory(cloudHistory);
+};
+
 // 4. Utilitários de Data e Calendário
 function parseDate(d) {
     return new Date(Number(d.substring(0,4)), Number(d.substring(4,6))-1, Number(d.substring(6,8)));
@@ -1657,7 +1696,7 @@ function showWorkerView() {
                 </div>
             </div>
 
-            <!-- Resumo Global de Totais (Horas + Bolt + Total Geral) -->
+            <!-- Resumo Global de Totais (Horas e Bolt em separado) -->
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 18px;">
                 <div style="background: rgba(139,92,246,0.08); border: 1.5px solid #8b5cf6; border-radius: 12px; padding: 12px 14px;">
                     <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #7c3aed;">${isEs ? '⏳ Horas por Pagar' : '⏳ Horas a Pagar'}</div>
@@ -1668,11 +1707,6 @@ function showWorkerView() {
                     <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #0284c7;">${isEs ? '🚗 Bolt por Pagar' : '🚗 Bolt a Pagar'}</div>
                     <div style="font-size: 20px; font-weight: 900; color: #0284c7; margin-top: 2px;">${formattedPendingBolt}</div>
                     <div style="font-size: 11px; opacity: 0.8; margin-top: 1px;">${pendingBoltList.length} ${isEs ? 'viajes' : 'viagens'}</div>
-                </div>
-                <div style="background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(5,150,105,0.08)); border: 2px solid #10b981; border-radius: 12px; padding: 12px 14px;">
-                    <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #059669;">${isEs ? '💰 Total a Recibir' : '💰 Total a Receber'}</div>
-                    <div style="font-size: 22px; font-weight: 900; color: #059669; margin-top: 2px;">${formattedGrandTotal}</div>
-                    <div style="font-size: 11px; opacity: 0.85; margin-top: 1px;">${isEs ? 'Horas + Bolt' : 'Horas + Bolt'}</div>
                 </div>
             </div>
 
@@ -1789,12 +1823,8 @@ function showWorkerView() {
                 </div>
             </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+            <div style="margin-bottom: 12px;">
                 <h3 style="font-size: 16px; margin: 0; color: #333;">${isEs ? '🚗 Viajes de Bolt por Pagar:' : '🚗 Viagens de Bolt por Pagar:'}</h3>
-                <button onclick="window.toggleWorkerBoltForm(event)"
-                    style="padding: 6px 12px; font-size: 12px; font-weight: 800; cursor: pointer; border-radius: 8px; border: 1px solid #0284c7; background: #fff; color: #0284c7;">
-                    ➕ ${isEs ? 'Añadir Otro Bolt' : 'Registar Outro Bolt'}
-                </button>
             </div>
         `;
 
@@ -1844,7 +1874,7 @@ function showWorkerView() {
                                 <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 6px;">
                                     <strong style="font-size: 14px; color: ${cInfo.textColor};">📅 ${capitalizedDayItem}</strong>
                                     <span style="display: inline-block; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 6px; background: ${cInfo.badgeBg}; color: ${cInfo.badgeColor};">
-                                        🚗 Bolt (${cInfo.tier})
+                                        🚗 Bolt
                                     </span>
                                 </div>
                                 ${bItem.note ? `<div style="font-size: 12px; opacity: 0.85; margin-top: 3px; color: #555;">📝 <i>${bItem.note}</i></div>` : ''}
@@ -1854,11 +1884,18 @@ function showWorkerView() {
                                     ${formattedItemAmount}
                                 </div>
                                 ${isTodayEntry ? `
-                                    <button onclick="window.startEditWorkerBolt('${bItem.id}')"
-                                        title="${isEs ? 'Modificar importe de hoy' : 'Alterar valor de hoje'}"
-                                        style="padding: 6px 10px; font-size: 12px; font-weight: 800; cursor: pointer; border-radius: 8px; border: 1px solid #0284c7; background: #ffffff; color: #0284c7; display: inline-flex; align-items: center; gap: 4px;">
-                                        ✏️ ${isEs ? 'Editar' : 'Alterar'}
-                                    </button>
+                                    <div style="display: flex; gap: 6px; align-items: center;">
+                                        <button onclick="window.startEditWorkerBolt('${bItem.id}')"
+                                            title="${isEs ? 'Modificar importe de hoy' : 'Alterar valor de hoje'}"
+                                            style="padding: 6px 10px; font-size: 12px; font-weight: 800; cursor: pointer; border-radius: 8px; border: 1px solid #0284c7; background: #ffffff; color: #0284c7; display: inline-flex; align-items: center; gap: 4px;">
+                                            ✏️ ${isEs ? 'Editar' : 'Alterar'}
+                                        </button>
+                                        <button onclick="window.deleteWorkerBolt('${bItem.id}')"
+                                            title="${isEs ? 'Eliminar viaje de hoy' : 'Apagar viagem de hoje'}"
+                                            style="padding: 6px 10px; font-size: 12px; font-weight: 800; cursor: pointer; border-radius: 8px; border: 1px solid #ef4444; background: #ffffff; color: #dc2626; display: inline-flex; align-items: center; gap: 4px;">
+                                            🗑️ ${isEs ? 'Eliminar' : 'Apagar'}
+                                        </button>
+                                    </div>
                                 ` : ''}
                             </div>
                         </div>
@@ -1989,7 +2026,7 @@ function showWorkerView() {
                             <div>
                                 <span>📅 ${itDateLabel}</span>
                                 <span style="display: inline-block; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px; background: ${cInfo.badgeBg}; color: ${cInfo.badgeColor}; margin-left: 6px;">
-                                    🚗 ${cInfo.tier}
+                                    🚗 Bolt
                                 </span>
                                 ${it.note ? `<span style="color: #666; font-size: 12px; margin-left: 8px;">(${it.note})</span>` : ''}
                             </div>
