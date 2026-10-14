@@ -5197,15 +5197,6 @@ function showPaymentsView() {
                 </div>
             ` : ''}
 
-            <!-- Legenda das Cores de Bolt -->
-            <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; font-size: 12px; font-weight: 700;">
-                <span style="color: #666;">Escala de valores:</span>
-                <span style="background: #f0fdf4; border: 1px solid #10b981; color: #047857; padding: 2px 8px; border-radius: 6px;">🟢 Até 7 €</span>
-                <span style="background: #fefce8; border: 1px solid #eab308; color: #a16207; padding: 2px 8px; border-radius: 6px;">🟡 7 € a 10 €</span>
-                <span style="background: #fff7ed; border: 1px solid #f97316; color: #c2410c; padding: 2px 8px; border-radius: 6px;">🟠 10 € a 15 €</span>
-                <span style="background: #fef2f2; border: 1px solid #ef4444; color: #b91c1c; padding: 2px 8px; border-radius: 6px;">🔴 Acima de 15 €</span>
-            </div>
-
             <h2 style="font-size: 19px; margin: 0 0 14px 0; color: #333;">🚗 Viagens de Bolt Acumuladas (Por Pagar)</h2>
         `;
 
@@ -5270,7 +5261,7 @@ function showPaymentsView() {
                                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                                     <strong style="font-size: 15px; color: ${cInfo.textColor};">📅 ${capitalizedDay}</strong>
                                     <span style="background: ${cInfo.badgeBg}; color: ${cInfo.badgeColor}; padding: 2px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px;">
-                                        🚗 Bolt (${cInfo.tier})
+                                        🚗 Bolt
                                     </span>
                                     ${item.byWorker ? `
                                         <span style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 2px 10px; border-radius: 8px; font-size: 11px; font-weight: 800;">
@@ -5432,7 +5423,7 @@ function showPaymentsView() {
                             <div>
                                 <span>📅 ${itDateLabel}</span>
                                 <span style="display: inline-block; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px; background: ${cInfo.badgeBg}; color: ${cInfo.badgeColor}; margin-left: 6px;">
-                                    🚗 ${cInfo.tier}
+                                    🚗 Bolt
                                 </span>
                                 ${it.note ? `<span style="color: #666; font-size: 12px; margin-left: 8px;">(${it.note})</span>` : ''}
                             </div>
