@@ -4890,18 +4890,6 @@ function showPaymentsView() {
                 </div>
             </div>
 
-            <div style="background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(5,150,105,0.06)); border: 2px solid #10b981; border-radius: 16px; padding: 16px; box-shadow: 0 4px 12px rgba(16,185,129,0.1);">
-                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #059669;">
-                    💰 Total Geral a Dever
-                </div>
-                <div style="font-size: 26px; font-weight: 900; color: #059669; margin: 4px 0 2px 0;">
-                    ${formattedGrandTotal}
-                </div>
-                <div style="font-size: 12px; opacity: 0.85;">
-                    Horas + Bolt
-                </div>
-            </div>
-
             <div style="background: rgba(255,255,255,0.7); border: 1px solid rgba(0,0,0,0.1); border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
                 <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #6d28d9;">
                     📊 Média / Previsão Mensal
