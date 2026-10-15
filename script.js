@@ -4142,11 +4142,52 @@ window.togglePaymentsTab = function(tabOrHistory) {
     showPaymentsView();
 };
 
-window.addWorkEntry = function() {
+window.calcNewWorkTimes = function(changedField) {
+    const inInput = document.getElementById('al-work-in-input');
+    const outInput = document.getElementById('al-work-out-input');
+    const hoursInput = document.getElementById('al-work-hours-input');
+    if (!inInput || !outInput || !hoursInput) return;
+
+    const inVal = inInput.value;
+    const outVal = outInput.value;
+    const rawHours = hoursInput.value.replace(',', '.').trim();
+    const h = parseFloat(rawHours);
+
+    if (inVal && outVal) {
+        const [inH, inM] = inVal.split(':').map(Number);
+        const [outH, outM] = outVal.split(':').map(Number);
+        const inMinutes = (inH * 60) + inM;
+        const outMinutes = (outH * 60) + outM;
+        if (outMinutes > inMinutes) {
+            const diffMinutes = outMinutes - inMinutes;
+            const hours = Math.round((diffMinutes / 60) * 100) / 100;
+            hoursInput.value = hours.toString().replace('.', ',');
+        }
+    } else if (inVal && !outVal && !isNaN(h) && h > 0 && changedField !== 'out') {
+        const [inH, inM] = inVal.split(':').map(Number);
+        const totalMins = Math.round((inH * 60) + inM + (h * 60));
+        const outH = Math.floor(totalMins / 60) % 24;
+        const outM = totalMins % 60;
+        outInput.value = `${String(outH).padStart(2, '0')}:${String(outM).padStart(2, '0')}`;
+    } else if (!inVal && outVal && !isNaN(h) && h > 0 && changedField !== 'in') {
+        const [outH, outM] = outVal.split(':').map(Number);
+        let totalMins = Math.round((outH * 60) + outM - (h * 60));
+        if (totalMins < 0) totalMins += 24 * 60;
+        const inH = Math.floor(totalMins / 60) % 24;
+        const inM = totalMins % 60;
+        inInput.value = `${String(inH).padStart(2, '0')}:${String(inM).padStart(2, '0')}`;
+    }
+
+    window.onWorkCalcInput();
+};
+
+window.addWorkEntry = async function() {
     const dateInput = document.getElementById('al-work-date-input');
     const hoursInput = document.getElementById('al-work-hours-input');
     const moneyInput = document.getElementById('al-work-money-input');
     const noteInput = document.getElementById('al-work-note-input');
+    const inInput = document.getElementById('al-work-in-input');
+    const outInput = document.getElementById('al-work-out-input');
 
     if (!dateInput) return;
     const dk = dateInput.value;
@@ -4155,8 +4196,23 @@ window.addWorkEntry = function() {
         return;
     }
 
-    const rawHours = hoursInput ? hoursInput.value.replace(',', '.').trim() : '';
+    const inVal = inInput ? inInput.value.trim() : '';
+    const outVal = outInput ? outInput.value.trim() : '';
+
+    let rawHours = hoursInput ? hoursInput.value.replace(',', '.').trim() : '';
     const rawMoney = moneyInput ? moneyInput.value.replace(',', '.').trim() : '';
+
+    if (rawHours === '' && inVal && outVal) {
+        const [inH, inM] = inVal.split(':').map(Number);
+        const [outH, outM] = outVal.split(':').map(Number);
+        const inMinutes = (inH * 60) + inM;
+        const outMinutes = (outH * 60) + outM;
+        if (outMinutes > inMinutes) {
+            const diffMinutes = outMinutes - inMinutes;
+            const calcH = Math.round((diffMinutes / 60) * 100) / 100;
+            rawHours = calcH.toString();
+        }
+    }
 
     const hours = rawHours !== '' ? parseFloat(rawHours) : 0;
     const money = rawMoney !== '' ? parseFloat(rawMoney) : 0;
@@ -4178,7 +4234,7 @@ window.addWorkEntry = function() {
         return;
     }
 
-    const note = noteInput ? noteInput.value.trim() : "";
+    let note = noteInput ? noteInput.value.trim() : "";
     const pData = getPayrollData();
     const rate = pData.ratePerHour || 11;
     const totalAmount = Math.round(((hours * rate) + money) * 100) / 100;
@@ -4194,13 +4250,30 @@ window.addWorkEntry = function() {
         createdAt: new Date().toISOString()
     };
 
+    if (inVal) newEntry.checkInTime = inVal;
+    if (outVal) newEntry.checkOutTime = outVal;
+
+    if (inVal || outVal) {
+        if (!cloudHistory["_timeclock"]) cloudHistory["_timeclock"] = {};
+        cloudHistory["_timeclock"][dk] = {
+            status: "completed",
+            inTime: inVal || (cloudHistory["_timeclock"][dk] && cloudHistory["_timeclock"][dk].inTime) || "",
+            outTime: outVal || (cloudHistory["_timeclock"][dk] && cloudHistory["_timeclock"][dk].outTime) || "",
+            hours: newEntry.hours,
+            amount: newEntry.amount,
+            workId: newEntry.id,
+            dateKey: dk
+        };
+    }
+
     pData.pendingWork.push(newEntry);
     pData.pendingWork.sort((a, b) => b.dateKey.localeCompare(a.dateKey));
 
+    cloudHistory["_payroll"] = pData;
     try { localStorage.setItem("al_payroll_backup", JSON.stringify(pData)); } catch(e) {}
-    if (historyLoadedOk) saveToCloudHistory(cloudHistory);
-
+    try { localStorage.setItem("al_cloud_history_backup", JSON.stringify(cloudHistory)); } catch(e) {}
     showPaymentsView();
+    await saveToCloudHistory(cloudHistory);
 };
 
 window.startEditWork = function(workId) {
@@ -4213,7 +4286,7 @@ window.cancelEditWork = function() {
     showPaymentsView();
 };
 
-window.calcEditTimes = function(workId) {
+window.calcEditTimes = function(workId, changedField) {
     const inInput = document.getElementById(`al-edit-in-${workId}`);
     const outInput = document.getElementById(`al-edit-out-${workId}`);
     const hoursInput = document.getElementById(`al-edit-hours-${workId}`);
@@ -4222,6 +4295,8 @@ window.calcEditTimes = function(workId) {
 
     const inVal = inInput.value;
     const outVal = outInput.value;
+    const rawHours = hoursInput.value.replace(',', '.').trim();
+    const h = parseFloat(rawHours);
 
     if (inVal && outVal) {
         const [inH, inM] = inVal.split(':').map(Number);
@@ -4234,14 +4309,74 @@ window.calcEditTimes = function(workId) {
             const diffMinutes = outMinutes - inMinutes;
             const hours = Math.round((diffMinutes / 60) * 100) / 100;
             hoursInput.value = hours.toString().replace('.', ',');
-            if (noteInput && (!noteInput.value || /ajudante/i.test(noteInput.value))) {
-                noteInput.value = `Registado pela ajudante (${inVal} - ${outVal})`;
+            if (noteInput) {
+                if (!noteInput.value) {
+                    noteInput.value = `Registado pela ajudante (${inVal} - ${outVal})`;
+                } else if (/regist(?:ad|rad)o por (?:la |pela )?ajudante/i.test(noteInput.value)) {
+                    noteInput.value = noteInput.value.replace(/\(\s*\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}\s*\)|\(\s*[^)]*\s*\)/i, `(${inVal} - ${outVal})`);
+                }
             }
+        }
+    } else if (inVal && !outVal && !isNaN(h) && h > 0 && changedField !== 'out') {
+        const [inH, inM] = inVal.split(':').map(Number);
+        const totalMins = Math.round((inH * 60) + inM + (h * 60));
+        const outH = Math.floor(totalMins / 60) % 24;
+        const outM = totalMins % 60;
+        outInput.value = `${String(outH).padStart(2, '0')}:${String(outM).padStart(2, '0')}`;
+        if (noteInput && /regist(?:ad|rad)o por (?:la |pela )?ajudante/i.test(noteInput.value)) {
+            noteInput.value = noteInput.value.replace(/\(\s*\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}\s*\)|\(\s*[^)]*\s*\)/i, `(${inVal} - ${outInput.value})`);
+        }
+    } else if (!inVal && outVal && !isNaN(h) && h > 0 && changedField !== 'in') {
+        const [outH, outM] = outVal.split(':').map(Number);
+        let totalMins = Math.round((outH * 60) + outM - (h * 60));
+        if (totalMins < 0) totalMins += 24 * 60;
+        const inH = Math.floor(totalMins / 60) % 24;
+        const inM = totalMins % 60;
+        inInput.value = `${String(inH).padStart(2, '0')}:${String(inM).padStart(2, '0')}`;
+        if (noteInput && /regist(?:ad|rad)o por (?:la |pela )?ajudante/i.test(noteInput.value)) {
+            noteInput.value = noteInput.value.replace(/\(\s*\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}\s*\)|\(\s*[^)]*\s*\)/i, `(${inInput.value} - ${outVal})`);
         }
     }
 };
 
-window.saveWorkEntry = function(workId) {
+window.onEditHoursInput = function(workId) {
+    const inInput = document.getElementById(`al-edit-in-${workId}`);
+    const outInput = document.getElementById(`al-edit-out-${workId}`);
+    const hoursInput = document.getElementById(`al-edit-hours-${workId}`);
+    const noteInput = document.getElementById(`al-edit-note-${workId}`);
+    if (!hoursInput) return;
+
+    const rawHours = hoursInput.value.replace(',', '.').trim();
+    const h = parseFloat(rawHours);
+    if (!isNaN(h) && h > 0) {
+        if (inInput && inInput.value) {
+            const [inH, inM] = inInput.value.split(':').map(Number);
+            const totalMins = Math.round((inH * 60) + inM + (h * 60));
+            const outH = Math.floor(totalMins / 60) % 24;
+            const outM = totalMins % 60;
+            const outStr = `${String(outH).padStart(2, '0')}:${String(outM).padStart(2, '0')}`;
+            if (outInput) outInput.value = outStr;
+            if (noteInput && /regist(?:ad|rad)o por (?:la |pela )?ajudante/i.test(noteInput.value)) {
+                noteInput.value = noteInput.value.replace(/\(\s*\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}\s*\)|\(\s*[^)]*\s*\)/i, `(${inInput.value} - ${outStr})`);
+            }
+        } else if (outInput && outInput.value) {
+            const [outH, outM] = outInput.value.split(':').map(Number);
+            let totalMins = Math.round((outH * 60) + outM - (h * 60));
+            if (totalMins < 0) totalMins += 24 * 60;
+            const inH = Math.floor(totalMins / 60) % 24;
+            const inM = totalMins % 60;
+            const inStr = `${String(inH).padStart(2, '0')}:${String(inM).padStart(2, '0')}`;
+            if (inInput) inInput.value = inStr;
+            if (noteInput && /regist(?:ad|rad)o por (?:la |pela )?ajudante/i.test(noteInput.value)) {
+                noteInput.value = noteInput.value.replace(/\(\s*\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}\s*\)|\(\s*[^)]*\s*\)/i, `(${inStr} - ${outInput.value})`);
+            }
+        } else if (noteInput && /regist(?:ad|rad)o por (?:la |pela )?ajudante/i.test(noteInput.value)) {
+            noteInput.value = noteInput.value.replace(/\(\s*[^)]*\s*\)/i, `(${rawHours}h)`);
+        }
+    }
+};
+
+window.saveWorkEntry = async function(workId) {
     const dateInput = document.getElementById(`al-edit-date-${workId}`);
     const hoursInput = document.getElementById(`al-edit-hours-${workId}`);
     const moneyInput = document.getElementById(`al-edit-money-${workId}`);
@@ -4265,7 +4400,30 @@ window.saveWorkEntry = function(workId) {
         return;
     }
 
-    const note = noteInput ? noteInput.value.trim() : "";
+    let note = noteInput ? noteInput.value.trim() : "";
+    const inVal = inInput ? inInput.value.trim() : "";
+    const outVal = outInput ? outInput.value.trim() : "";
+
+    const isWorkerNote = /regist(?:ad|rad)o por (?:la |pela )?ajudante/i.test(note);
+    if (inVal && outVal) {
+        if (isWorkerNote) {
+            if (/\(\s*\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}\s*\)/.test(note)) {
+                note = note.replace(/\(\s*\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}\s*\)/, `(${inVal} - ${outVal})`);
+            } else if (/\([^)]*\)/.test(note)) {
+                note = note.replace(/\([^)]*\)/, `(${inVal} - ${outVal})`);
+            } else {
+                note = note + ` (${inVal} - ${outVal})`;
+            }
+        }
+    } else if (isWorkerNote && hasHours) {
+        const hFmt = hours.toString().replace('.', ',');
+        if (/\([^)]*\)/.test(note)) {
+            note = note.replace(/\([^)]*\)/, `(${hFmt}h)`);
+        } else {
+            note = note + ` (${hFmt}h)`;
+        }
+    }
+
     const pData = getPayrollData();
     const item = pData.pendingWork.find(w => w.id === workId);
     if (item) {
@@ -4276,8 +4434,8 @@ window.saveWorkEntry = function(workId) {
         const rate = item.rate || pData.ratePerHour || 11;
         item.amount = Math.round(((item.hours * rate) + item.extraMoney) * 100) / 100;
         item.note = note;
-        if (inInput && inInput.value) item.checkInTime = inInput.value;
-        if (outInput && outInput.value) item.checkOutTime = outInput.value;
+        if (inVal) item.checkInTime = inVal; else delete item.checkInTime;
+        if (outVal) item.checkOutTime = outVal; else delete item.checkOutTime;
         pData.pendingWork.sort((a, b) => b.dateKey.localeCompare(a.dateKey));
 
         if (!cloudHistory["_timeclock"]) cloudHistory["_timeclock"] = {};
@@ -4296,10 +4454,11 @@ window.saveWorkEntry = function(workId) {
     }
 
     editingWorkId = null;
+    cloudHistory["_payroll"] = pData;
     try { localStorage.setItem("al_payroll_backup", JSON.stringify(pData)); } catch(e) {}
     try { localStorage.setItem("al_cloud_history_backup", JSON.stringify(cloudHistory)); } catch(e) {}
-    if (historyLoadedOk) saveToCloudHistory(cloudHistory);
     showPaymentsView();
+    await saveToCloudHistory(cloudHistory);
 };
 
 window.deleteWorkEntry = function(workId) {
@@ -4963,11 +5122,23 @@ function showPaymentsView() {
                                     style="padding: 10px 14px; border: 1.5px solid #ccc; border-radius: 10px; font-size: 14px; cursor: pointer;">
                             </div>
                             <div>
+                                <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #059669;">🟢 Entrada (opcional):</label>
+                                <input type="time" id="al-work-in-input"
+                                    onchange="window.calcNewWorkTimes('in')" oninput="window.calcNewWorkTimes('in')"
+                                    style="padding: 10px 14px; border: 1.5px solid #10b981; border-radius: 10px; font-size: 14px; width: 125px; font-weight: bold; color: #047857;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #dc2626;">🔴 Saída (opcional):</label>
+                                <input type="time" id="al-work-out-input"
+                                    onchange="window.calcNewWorkTimes('out')" oninput="window.calcNewWorkTimes('out')"
+                                    style="padding: 10px 14px; border: 1.5px solid #ef4444; border-radius: 10px; font-size: 14px; width: 125px; font-weight: bold; color: #b91c1c;">
+                            </div>
+                            <div>
                                 <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #444;">⏱️ Horas (ex: 2,5 ou -2):</label>
                                 <input type="text" id="al-work-hours-input" placeholder="Ex: 2,5 ou -2"
-                                    oninput="window.onWorkCalcInput()"
+                                    oninput="window.calcNewWorkTimes('hours')"
                                     onkeydown="if(event.key==='Enter') window.addWorkEntry()"
-                                    style="padding: 10px 14px; border: 1.5px solid #ccc; border-radius: 10px; font-size: 14px; width: 140px; font-weight: bold;">
+                                    style="padding: 10px 14px; border: 1.5px solid #ccc; border-radius: 10px; font-size: 14px; width: 130px; font-weight: bold;">
                             </div>
                             <div>
                                 <label style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #444;">💶 Valor em € (ex: 20 ou -15):</label>
@@ -5059,17 +5230,20 @@ function showPaymentsView() {
                                 </div>
                                 <div>
                                     <label style="display: block; font-size: 11px; font-weight: 700; color: #059669; margin-bottom: 3px;">🟢 Entrada (HH:MM):</label>
-                                    <input type="time" id="al-edit-in-${item.id}" value="${item.checkInTime || ''}" onchange="window.calcEditTimes('${item.id}')"
+                                    <input type="time" id="al-edit-in-${item.id}" value="${item.checkInTime || ''}"
+                                        oninput="window.calcEditTimes('${item.id}', 'in')" onchange="window.calcEditTimes('${item.id}', 'in')"
                                         style="padding: 8px 10px; border: 1.5px solid #10b981; border-radius: 8px; font-size: 13px; width: 100%; box-sizing: border-box; font-weight: bold;">
                                 </div>
                                 <div>
                                     <label style="display: block; font-size: 11px; font-weight: 700; color: #dc2626; margin-bottom: 3px;">🔴 Saída (HH:MM):</label>
-                                    <input type="time" id="al-edit-out-${item.id}" value="${item.checkOutTime || ''}" onchange="window.calcEditTimes('${item.id}')"
+                                    <input type="time" id="al-edit-out-${item.id}" value="${item.checkOutTime || ''}"
+                                        oninput="window.calcEditTimes('${item.id}', 'out')" onchange="window.calcEditTimes('${item.id}', 'out')"
                                         style="padding: 8px 10px; border: 1.5px solid #ef4444; border-radius: 8px; font-size: 13px; width: 100%; box-sizing: border-box; font-weight: bold;">
                                 </div>
                                 <div>
                                     <label style="display: block; font-size: 11px; font-weight: 700; color: #7c3aed; margin-bottom: 3px;">⏱️ Horas Totais:</label>
                                     <input type="text" id="al-edit-hours-${item.id}" value="${item.hours ? item.hours.toString().replace('.', ',') : ''}" placeholder="Ex: 4,5"
+                                        oninput="window.onEditHoursInput('${item.id}')"
                                         style="padding: 8px 10px; border: 1.5px solid #8b5cf6; border-radius: 8px; font-size: 13px; width: 100%; box-sizing: border-box; font-weight: bold;">
                                 </div>
                                 <div>
@@ -5097,6 +5271,9 @@ function showPaymentsView() {
                     `;
                 } else {
                     const isWorkerEntry = item.byWorker || (item.note && /ajudante/i.test(item.note));
+                    const timeRangeStr = (item.checkInTime && item.checkOutTime)
+                        ? `(${item.checkInTime} - ${item.checkOutTime})`
+                        : (item.checkInTime ? `(Início: ${item.checkInTime})` : (item.checkOutTime ? `(Fim: ${item.checkOutTime})` : ''));
                     const cardStyle = isWorkerEntry
                         ? 'border: 2px solid #10b981; border-left: 6px solid #10b981; background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(6,182,212,0.04)); box-shadow: 0 4px 12px rgba(16,185,129,0.12);'
                         : 'border: 1px solid rgba(0,0,0,0.1); border-radius: 14px; background: rgba(255,255,255,0.85); box-shadow: 0 2px 6px rgba(0,0,0,0.02);';
@@ -5108,9 +5285,13 @@ function showPaymentsView() {
                                     <strong style="font-size: 15px; color: #111;">📅 ${capitalizedDay}</strong>
                                     ${isWorkerEntry ? `
                                         <span style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 2px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(16,185,129,0.3);">
-                                            👤 Marcado pela Ajudante ${item.checkInTime && item.checkOutTime ? `(${item.checkInTime} - ${item.checkOutTime})` : ''}
+                                            👤 Marcado pela Ajudante ${timeRangeStr}
                                         </span>
-                                    ` : ''}
+                                    ` : (timeRangeStr ? `
+                                        <span style="background: rgba(16,185,129,0.12); color: #047857; padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px;">
+                                            ⏱️ ${timeRangeStr}
+                                        </span>
+                                    ` : '')}
                                     ${item.hours ? `
                                         <span style="background: rgba(139,92,246,0.12); color: #7c3aed; font-weight: 800; padding: 2px 10px; border-radius: 12px; font-size: 13px;">
                                             ⏱️ ${item.hours.toString().replace('.', ',')} h
@@ -6084,6 +6265,15 @@ function showWorkerView() {
             </div>
         `;
     } else if (currentShift.status === "completed") {
+        const pData = getPayrollData();
+        const pItem = (pData.pendingWork || []).find(w => w.id === currentShift.workId || w.dateKey === todayStr);
+        if (pItem) {
+            if (pItem.hours !== undefined) currentShift.hours = pItem.hours;
+            if (pItem.amount !== undefined) currentShift.amount = pItem.amount;
+            if (pItem.checkInTime) currentShift.inTime = pItem.checkInTime;
+            if (pItem.checkOutTime) currentShift.outTime = pItem.checkOutTime;
+        }
+
         const hoursFmt = (currentShift.hours || 0).toString().replace('.', ',');
         const amtVal = (currentShift.amount !== undefined && !isNaN(currentShift.amount)) ? currentShift.amount : ((currentShift.hours || 0) * 11);
         const amtFmt = amtVal.toLocaleString(isEs ? 'es-ES' : 'pt-PT', { style: 'currency', currency: 'EUR' });
