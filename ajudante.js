@@ -1503,6 +1503,15 @@ function showWorkerView() {
             </div>
         `;
     } else if (currentShift.status === "completed") {
+        const pData = getPayrollData();
+        const pItem = (pData.pendingWork || []).find(w => w.id === currentShift.workId || w.dateKey === todayStr);
+        if (pItem) {
+            if (pItem.hours !== undefined) currentShift.hours = pItem.hours;
+            if (pItem.amount !== undefined) currentShift.amount = pItem.amount;
+            if (pItem.checkInTime) currentShift.inTime = pItem.checkInTime;
+            if (pItem.checkOutTime) currentShift.outTime = pItem.checkOutTime;
+        }
+
         const hoursFmt = (currentShift.hours || 0).toString().replace('.', ',');
         const amtVal = (currentShift.amount !== undefined && !isNaN(currentShift.amount)) ? currentShift.amount : ((currentShift.hours || 0) * 11);
         const amtFmt = amtVal.toLocaleString(isEs ? 'es-ES' : 'pt-PT', { style: 'currency', currency: 'EUR' });
@@ -1777,12 +1786,15 @@ function showWorkerView() {
                 const formattedItemAmount = itemAmount.toLocaleString(isEs ? 'es-ES' : 'pt-PT', { style: 'currency', currency: 'EUR' });
 
                 const isByWorker = item.byWorker || (item.note && /ajudante/i.test(item.note));
+                const timeRangeStr = (item.checkInTime && item.checkOutTime)
+                    ? `(${item.checkInTime} - ${item.checkOutTime})`
+                    : (item.checkInTime ? `(${isEs ? 'Inicio' : 'Início'}: ${item.checkInTime})` : (item.checkOutTime ? `(${isEs ? 'Fin' : 'Fim'}: ${item.checkOutTime})` : ''));
                 const cardBg = isByWorker ? '#f0fdf4' : 'rgba(255,255,255,0.7)';
                 const cardBorder = isByWorker ? '2px solid #10b981' : '1px solid rgba(0,0,0,0.08)';
                 const amountColor = isByWorker ? '#047857' : (itemAmount >= 0 ? '#111' : '#2563eb');
                 const badgeHtml = isByWorker
-                    ? `<span style="display: inline-block; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 6px; background: #10b981; color: white; margin-left: 6px; box-shadow: 0 2px 6px rgba(16,185,129,0.25);">⏱️ ${isEs ? 'Marcado por ti' : 'Marcado por ti'}</span>`
-                    : '';
+                    ? `<span style="display: inline-block; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 6px; background: #10b981; color: white; margin-left: 6px; box-shadow: 0 2px 6px rgba(16,185,129,0.25);">⏱️ ${isEs ? 'Marcado por ti' : 'Marcado por ti'} ${timeRangeStr}</span>`
+                    : (timeRangeStr ? `<span style="display: inline-block; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 6px; background: rgba(16,185,129,0.15); color: #047857; margin-left: 6px;">⏱️ ${timeRangeStr}</span>` : '');
 
                 html += `
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: ${cardBg}; border: ${cardBorder}; border-radius: 12px; flex-wrap: wrap; gap: 8px; ${isByWorker ? 'box-shadow: 0 3px 10px rgba(16,185,129,0.12);' : ''}">
@@ -2102,3 +2114,10 @@ async function loadCalendars() {
 }
 
 loadCalendars();
+
+document.addEventListener("visibilitychange", async () => {
+    if (document.visibilityState === "visible") {
+        await fetchCloudHistory();
+        showWorkerView();
+    }
+});
