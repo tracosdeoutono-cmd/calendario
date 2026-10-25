@@ -6076,11 +6076,10 @@ window.toggleRoomHouseFilter = function(houseKey) {
         calendarSelectedHouse = houseKey;
     }
     renderCurrentView();
-    window.scrollTimelineToToday();
 };
 
 window.calendarGoToday = function() {
-    window.scrollTimelineToToday();
+    window.scrollTimelineToToday(false);
 };
 
 window.openTimelineResModal = function(encodedData) {
@@ -6104,15 +6103,18 @@ window.closeTimelineResModal = function() {
     if (modal) modal.style.display = 'none';
 };
 
-window.scrollTimelineToToday = function() {
-    setTimeout(() => {
-        const container = document.getElementById('timeline-scroll-container');
-        const todayCell = document.getElementById('timeline-today-cell');
-        if (container && todayCell) {
-            const scrollX = todayCell.offsetLeft - (container.clientWidth / 3);
-            container.scrollTo({ left: Math.max(0, scrollX), behavior: 'smooth' });
-        }
-    }, 60);
+window.scrollTimelineToToday = function(isSmooth = false) {
+    const container = document.getElementById('timeline-scroll-container');
+    const todayCell = document.getElementById('timeline-today-cell');
+    if (!container) return;
+    const targetX = todayCell
+        ? Math.max(0, todayCell.offsetLeft - 100)
+        : Math.max(0, (CALENDAR_DAYS_PAST * CALENDAR_COL_WIDTH) - 100);
+    if (isSmooth) {
+        container.scrollTo({ left: targetX, behavior: 'smooth' });
+    } else {
+        container.scrollLeft = targetX;
+    }
 };
 
 function getHouseTheme(houseKey) {
@@ -6194,57 +6196,38 @@ function showTimelineCalendarView() {
     });
 
     const allReservations = getAllReservationsWithHistory();
+    const CALENDAR_ROOM_COL_WIDTH = 86;
 
     let html = renderNavigation();
 
     html += `
-        <div style="margin-bottom: 24px;">
-            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px;">
-                <div>
-                    <h1 style="margin: 0 0 4px 0; font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 8px;">
-                        <span>📅</span> Calendário Geral de Estadias
-                    </h1>
-                    <div style="font-size: 13.5px; color: #64748b; font-weight: 600;">
-                        Linha do tempo de 1 ano para trás e 1 ano para a frente · Clique em qualquer quarto para filtrar a casa
-                    </div>
-                </div>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-                    <button onclick="window.calendarGoToday()"
-                        style="padding: 9px 18px; font-size: 13.5px; font-weight: 800; cursor: pointer; border-radius: 9px; border: 1px solid #0284c7; background: #0284c7; color: white; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3); transition: transform 0.15s ease;"
-                        onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='none'">
-                        📍 Hoje
-                    </button>
-                </div>
-            </div>
-
-            <!-- Faixa com Período e Filtro Ativo -->
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
-                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 14px; font-size: 13px; font-weight: 700; color: #475569; display: inline-flex; align-items: center; gap: 8px;">
-                    <span>📆</span>
-                    <span>${rangeTitle}</span>
-                </div>
+        <div style="margin-bottom: 20px; margin-top: 4px;">
+            <!-- Controlo Superior: Botão Hoje e Filtro de Casa Ativo -->
+            <div style="display: flex; align-items: center; justify-content: flex-start; gap: 8px; margin-bottom: 8px;">
+                <button onclick="window.calendarGoToday()"
+                    style="padding: 6px 16px; font-size: 13px; font-weight: 800; cursor: pointer; border-radius: 8px; border: 1px solid #0284c7; background: #0284c7; color: white; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25); transition: transform 0.15s ease;"
+                    onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='none'">
+                    📍 Hoje
+                </button>
                 ${calendarSelectedHouse !== 'all' ? `
                     <button onclick="window.toggleRoomHouseFilter('all')"
-                        style="padding: 6px 14px; font-size: 12.5px; font-weight: 700; border-radius: 20px; border: 1.5px solid #0284c7; background: #e0f2fe; color: #0369a1; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-                        <span>Filtro ativo: <strong>${displayRooms[0]?.label || ''}</strong></span>
-                        <span style="font-size: 14px;">✕</span>
+                        title="Remover filtro e mostrar todas as casas"
+                        style="padding: 5px 12px; font-size: 12px; font-weight: 700; border-radius: 20px; border: 1.5px solid #0284c7; background: #e0f2fe; color: #0369a1; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                        <span>${displayRooms[0]?.label || ''}</span>
+                        <span style="font-size: 13px; font-weight: 800;">✕</span>
                         <span style="font-weight: 500; font-size: 11px;">(Mostrar todos)</span>
                     </button>
-                ` : `
-                    <div style="font-size: 12px; color: #64748b; font-style: italic;">
-                        💡 Clica num quarto na 1ª coluna para filtrar apenas a respetiva casa
-                    </div>
-                `}
+                ` : ''}
             </div>
 
             <!-- CONTAINER DA TIMELINE COM SCROLL HORIZONTAL (2 ANOS: 365d passados + 365d futuros) -->
             <div id="timeline-scroll-container" style="overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #cbd5e1; border-radius: 12px; background: #ffffff; box-shadow: 0 4px 16px rgba(0,0,0,0.06); position: relative; max-width: 100%;">
-                <table style="border-collapse: collapse; table-layout: fixed; min-width: ${140 + CALENDAR_TOTAL_DAYS * CALENDAR_COL_WIDTH}px; width: 100%;">
+                <table style="border-collapse: collapse; table-layout: fixed; min-width: ${CALENDAR_ROOM_COL_WIDTH + CALENDAR_TOTAL_DAYS * CALENDAR_COL_WIDTH}px; width: 100%;">
                     <thead>
                         <!-- Linha 1: Mês -->
                         <tr style="background: #f1f5f9; border-bottom: 1px solid #cbd5e1;">
-                            <th style="width: 140px; min-width: 140px; position: sticky; left: 0; z-index: 30; background: #e2e8f0; border-right: 2px solid #cbd5e1; padding: 6px 10px; font-size: 12px; font-weight: 800; color: #334155; text-align: left;">
-                                Alojamentos
+                            <th style="width: ${CALENDAR_ROOM_COL_WIDTH}px; min-width: ${CALENDAR_ROOM_COL_WIDTH}px; max-width: ${CALENDAR_ROOM_COL_WIDTH}px; position: sticky; left: 0; z-index: 30; background: #e2e8f0; border-right: 2px solid #cbd5e1; padding: 6px 4px; font-size: 11px; font-weight: 800; color: #334155; text-align: center;">
+                                Quartos
                             </th>
                             ${monthsGrouped.map(m => `
                                 <th colspan="${m.count}" style="border-right: 1px solid #cbd5e1; padding: 6px 8px; font-size: 12px; font-weight: 800; text-transform: capitalize; color: #1e293b; text-align: center; background: #f1f5f9;">
@@ -6255,8 +6238,8 @@ function showTimelineCalendarView() {
 
                         <!-- Linha 2: Dia da Semana -->
                         <tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
-                            <th style="position: sticky; left: 0; z-index: 30; background: #f1f5f9; border-right: 2px solid #cbd5e1; padding: 4px 10px; font-size: 11px; color: #64748b; text-align: left;">
-                                ${displayRooms.length} quartos
+                            <th style="width: ${CALENDAR_ROOM_COL_WIDTH}px; min-width: ${CALENDAR_ROOM_COL_WIDTH}px; max-width: ${CALENDAR_ROOM_COL_WIDTH}px; position: sticky; left: 0; z-index: 30; background: #f1f5f9; border-right: 2px solid #cbd5e1; padding: 4px 2px; font-size: 10px; color: #64748b; text-align: center;">
+                                ${displayRooms.length} q.
                             </th>
                             ${days.map(d => {
                                 const isT = sameDay(d, today);
@@ -6272,7 +6255,7 @@ function showTimelineCalendarView() {
 
                         <!-- Linha 3: Número do Dia -->
                         <tr style="background: #ffffff; border-bottom: 2px solid #cbd5e1;">
-                            <th style="position: sticky; left: 0; z-index: 30; background: #ffffff; border-right: 2px solid #cbd5e1; padding: 6px 10px; font-size: 11px; color: #64748b; text-align: left;">
+                            <th style="width: ${CALENDAR_ROOM_COL_WIDTH}px; min-width: ${CALENDAR_ROOM_COL_WIDTH}px; max-width: ${CALENDAR_ROOM_COL_WIDTH}px; position: sticky; left: 0; z-index: 30; background: #ffffff; border-right: 2px solid #cbd5e1; padding: 6px 0; text-align: center;">
                                 
                             </th>
                             ${days.map(d => {
@@ -6296,16 +6279,13 @@ function showTimelineCalendarView() {
                                 <tr style="height: 54px; border-bottom: 1px solid #e2e8f0; position: relative;">
                                     <!-- Coluna Fixa do Quarto (Clicável para Filtrar) -->
                                     <td onclick="window.toggleRoomHouseFilter('${rm.house}')"
-                                        title="Clique para filtrar apenas quartos de ${rm.label} (ou mostrar todos)"
-                                        style="position: sticky; left: 0; z-index: 20; background: ${calendarSelectedHouse === rm.house ? '#f0fdf4' : '#ffffff'}; border-right: 2px solid #cbd5e1; border-left: 5px solid ${rm.color}; padding: 0 10px; font-size: 13px; font-weight: 800; color: #1e293b; white-space: nowrap; cursor: pointer; user-select: none; transition: background 0.15s ease;"
+                                        title="Filtrar quartos de ${rm.label} (ou mostrar todos)"
+                                        style="width: ${CALENDAR_ROOM_COL_WIDTH}px; min-width: ${CALENDAR_ROOM_COL_WIDTH}px; max-width: ${CALENDAR_ROOM_COL_WIDTH}px; position: sticky; left: 0; z-index: 20; background: ${calendarSelectedHouse === rm.house ? '#f0fdf4' : '#ffffff'}; border-right: 2px solid #cbd5e1; border-left: 4px solid ${rm.color}; padding: 0 6px; font-size: 11.5px; font-weight: 750; color: #1e293b; white-space: nowrap; cursor: pointer; user-select: none; box-sizing: border-box; transition: background 0.15s ease;"
                                         onmouseover="this.style.background='#f1f5f9'"
                                         onmouseout="this.style.background='${calendarSelectedHouse === rm.house ? '#f0fdf4' : '#ffffff'}'">
-                                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
-                                            <div style="display: flex; align-items: center; gap: 6px;">
-                                                <span style="width: 8px; height: 8px; border-radius: 50%; background: ${rm.color}; flex-shrink: 0;"></span>
-                                                <span>${rm.name}</span>
-                                            </div>
-                                            ${calendarSelectedHouse === rm.house ? `<span style="font-size: 10px; background: ${rm.color}; color: white; border-radius: 4px; padding: 1px 4px; font-weight: 700;">Ativo</span>` : ''}
+                                        <div style="display: flex; align-items: center; justify-content: flex-start; gap: 4px; overflow: hidden; white-space: nowrap;">
+                                            <span style="width: 6px; height: 6px; border-radius: 50%; background: ${rm.color}; flex-shrink: 0;"></span>
+                                            <span style="overflow: hidden; text-overflow: ellipsis;">${rm.name}</span>
                                         </div>
                                     </td>
 
@@ -6422,7 +6402,13 @@ function showTimelineCalendarView() {
     `;
 
     result.innerHTML = html;
-    window.scrollTimelineToToday();
+    const scrollContainer = document.getElementById('timeline-scroll-container');
+    if (scrollContainer) {
+        scrollContainer.scrollLeft = Math.max(0, (CALENDAR_DAYS_PAST * CALENDAR_COL_WIDTH) - 100);
+    }
+    requestAnimationFrame(() => {
+        window.scrollTimelineToToday(false);
+    });
 }
 
 function showWorkerView() {
