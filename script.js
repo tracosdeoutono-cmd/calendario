@@ -685,10 +685,11 @@
 
         .top-navbar-row {
             display: flex !important;
-            align-items: center !important;
+            align-items: flex-start !important;
             justify-content: space-between !important;
             gap: 16px !important;
             width: 100% !important;
+            margin-top: 10px !important;
             margin-bottom: 20px !important;
             position: relative !important;
             box-sizing: border-box !important;
@@ -858,23 +859,27 @@
             display: flex !important;
             flex-direction: column !important;
             align-items: center !important;
-            justify-content: center !important;
+            justify-content: flex-start !important;
             z-index: 100 !important;
             margin-left: auto !important;
+            margin-top: 0 !important;
+            padding-top: 0 !important;
             flex-shrink: 0 !important;
             width: 46px !important;
-            height: 46px !important;
+            height: auto !important;
         }
         .menu-trigger-btn {
-            background: none;
-            border: none;
-            padding: 0;
-            cursor: pointer;
-            outline: none;
-            transition: transform 0.2s ease, opacity 0.2s ease;
-            display: block;
-            height: 46px;
-            width: 46px;
+            background: none !important;
+            border: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            cursor: pointer !important;
+            outline: none !important;
+            transition: transform 0.2s ease, opacity 0.2s ease !important;
+            display: block !important;
+            height: 46px !important;
+            width: 46px !important;
+            box-sizing: border-box !important;
         }
         .menu-trigger-btn:hover {
             transform: scale(1.05);
@@ -884,29 +889,35 @@
             transform: scale(0.96);
         }
         .menu-trigger-img {
-            height: 46px;
-            width: 46px;
-            object-fit: cover;
-            border-radius: 11px;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.18);
-            display: block;
+            height: 46px !important;
+            width: 46px !important;
+            object-fit: cover !important;
+            border-radius: 11px !important;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.18) !important;
+            display: block !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
         .calendar-quick-btn {
-            background: #ffffff;
-            border: 1px solid rgba(0,0,0,0.12);
-            border-radius: 11px;
-            width: 44px;
-            height: 44px;
-            font-size: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            outline: none;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.15);
-            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-            margin-top: 8px;
-            flex-shrink: 0;
+            background: #ffffff !important;
+            border: 1px solid rgba(0,0,0,0.12) !important;
+            border-radius: 11px !important;
+            width: 44px !important;
+            height: 44px !important;
+            font-size: 22px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            cursor: pointer !important;
+            outline: none !important;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.15) !important;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease !important;
+            margin-top: 8px !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            margin-bottom: 0 !important;
+            padding: 0 !important;
+            flex-shrink: 0 !important;
         }
         .calendar-quick-btn:hover {
             transform: scale(1.08);
@@ -2063,6 +2074,7 @@ async function loadCalendars() {
         });
         const [_, results] = await Promise.all([historyPromise, Promise.all(calendarPromises)]);
         globalReservations = results.flat();
+        syncPersistentStayHistory(globalReservations);
         syncCleaningPlan();
         renderCurrentView();
     } catch (err) {
@@ -2107,6 +2119,86 @@ function parseICS(text, roomName) {
         }
     }
     return r;
+}
+
+function syncPersistentStayHistory(liveReservations) {
+    if (!cloudHistory["_stay_history"] || typeof cloudHistory["_stay_history"] !== 'object') {
+        cloudHistory["_stay_history"] = {};
+    }
+    const store = cloudHistory["_stay_history"];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayKey = formatDateKey(today);
+
+    const activeKeys = new Set();
+
+    if (Array.isArray(liveReservations)) {
+        liveReservations.forEach(r => {
+            if (!r || !r.room || !r.checkIn || !r.checkOut) return;
+            const inKey = formatDateKey(r.checkIn);
+            const outKey = formatDateKey(r.checkOut);
+            const stayKey = `${r.room}_${inKey}_${outKey}`;
+            activeKeys.add(stayKey);
+
+            store[stayKey] = {
+                room: r.room,
+                checkIn: inKey,
+                checkOut: outKey,
+                code: r.code || '',
+                phone: r.phone || '',
+                summary: r.summary || ''
+            };
+        });
+    }
+
+    // Se uma reserva futura já não vier no feed do Airbnb, foi cancelada!
+    Object.keys(store).forEach(k => {
+        const item = store[k];
+        if (item && item.checkIn && item.checkIn >= todayKey) {
+            if (!activeKeys.has(k)) {
+                delete store[k];
+            }
+        }
+    });
+
+    try { localStorage.setItem("al_cloud_history_backup", JSON.stringify(cloudHistory)); } catch(e) {}
+    if (historyLoadedOk) {
+        saveToCloudHistory(cloudHistory);
+    }
+}
+
+function getAllReservationsWithHistory() {
+    const map = new Map();
+    if (cloudHistory["_stay_history"] && typeof cloudHistory["_stay_history"] === 'object') {
+        Object.values(cloudHistory["_stay_history"]).forEach(item => {
+            if (item && item.room && item.checkIn && item.checkOut) {
+                const cIn = parseDateKey(item.checkIn);
+                const cOut = parseDateKey(item.checkOut);
+                if (cOut > cIn) {
+                    const key = `${item.room}_${item.checkIn}_${item.checkOut}`;
+                    map.set(key, {
+                        room: item.room,
+                        checkIn: cIn,
+                        checkOut: cOut,
+                        code: item.code || '',
+                        phone: item.phone || '',
+                        summary: item.summary || ''
+                    });
+                }
+            }
+        });
+    }
+    if (Array.isArray(globalReservations)) {
+        globalReservations.forEach(r => {
+            if (r && r.room && r.checkIn && r.checkOut) {
+                const inKey = formatDateKey(r.checkIn);
+                const outKey = formatDateKey(r.checkOut);
+                const key = `${r.room}_${inKey}_${outKey}`;
+                map.set(key, r);
+            }
+        });
+    }
+    return Array.from(map.values());
 }
 
 function sameDay(a, b) { return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
@@ -5968,27 +6060,26 @@ window.resetWorkerShift = async function() {
 };
 
 // ══════════════════════════════════════════════════
-// CALENDÁRIO GERAL DE ESTADIAS (TIMELINE)
+// CALENDÁRIO GERAL DE ESTADIAS (TIMELINE 1 ANO TRÁS / 1 ANO FRENTE)
 // ══════════════════════════════════════════════════
 
 let calendarSelectedHouse = "all";
-let calendarAnchorOffset = -3; // Dias de margem para o passado a partir de hoje
-const CALENDAR_TOTAL_DAYS = 45;
-const CALENDAR_COL_WIDTH = 54;
+const CALENDAR_DAYS_PAST = 365;
+const CALENDAR_DAYS_FUTURE = 365;
+const CALENDAR_TOTAL_DAYS = CALENDAR_DAYS_PAST + CALENDAR_DAYS_FUTURE + 1; // 731 dias
+const CALENDAR_COL_WIDTH = 50;
 
-window.selectCalendarHouse = function(house) {
-    calendarSelectedHouse = house;
+window.toggleRoomHouseFilter = function(houseKey) {
+    if (calendarSelectedHouse === houseKey) {
+        calendarSelectedHouse = "all";
+    } else {
+        calendarSelectedHouse = houseKey;
+    }
     renderCurrentView();
-};
-
-window.calendarShift = function(delta) {
-    calendarAnchorOffset += delta;
-    renderCurrentView();
+    window.scrollTimelineToToday();
 };
 
 window.calendarGoToday = function() {
-    calendarAnchorOffset = -3;
-    renderCurrentView();
     window.scrollTimelineToToday();
 };
 
@@ -6018,30 +6109,60 @@ window.scrollTimelineToToday = function() {
         const container = document.getElementById('timeline-scroll-container');
         const todayCell = document.getElementById('timeline-today-cell');
         if (container && todayCell) {
-            const scrollX = todayCell.offsetLeft - 220;
+            const scrollX = todayCell.offsetLeft - (container.clientWidth / 3);
             container.scrollTo({ left: Math.max(0, scrollX), behavior: 'smooth' });
         }
     }, 60);
 };
 
+function getHouseTheme(houseKey) {
+    if (houseKey === "achada") {
+        return {
+            bg: "linear-gradient(135deg, #0284c7 0%, #0369a1 100%)",
+            shadow: "0 2px 6px rgba(2, 132, 199, 0.35)",
+            border: "rgba(255,255,255,0.35)"
+        };
+    }
+    if (houseKey === "impasse") {
+        return {
+            bg: "linear-gradient(135deg, #10b981 0%, #047857 100%)",
+            shadow: "0 2px 6px rgba(16, 185, 129, 0.35)",
+            border: "rgba(255,255,255,0.35)"
+        };
+    }
+    if (houseKey === "vizinho") {
+        return {
+            bg: "linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)",
+            shadow: "0 2px 6px rgba(139, 92, 246, 0.35)",
+            border: "rgba(255,255,255,0.35)"
+        };
+    }
+    return {
+        bg: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+        shadow: "0 2px 6px rgba(245, 158, 11, 0.35)",
+        border: "rgba(255,255,255,0.35)"
+    };
+}
+
 function showTimelineCalendarView() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const rangeStart = addDays(today, calendarAnchorOffset);
-    const rangeEnd = addDays(rangeStart, CALENDAR_TOTAL_DAYS);
+    const rangeStart = addDays(today, -CALENDAR_DAYS_PAST);
+    const rangeEnd = addDays(today, CALENDAR_DAYS_FUTURE + 1);
+    const todayIndex = CALENDAR_DAYS_PAST;
 
-    const rangeStartStr = rangeStart.toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' });
+    const rangeStartStr = rangeStart.toLocaleDateString('pt-PT', { day: 'numeric', month: 'short', year: 'numeric' });
     const rangeEndStr = addDays(rangeEnd, -1).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short', year: 'numeric' });
     const rangeTitle = `${rangeStartStr} – ${rangeEndStr}`;
 
     const ALL_ROOMS = [
-        { house: "achada", label: "Achada", color: "#3b82f6", name: "Achada 1" },
-        { house: "achada", label: "Achada", color: "#3b82f6", name: "Achada 2" },
-        { house: "achada", label: "Achada", color: "#3b82f6", name: "Achada 3" },
-        { house: "achada", label: "Achada", color: "#3b82f6", name: "Achada 4" },
-        { house: "achada", label: "Achada", color: "#3b82f6", name: "Achada 5" },
-        { house: "achada", label: "Achada", color: "#3b82f6", name: "Achada 6" },
+        { house: "achada", label: "Achada", color: "#0284c7", name: "Achada 1" },
+        { house: "achada", label: "Achada", color: "#0284c7", name: "Achada 2" },
+        { house: "achada", label: "Achada", color: "#0284c7", name: "Achada 3" },
+        { house: "achada", label: "Achada", color: "#0284c7", name: "Achada 4" },
+        { house: "achada", label: "Achada", color: "#0284c7", name: "Achada 5" },
+        { house: "achada", label: "Achada", color: "#0284c7", name: "Achada 6" },
         { house: "impasse", label: "Impasse", color: "#10b981", name: "Impasse 2" },
         { house: "impasse", label: "Impasse", color: "#10b981", name: "Impasse 3" },
         { house: "impasse", label: "Impasse", color: "#10b981", name: "Impasse 4" },
@@ -6072,66 +6193,51 @@ function showTimelineCalendarView() {
         }
     });
 
+    const allReservations = getAllReservationsWithHistory();
+
     let html = renderNavigation();
 
     html += `
         <div style="margin-bottom: 24px;">
-            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px;">
                 <div>
                     <h1 style="margin: 0 0 4px 0; font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 8px;">
                         <span>📅</span> Calendário Geral de Estadias
                     </h1>
-                    <div style="font-size: 14px; color: #64748b; font-weight: 600;">
-                        Linha do tempo das estadias por quarto com divisões entre reservas
+                    <div style="font-size: 13.5px; color: #64748b; font-weight: 600;">
+                        Linha do tempo de 1 ano para trás e 1 ano para a frente · Clique em qualquer quarto para filtrar a casa
                     </div>
                 </div>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                     <button onclick="window.calendarGoToday()"
-                        style="padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; border-radius: 8px; border: 1px solid #0284c7; background: #0284c7; color: white; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);">
+                        style="padding: 9px 18px; font-size: 13.5px; font-weight: 800; cursor: pointer; border-radius: 9px; border: 1px solid #0284c7; background: #0284c7; color: white; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3); transition: transform 0.15s ease;"
+                        onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='none'">
                         📍 Hoje
                     </button>
-                    <div style="display: inline-flex; border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                        <button onclick="window.calendarShift(-14)"
-                            style="padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; background: #ffffff; color: #334155;"
-                            title="Recuar 14 dias">
-                            ◀ 14d
-                        </button>
-                        <button onclick="window.calendarShift(14)"
-                            style="padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; border-left: 1px solid #cbd5e1; background: #ffffff; color: #334155;"
-                            title="Avançar 14 dias">
-                            14d ▶
-                        </button>
-                    </div>
                 </div>
             </div>
 
-            <!-- Filtros de Casas -->
-            <div style="display: flex; gap: 6px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px;">
-                <button onclick="window.selectCalendarHouse('all')"
-                    style="padding: 8px 16px; font-size: 13px; font-weight: 700; cursor: pointer; border-radius: 20px; border: 1.5px solid ${calendarSelectedHouse==='all'?'#0f172a':'#cbd5e1'}; background: ${calendarSelectedHouse==='all'?'#0f172a':'#ffffff'}; color: ${calendarSelectedHouse==='all'?'#ffffff':'#475569'}; white-space: nowrap; transition: all 0.2s;">
-                    Todas as Casas (12)
-                </button>
-                <button onclick="window.selectCalendarHouse('achada')"
-                    style="padding: 8px 16px; font-size: 13px; font-weight: 700; cursor: pointer; border-radius: 20px; border: 1.5px solid ${calendarSelectedHouse==='achada'?'#3b82f6':'#cbd5e1'}; background: ${calendarSelectedHouse==='achada'?'#3b82f6':'#ffffff'}; color: ${calendarSelectedHouse==='achada'?'#ffffff':'#475569'}; white-space: nowrap; transition: all 0.2s;">
-                    🏡 Achada (6)
-                </button>
-                <button onclick="window.selectCalendarHouse('impasse')"
-                    style="padding: 8px 16px; font-size: 13px; font-weight: 700; cursor: pointer; border-radius: 20px; border: 1.5px solid ${calendarSelectedHouse==='impasse'?'#10b981':'#cbd5e1'}; background: ${calendarSelectedHouse==='impasse'?'#10b981':'#ffffff'}; color: ${calendarSelectedHouse==='impasse'?'#ffffff':'#475569'}; white-space: nowrap; transition: all 0.2s;">
-                    🏡 Impasse (3)
-                </button>
-                <button onclick="window.selectCalendarHouse('vizinho')"
-                    style="padding: 8px 16px; font-size: 13px; font-weight: 700; cursor: pointer; border-radius: 20px; border: 1.5px solid ${calendarSelectedHouse==='vizinho'?'#8b5cf6':'#cbd5e1'}; background: ${calendarSelectedHouse==='vizinho'?'#8b5cf6':'#ffffff'}; color: ${calendarSelectedHouse==='vizinho'?'#ffffff':'#475569'}; white-space: nowrap; transition: all 0.2s;">
-                    🏡 Vizinho (3)
-                </button>
+            <!-- Faixa com Período e Filtro Ativo -->
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 14px; font-size: 13px; font-weight: 700; color: #475569; display: inline-flex; align-items: center; gap: 8px;">
+                    <span>📆</span>
+                    <span>${rangeTitle}</span>
+                </div>
+                ${calendarSelectedHouse !== 'all' ? `
+                    <button onclick="window.toggleRoomHouseFilter('all')"
+                        style="padding: 6px 14px; font-size: 12.5px; font-weight: 700; border-radius: 20px; border: 1.5px solid #0284c7; background: #e0f2fe; color: #0369a1; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                        <span>Filtro ativo: <strong>${displayRooms[0]?.label || ''}</strong></span>
+                        <span style="font-size: 14px;">✕</span>
+                        <span style="font-weight: 500; font-size: 11px;">(Mostrar todos)</span>
+                    </button>
+                ` : `
+                    <div style="font-size: 12px; color: #64748b; font-style: italic;">
+                        💡 Clica num quarto na 1ª coluna para filtrar apenas a respetiva casa
+                    </div>
+                `}
             </div>
 
-            <!-- Faixa com Período Visível -->
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 14px; font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 12px; display: inline-flex; align-items: center; gap: 8px;">
-                <span>📆</span>
-                <span>${rangeTitle}</span>
-            </div>
-
-            <!-- CONTAINER DA TIMELINE COM SCROLL HORIZONTAL -->
+            <!-- CONTAINER DA TIMELINE COM SCROLL HORIZONTAL (2 ANOS: 365d passados + 365d futuros) -->
             <div id="timeline-scroll-container" style="overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #cbd5e1; border-radius: 12px; background: #ffffff; box-shadow: 0 4px 16px rgba(0,0,0,0.06); position: relative; max-width: 100%;">
                 <table style="border-collapse: collapse; table-layout: fixed; min-width: ${140 + CALENDAR_TOTAL_DAYS * CALENDAR_COL_WIDTH}px; width: 100%;">
                     <thead>
@@ -6141,7 +6247,7 @@ function showTimelineCalendarView() {
                                 Alojamentos
                             </th>
                             ${monthsGrouped.map(m => `
-                                <th colspan="${m.count}" style="border-right: 1px solid #cbd5e1; padding: 6px 10px; font-size: 12px; font-weight: 800; text-transform: capitalize; color: #1e293b; text-align: center; background: #f1f5f9;">
+                                <th colspan="${m.count}" style="border-right: 1px solid #cbd5e1; padding: 6px 8px; font-size: 12px; font-weight: 800; text-transform: capitalize; color: #1e293b; text-align: center; background: #f1f5f9;">
                                     ${m.label}
                                 </th>
                             `).join('')}
@@ -6157,7 +6263,7 @@ function showTimelineCalendarView() {
                                 const isW = d.getDay() === 0 || d.getDay() === 6;
                                 const wStr = d.toLocaleDateString('pt-PT', { weekday: 'narrow' }).toUpperCase();
                                 return `
-                                    <th style="width: ${CALENDAR_COL_WIDTH}px; min-width: ${CALENDAR_COL_WIDTH}px; max-width: ${CALENDAR_COL_WIDTH}px; text-align: center; font-size: 11px; font-weight: 700; padding: 4px 0; border-right: 1px solid #e2e8f0; ${isT ? 'background: rgba(2, 132, 199, 0.12); color: #0284c7;' : (isW ? 'background: #f1f5f9; color: #94a3b8;' : 'color: #64748b;')}">
+                                    <th style="width: ${CALENDAR_COL_WIDTH}px; min-width: ${CALENDAR_COL_WIDTH}px; max-width: ${CALENDAR_COL_WIDTH}px; text-align: center; font-size: 10.5px; font-weight: 700; padding: 4px 0; border-right: 1px solid #e2e8f0; ${isT ? 'background: rgba(2, 132, 199, 0.15); color: #0284c7;' : (isW ? 'background: #f1f5f9; color: #94a3b8;' : 'color: #64748b;')}">
                                         ${wStr}
                                     </th>
                                 `;
@@ -6174,8 +6280,8 @@ function showTimelineCalendarView() {
                                 const isW = d.getDay() === 0 || d.getDay() === 6;
                                 const dNum = String(d.getDate()).padStart(2, '0');
                                 return `
-                                    <th ${isT ? 'id="timeline-today-cell"' : ''} style="width: ${CALENDAR_COL_WIDTH}px; min-width: ${CALENDAR_COL_WIDTH}px; max-width: ${CALENDAR_COL_WIDTH}px; text-align: center; font-size: 13px; font-weight: 800; padding: 6px 0; border-right: 1px solid #e2e8f0; ${isT ? 'background: rgba(2, 132, 199, 0.15); color: #0284c7;' : (isW ? 'background: #f8fafc; color: #475569;' : 'color: #1e293b;')}">
-                                        ${isT ? `<span style="background: #0284c7; color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px; display: inline-block;">${dNum}</span>` : dNum}
+                                    <th ${isT ? 'id="timeline-today-cell"' : ''} style="width: ${CALENDAR_COL_WIDTH}px; min-width: ${CALENDAR_COL_WIDTH}px; max-width: ${CALENDAR_COL_WIDTH}px; text-align: center; font-size: 12.5px; font-weight: 800; padding: 6px 0; border-right: 1px solid #e2e8f0; ${isT ? 'background: rgba(2, 132, 199, 0.18); color: #0284c7;' : (isW ? 'background: #f8fafc; color: #475569;' : 'color: #1e293b;')}">
+                                        ${isT ? `<span style="background: #0284c7; color: white; border-radius: 50%; padding: 2px 6px; font-size: 11.5px; display: inline-block;">${dNum}</span>` : dNum}
                                     </th>
                                 `;
                             }).join('')}
@@ -6183,30 +6289,30 @@ function showTimelineCalendarView() {
                     </thead>
                     <tbody>
                         ${displayRooms.map(rm => {
-                            const roomRes = globalReservations.filter(r => r.room === rm.name && r.checkOut > rangeStart && r.checkIn < rangeEnd);
+                            const roomRes = allReservations.filter(r => r.room === rm.name && r.checkOut > rangeStart && r.checkIn < rangeEnd);
+                            const houseStyle = getHouseTheme(rm.house);
+
                             return `
                                 <tr style="height: 54px; border-bottom: 1px solid #e2e8f0; position: relative;">
-                                    <!-- Coluna Fixa do Quarto -->
-                                    <td style="position: sticky; left: 0; z-index: 20; background: #ffffff; border-right: 2px solid #cbd5e1; padding: 0 10px; font-size: 13px; font-weight: 800; color: #1e293b; white-space: nowrap; box-shadow: 2px 0 6px rgba(0,0,0,0.03);">
-                                        <div style="display: flex; align-items: center; gap: 6px;">
-                                            <span style="width: 8px; height: 8px; border-radius: 50%; background: ${rm.color}; flex-shrink: 0;"></span>
-                                            <span>${rm.name}</span>
+                                    <!-- Coluna Fixa do Quarto (Clicável para Filtrar) -->
+                                    <td onclick="window.toggleRoomHouseFilter('${rm.house}')"
+                                        title="Clique para filtrar apenas quartos de ${rm.label} (ou mostrar todos)"
+                                        style="position: sticky; left: 0; z-index: 20; background: ${calendarSelectedHouse === rm.house ? '#f0fdf4' : '#ffffff'}; border-right: 2px solid #cbd5e1; border-left: 5px solid ${rm.color}; padding: 0 10px; font-size: 13px; font-weight: 800; color: #1e293b; white-space: nowrap; cursor: pointer; user-select: none; transition: background 0.15s ease;"
+                                        onmouseover="this.style.background='#f1f5f9'"
+                                        onmouseout="this.style.background='${calendarSelectedHouse === rm.house ? '#f0fdf4' : '#ffffff'}'">
+                                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
+                                            <div style="display: flex; align-items: center; gap: 6px;">
+                                                <span style="width: 8px; height: 8px; border-radius: 50%; background: ${rm.color}; flex-shrink: 0;"></span>
+                                                <span>${rm.name}</span>
+                                            </div>
+                                            ${calendarSelectedHouse === rm.house ? `<span style="font-size: 10px; background: ${rm.color}; color: white; border-radius: 4px; padding: 1px 4px; font-weight: 700;">Ativo</span>` : ''}
                                         </div>
                                     </td>
 
                                     <!-- Área de Timeline das Células e Estadias -->
-                                    <td colspan="${CALENDAR_TOTAL_DAYS}" style="padding: 0; position: relative; height: 54px;">
-                                        <!-- Grelha de Fundo dos Dias -->
-                                        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; pointer-events: none;">
-                                            ${days.map(d => {
-                                                const isT = sameDay(d, today);
-                                                const isW = d.getDay() === 0 || d.getDay() === 6;
-                                                return `
-                                                    <div style="width: ${CALENDAR_COL_WIDTH}px; min-width: ${CALENDAR_COL_WIDTH}px; height: 100%; border-right: 1px solid #f1f5f9; box-sizing: border-box; ${isT ? 'background: rgba(2, 132, 199, 0.05); border-left: 1.5px solid rgba(2, 132, 199, 0.4); border-right: 1.5px solid rgba(2, 132, 199, 0.4);' : (isW ? 'background: #fafafa;' : '')}">
-                                                    </div>
-                                                `;
-                                            }).join('')}
-                                        </div>
+                                    <td colspan="${CALENDAR_TOTAL_DAYS}" style="padding: 0; position: relative; height: 54px; background-size: ${CALENDAR_COL_WIDTH}px 100%; background-image: linear-gradient(to right, #f1f5f9 1px, transparent 1px); border-right: 1px solid #cbd5e1;">
+                                        <!-- Marcação do dia de hoje -->
+                                        <div style="position: absolute; left: ${todayIndex * CALENDAR_COL_WIDTH}px; width: ${CALENDAR_COL_WIDTH}px; top: 0; bottom: 0; background: rgba(2, 132, 199, 0.08); border-left: 2px solid #0284c7; border-right: 2px solid #0284c7; pointer-events: none; z-index: 2;"></div>
 
                                         <!-- Barras de Estadias (Eventos) -->
                                         ${roomRes.map(r => {
@@ -6249,7 +6355,7 @@ function showTimelineCalendarView() {
                                             return `
                                                 <div onclick="window.openTimelineResModal('${encData}')"
                                                     title="${rm.name}: ${formatDateKey(r.checkIn)} até ${formatDateKey(r.checkOut)} (${nights} noites) - Clique para ver detalhes"
-                                                    style="position: absolute; top: 8px; height: 38px; left: ${leftPx}px; width: ${widthPx}px; background: linear-gradient(135deg, #ff4858 0%, #e11d48 100%); color: #ffffff; border-radius: ${roundLeft} ${roundRight} ${roundRight} ${roundLeft}; box-shadow: 0 2px 6px rgba(225, 29, 72, 0.32); display: flex; align-items: center; padding: 0 8px; gap: 6px; font-size: 11.5px; font-weight: 700; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; z-index: 10; border: 1px solid rgba(255,255,255,0.3); transition: transform 0.15s ease, box-shadow 0.15s ease;"
+                                                    style="position: absolute; top: 8px; height: 38px; left: ${leftPx}px; width: ${widthPx}px; background: ${houseStyle.bg}; color: #ffffff; border-radius: ${roundLeft} ${roundRight} ${roundRight} ${roundLeft}; box-shadow: ${houseStyle.shadow}; display: flex; align-items: center; padding: 0 8px; gap: 6px; font-size: 11.5px; font-weight: 700; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; z-index: 10; border: 1px solid ${houseStyle.border}; transition: transform 0.15s ease, box-shadow 0.15s ease;"
                                                     onmouseover="this.style.transform='scaleY(1.06)'; this.style.zIndex='15';"
                                                     onmouseout="this.style.transform='none'; this.style.zIndex='10';">
                                                     <span style="font-size: 13px;">🧳</span>
