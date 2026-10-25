@@ -891,9 +891,39 @@
             box-shadow: 0 4px 14px rgba(0,0,0,0.18);
             display: block;
         }
+        .calendar-quick-btn {
+            background: #ffffff;
+            border: 1px solid rgba(0,0,0,0.12);
+            border-radius: 11px;
+            width: 44px;
+            height: 44px;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            outline: none;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+            margin-top: 8px;
+            flex-shrink: 0;
+        }
+        .calendar-quick-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.22);
+        }
+        .calendar-quick-btn:active {
+            transform: scale(0.96);
+        }
+        .calendar-quick-btn.active {
+            background: #0284c7 !important;
+            border-color: #0284c7 !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.4);
+        }
         .floating-sub-items {
             position: absolute !important;
-            top: 52px !important;
+            top: 108px !important;
             left: 50% !important;
             transform: translateX(-50%) !important;
             right: auto !important;
@@ -1701,6 +1731,7 @@ function buildThemePopupHTML() {
 
 function renderNavigation() {
     const isCleaning = currentView === "cleaning";
+    const isCalendar = currentView === "calendar";
     const isOccupancy = currentView === "occupancy";
     const isLaundry = currentView === "laundry";
     const isPayments = currentView === "payments";
@@ -1712,6 +1743,9 @@ function renderNavigation() {
         <div class="floating-menu-container">
             <button onclick="window.toggleFloatingSubMenu(event)" class="menu-trigger-btn" title="Definições e Ferramentas">
                 <img src="icone2.jpeg" alt="Menu" class="menu-trigger-img">
+            </button>
+            <button onclick="window.toggleTimelineCalendar(event)" class="calendar-quick-btn ${isCalendar?'active':''}" title="${isCalendar?'Voltar ao Início':'Calendário Geral (Estadias)'}">
+                📅
             </button>
             <div id="al-floating-sub-items" class="floating-sub-items ${showFloatingSubMenu ? 'menu-expanded' : 'menu-collapsed'}">
                 <div class="theme-popup-wrapper">
@@ -1741,6 +1775,7 @@ function renderNavigation() {
         navButtonsHtml = `
             <div style="margin-bottom: 24px; width: 100%; display: flex; flex-direction: column; gap: 8px; clear: both;">
                 <button onclick="window.switchMainView('cleaning')" class="segment-btn ${isCleaning?'active-cleaning':''}">🧹 Limpezas</button>
+                <button onclick="window.switchMainView('calendar')" class="segment-btn ${isCalendar?'active-calendar':''}">📅 Calendário Geral</button>
                 <button onclick="window.switchMainView('occupancy')" class="segment-btn ${isOccupancy?'active-occupancy':''}">📊 Disponibilidade</button>
                 <button onclick="window.switchMainView('laundry')" class="segment-btn ${isLaundry?'active-laundry':''}">🧺 Stock Lavandaria</button>
                 <button onclick="window.switchMainView('payments')" class="segment-btn ${isPayments?'active-payments':''}">💶 Pagamentos</button>
@@ -1749,6 +1784,7 @@ function renderNavigation() {
         navButtonsHtml = `
             <div style="margin-bottom: 20px; width: 100%; display: flex; gap: 10px; flex-wrap: wrap; clear: both;">
                 <button onclick="window.switchMainView('cleaning')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #007bff; background-color: ${isCleaning?'#007bff':'#ffffff'}; color: ${isCleaning?'#ffffff':'#007bff'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">🧹 Plano de Limpezas</button>
+                <button onclick="window.switchMainView('calendar')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #e11d48; background-color: ${isCalendar?'#e11d48':'#ffffff'}; color: ${isCalendar?'#ffffff':'#e11d48'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">📅 Calendário Geral</button>
                 <button onclick="window.switchMainView('occupancy')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #28a745; background-color: ${isOccupancy?'#28a745':'#ffffff'}; color: ${isOccupancy?'#ffffff':'#28a745'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">📊 Disponibilidade da Casa</button>
                 <button onclick="window.switchMainView('laundry')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #0284c7; background-color: ${isLaundry?'#0284c7':'#ffffff'}; color: ${isLaundry?'#ffffff':'#0284c7'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">🧺 Stock Lavandaria</button>
                 <button onclick="window.switchMainView('payments')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #8b5cf6; background-color: ${isPayments?'#8b5cf6':'#ffffff'}; color: ${isPayments?'#ffffff':'#8b5cf6'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">💶 Pagamentos</button>
@@ -1766,12 +1802,24 @@ function renderNavigation() {
 function renderCurrentView() {
     if (currentView === "worker") showWorkerView();
     else if (currentView === "cleaning") showCleaningPlan();
+    else if (currentView === "calendar") showTimelineCalendarView();
     else if (currentView === "occupancy") showOccupancyPlan();
     else if (currentView === "snapshots") showSnapshotsPlan();
     else if (currentView === "laundry") showLaundryStockView();
     else if (currentView === "settings") showSettingsView();
     else if (currentView === "payments") showPaymentsView();
 }
+
+window.toggleTimelineCalendar = function(event) {
+    if (event) event.stopPropagation();
+    if (currentView === "calendar") {
+        currentView = "cleaning";
+    } else {
+        currentView = "calendar";
+    }
+    showFloatingSubMenu = false;
+    renderCurrentView();
+};
 
 window.toggleSnapshots = function() {
     if (currentView === "snapshots") {
@@ -2047,7 +2095,14 @@ function parseICS(text, roomName) {
             const checkIn = parseDate(s[1]);
             const checkOut = parseDate(e[1]);
             if (checkOut > checkIn) {
-                r.push({ room: roomName, checkIn, checkOut });
+                let code = "";
+                const codeMatch = event.match(/details\/([A-Z0-9]+)/i);
+                if (codeMatch) code = codeMatch[1];
+                let phone = "";
+                const phoneMatch = event.match(/Phone Number[^\d]*(\d+)/i);
+                if (phoneMatch) phone = phoneMatch[1];
+                const sumText = summary ? summary[1].trim() : "";
+                r.push({ room: roomName, checkIn, checkOut, code, phone, summary: sumText });
             }
         }
     }
@@ -5911,6 +5966,358 @@ window.resetWorkerShift = async function() {
     showWorkerView();
     if (historyLoadedOk) await saveToCloudHistory(cloudHistory);
 };
+
+// ══════════════════════════════════════════════════
+// CALENDÁRIO GERAL DE ESTADIAS (TIMELINE)
+// ══════════════════════════════════════════════════
+
+let calendarSelectedHouse = "all";
+let calendarAnchorOffset = -3; // Dias de margem para o passado a partir de hoje
+const CALENDAR_TOTAL_DAYS = 45;
+const CALENDAR_COL_WIDTH = 54;
+
+window.selectCalendarHouse = function(house) {
+    calendarSelectedHouse = house;
+    renderCurrentView();
+};
+
+window.calendarShift = function(delta) {
+    calendarAnchorOffset += delta;
+    renderCurrentView();
+};
+
+window.calendarGoToday = function() {
+    calendarAnchorOffset = -3;
+    renderCurrentView();
+    window.scrollTimelineToToday();
+};
+
+window.openTimelineResModal = function(encodedData) {
+    try {
+        const data = JSON.parse(decodeURIComponent(encodedData));
+        const modal = document.getElementById('al-timeline-modal');
+        if (!modal) return;
+        document.getElementById('modal-res-room').textContent = data.room || 'Quarto';
+        document.getElementById('modal-res-summary').textContent = data.summary || 'Reserva Airbnb';
+        document.getElementById('modal-res-checkin').textContent = data.checkIn || '—';
+        document.getElementById('modal-res-checkout').textContent = data.checkOut || '—';
+        document.getElementById('modal-res-nights').textContent = (data.nights || 1) + ' noite(s)';
+        document.getElementById('modal-res-code').textContent = data.code || '—';
+        document.getElementById('modal-res-phone').textContent = data.phone ? `*** ${data.phone}` : '—';
+        modal.style.display = 'flex';
+    } catch(e) { console.error(e); }
+};
+
+window.closeTimelineResModal = function() {
+    const modal = document.getElementById('al-timeline-modal');
+    if (modal) modal.style.display = 'none';
+};
+
+window.scrollTimelineToToday = function() {
+    setTimeout(() => {
+        const container = document.getElementById('timeline-scroll-container');
+        const todayCell = document.getElementById('timeline-today-cell');
+        if (container && todayCell) {
+            const scrollX = todayCell.offsetLeft - 220;
+            container.scrollTo({ left: Math.max(0, scrollX), behavior: 'smooth' });
+        }
+    }, 60);
+};
+
+function showTimelineCalendarView() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const rangeStart = addDays(today, calendarAnchorOffset);
+    const rangeEnd = addDays(rangeStart, CALENDAR_TOTAL_DAYS);
+
+    const rangeStartStr = rangeStart.toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' });
+    const rangeEndStr = addDays(rangeEnd, -1).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short', year: 'numeric' });
+    const rangeTitle = `${rangeStartStr} – ${rangeEndStr}`;
+
+    const ALL_ROOMS = [
+        { house: "achada", label: "Achada", color: "#3b82f6", name: "Achada 1" },
+        { house: "achada", label: "Achada", color: "#3b82f6", name: "Achada 2" },
+        { house: "achada", label: "Achada", color: "#3b82f6", name: "Achada 3" },
+        { house: "achada", label: "Achada", color: "#3b82f6", name: "Achada 4" },
+        { house: "achada", label: "Achada", color: "#3b82f6", name: "Achada 5" },
+        { house: "achada", label: "Achada", color: "#3b82f6", name: "Achada 6" },
+        { house: "impasse", label: "Impasse", color: "#10b981", name: "Impasse 2" },
+        { house: "impasse", label: "Impasse", color: "#10b981", name: "Impasse 3" },
+        { house: "impasse", label: "Impasse", color: "#10b981", name: "Impasse 4" },
+        { house: "vizinho", label: "Vizinho", color: "#8b5cf6", name: "Vizinho 1" },
+        { house: "vizinho", label: "Vizinho", color: "#8b5cf6", name: "Vizinho 2" },
+        { house: "vizinho", label: "Vizinho", color: "#8b5cf6", name: "Vizinho 3" }
+    ];
+
+    const displayRooms = calendarSelectedHouse === "all"
+        ? ALL_ROOMS
+        : ALL_ROOMS.filter(r => r.house === calendarSelectedHouse);
+
+    const days = [];
+    for (let i = 0; i < CALENDAR_TOTAL_DAYS; i++) {
+        days.push(addDays(rangeStart, i));
+    }
+
+    // Agrupamento de colunas por mês
+    const monthsGrouped = [];
+    days.forEach(d => {
+        const mKey = `${d.getFullYear()}-${d.getMonth()}`;
+        const last = monthsGrouped[monthsGrouped.length - 1];
+        if (last && last.key === mKey) {
+            last.count++;
+        } else {
+            const mLabel = d.toLocaleDateString('pt-PT', { month: 'long', year: 'numeric' });
+            monthsGrouped.push({ key: mKey, label: mLabel, count: 1 });
+        }
+    });
+
+    let html = renderNavigation();
+
+    html += `
+        <div style="margin-bottom: 24px;">
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div>
+                    <h1 style="margin: 0 0 4px 0; font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+                        <span>📅</span> Calendário Geral de Estadias
+                    </h1>
+                    <div style="font-size: 14px; color: #64748b; font-weight: 600;">
+                        Linha do tempo das estadias por quarto com divisões entre reservas
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                    <button onclick="window.calendarGoToday()"
+                        style="padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; border-radius: 8px; border: 1px solid #0284c7; background: #0284c7; color: white; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);">
+                        📍 Hoje
+                    </button>
+                    <div style="display: inline-flex; border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                        <button onclick="window.calendarShift(-14)"
+                            style="padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; background: #ffffff; color: #334155;"
+                            title="Recuar 14 dias">
+                            ◀ 14d
+                        </button>
+                        <button onclick="window.calendarShift(14)"
+                            style="padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; border-left: 1px solid #cbd5e1; background: #ffffff; color: #334155;"
+                            title="Avançar 14 dias">
+                            14d ▶
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtros de Casas -->
+            <div style="display: flex; gap: 6px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px;">
+                <button onclick="window.selectCalendarHouse('all')"
+                    style="padding: 8px 16px; font-size: 13px; font-weight: 700; cursor: pointer; border-radius: 20px; border: 1.5px solid ${calendarSelectedHouse==='all'?'#0f172a':'#cbd5e1'}; background: ${calendarSelectedHouse==='all'?'#0f172a':'#ffffff'}; color: ${calendarSelectedHouse==='all'?'#ffffff':'#475569'}; white-space: nowrap; transition: all 0.2s;">
+                    Todas as Casas (12)
+                </button>
+                <button onclick="window.selectCalendarHouse('achada')"
+                    style="padding: 8px 16px; font-size: 13px; font-weight: 700; cursor: pointer; border-radius: 20px; border: 1.5px solid ${calendarSelectedHouse==='achada'?'#3b82f6':'#cbd5e1'}; background: ${calendarSelectedHouse==='achada'?'#3b82f6':'#ffffff'}; color: ${calendarSelectedHouse==='achada'?'#ffffff':'#475569'}; white-space: nowrap; transition: all 0.2s;">
+                    🏡 Achada (6)
+                </button>
+                <button onclick="window.selectCalendarHouse('impasse')"
+                    style="padding: 8px 16px; font-size: 13px; font-weight: 700; cursor: pointer; border-radius: 20px; border: 1.5px solid ${calendarSelectedHouse==='impasse'?'#10b981':'#cbd5e1'}; background: ${calendarSelectedHouse==='impasse'?'#10b981':'#ffffff'}; color: ${calendarSelectedHouse==='impasse'?'#ffffff':'#475569'}; white-space: nowrap; transition: all 0.2s;">
+                    🏡 Impasse (3)
+                </button>
+                <button onclick="window.selectCalendarHouse('vizinho')"
+                    style="padding: 8px 16px; font-size: 13px; font-weight: 700; cursor: pointer; border-radius: 20px; border: 1.5px solid ${calendarSelectedHouse==='vizinho'?'#8b5cf6':'#cbd5e1'}; background: ${calendarSelectedHouse==='vizinho'?'#8b5cf6':'#ffffff'}; color: ${calendarSelectedHouse==='vizinho'?'#ffffff':'#475569'}; white-space: nowrap; transition: all 0.2s;">
+                    🏡 Vizinho (3)
+                </button>
+            </div>
+
+            <!-- Faixa com Período Visível -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 14px; font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 12px; display: inline-flex; align-items: center; gap: 8px;">
+                <span>📆</span>
+                <span>${rangeTitle}</span>
+            </div>
+
+            <!-- CONTAINER DA TIMELINE COM SCROLL HORIZONTAL -->
+            <div id="timeline-scroll-container" style="overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #cbd5e1; border-radius: 12px; background: #ffffff; box-shadow: 0 4px 16px rgba(0,0,0,0.06); position: relative; max-width: 100%;">
+                <table style="border-collapse: collapse; table-layout: fixed; min-width: ${140 + CALENDAR_TOTAL_DAYS * CALENDAR_COL_WIDTH}px; width: 100%;">
+                    <thead>
+                        <!-- Linha 1: Mês -->
+                        <tr style="background: #f1f5f9; border-bottom: 1px solid #cbd5e1;">
+                            <th style="width: 140px; min-width: 140px; position: sticky; left: 0; z-index: 30; background: #e2e8f0; border-right: 2px solid #cbd5e1; padding: 6px 10px; font-size: 12px; font-weight: 800; color: #334155; text-align: left;">
+                                Alojamentos
+                            </th>
+                            ${monthsGrouped.map(m => `
+                                <th colspan="${m.count}" style="border-right: 1px solid #cbd5e1; padding: 6px 10px; font-size: 12px; font-weight: 800; text-transform: capitalize; color: #1e293b; text-align: center; background: #f1f5f9;">
+                                    ${m.label}
+                                </th>
+                            `).join('')}
+                        </tr>
+
+                        <!-- Linha 2: Dia da Semana -->
+                        <tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                            <th style="position: sticky; left: 0; z-index: 30; background: #f1f5f9; border-right: 2px solid #cbd5e1; padding: 4px 10px; font-size: 11px; color: #64748b; text-align: left;">
+                                ${displayRooms.length} quartos
+                            </th>
+                            ${days.map(d => {
+                                const isT = sameDay(d, today);
+                                const isW = d.getDay() === 0 || d.getDay() === 6;
+                                const wStr = d.toLocaleDateString('pt-PT', { weekday: 'narrow' }).toUpperCase();
+                                return `
+                                    <th style="width: ${CALENDAR_COL_WIDTH}px; min-width: ${CALENDAR_COL_WIDTH}px; max-width: ${CALENDAR_COL_WIDTH}px; text-align: center; font-size: 11px; font-weight: 700; padding: 4px 0; border-right: 1px solid #e2e8f0; ${isT ? 'background: rgba(2, 132, 199, 0.12); color: #0284c7;' : (isW ? 'background: #f1f5f9; color: #94a3b8;' : 'color: #64748b;')}">
+                                        ${wStr}
+                                    </th>
+                                `;
+                            }).join('')}
+                        </tr>
+
+                        <!-- Linha 3: Número do Dia -->
+                        <tr style="background: #ffffff; border-bottom: 2px solid #cbd5e1;">
+                            <th style="position: sticky; left: 0; z-index: 30; background: #ffffff; border-right: 2px solid #cbd5e1; padding: 6px 10px; font-size: 11px; color: #64748b; text-align: left;">
+                                
+                            </th>
+                            ${days.map(d => {
+                                const isT = sameDay(d, today);
+                                const isW = d.getDay() === 0 || d.getDay() === 6;
+                                const dNum = String(d.getDate()).padStart(2, '0');
+                                return `
+                                    <th ${isT ? 'id="timeline-today-cell"' : ''} style="width: ${CALENDAR_COL_WIDTH}px; min-width: ${CALENDAR_COL_WIDTH}px; max-width: ${CALENDAR_COL_WIDTH}px; text-align: center; font-size: 13px; font-weight: 800; padding: 6px 0; border-right: 1px solid #e2e8f0; ${isT ? 'background: rgba(2, 132, 199, 0.15); color: #0284c7;' : (isW ? 'background: #f8fafc; color: #475569;' : 'color: #1e293b;')}">
+                                        ${isT ? `<span style="background: #0284c7; color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px; display: inline-block;">${dNum}</span>` : dNum}
+                                    </th>
+                                `;
+                            }).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${displayRooms.map(rm => {
+                            const roomRes = globalReservations.filter(r => r.room === rm.name && r.checkOut > rangeStart && r.checkIn < rangeEnd);
+                            return `
+                                <tr style="height: 54px; border-bottom: 1px solid #e2e8f0; position: relative;">
+                                    <!-- Coluna Fixa do Quarto -->
+                                    <td style="position: sticky; left: 0; z-index: 20; background: #ffffff; border-right: 2px solid #cbd5e1; padding: 0 10px; font-size: 13px; font-weight: 800; color: #1e293b; white-space: nowrap; box-shadow: 2px 0 6px rgba(0,0,0,0.03);">
+                                        <div style="display: flex; align-items: center; gap: 6px;">
+                                            <span style="width: 8px; height: 8px; border-radius: 50%; background: ${rm.color}; flex-shrink: 0;"></span>
+                                            <span>${rm.name}</span>
+                                        </div>
+                                    </td>
+
+                                    <!-- Área de Timeline das Células e Estadias -->
+                                    <td colspan="${CALENDAR_TOTAL_DAYS}" style="padding: 0; position: relative; height: 54px;">
+                                        <!-- Grelha de Fundo dos Dias -->
+                                        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; pointer-events: none;">
+                                            ${days.map(d => {
+                                                const isT = sameDay(d, today);
+                                                const isW = d.getDay() === 0 || d.getDay() === 6;
+                                                return `
+                                                    <div style="width: ${CALENDAR_COL_WIDTH}px; min-width: ${CALENDAR_COL_WIDTH}px; height: 100%; border-right: 1px solid #f1f5f9; box-sizing: border-box; ${isT ? 'background: rgba(2, 132, 199, 0.05); border-left: 1.5px solid rgba(2, 132, 199, 0.4); border-right: 1.5px solid rgba(2, 132, 199, 0.4);' : (isW ? 'background: #fafafa;' : '')}">
+                                                    </div>
+                                                `;
+                                            }).join('')}
+                                        </div>
+
+                                        <!-- Barras de Estadias (Eventos) -->
+                                        ${roomRes.map(r => {
+                                            const startDiff = (r.checkIn.getTime() - rangeStart.getTime()) / (1000 * 60 * 60 * 24);
+                                            const endDiff = (r.checkOut.getTime() - rangeStart.getTime()) / (1000 * 60 * 60 * 24);
+                                            const nights = Math.max(1, Math.round((r.checkOut.getTime() - r.checkIn.getTime()) / (1000 * 60 * 60 * 24)));
+
+                                            // Check-in à tarde (+0.5), Check-out de manhã (+0.5)
+                                            let leftPx = Math.round((startDiff + 0.5) * CALENDAR_COL_WIDTH + 2);
+                                            let rightPx = Math.round((endDiff + 0.5) * CALENDAR_COL_WIDTH - 2);
+
+                                            let roundLeft = "8px";
+                                            let roundRight = "8px";
+
+                                            if (leftPx < 0) {
+                                                leftPx = 0;
+                                                roundLeft = "0px";
+                                            }
+                                            const maxPx = CALENDAR_TOTAL_DAYS * CALENDAR_COL_WIDTH;
+                                            if (rightPx > maxPx) {
+                                                rightPx = maxPx;
+                                                roundRight = "0px";
+                                            }
+                                            const widthPx = Math.max(rightPx - leftPx, 18);
+
+                                            const encData = encodeURIComponent(JSON.stringify({
+                                                room: r.room,
+                                                checkIn: formatDateKey(r.checkIn),
+                                                checkOut: formatDateKey(r.checkOut),
+                                                nights: nights,
+                                                code: r.code || '',
+                                                phone: r.phone || '',
+                                                summary: r.summary || ''
+                                            }));
+
+                                            const displayTitle = r.summary && r.summary !== 'Reserved'
+                                                ? r.summary
+                                                : (r.code ? `Airbnb ${r.code}` : 'Reserva');
+
+                                            return `
+                                                <div onclick="window.openTimelineResModal('${encData}')"
+                                                    title="${rm.name}: ${formatDateKey(r.checkIn)} até ${formatDateKey(r.checkOut)} (${nights} noites) - Clique para ver detalhes"
+                                                    style="position: absolute; top: 8px; height: 38px; left: ${leftPx}px; width: ${widthPx}px; background: linear-gradient(135deg, #ff4858 0%, #e11d48 100%); color: #ffffff; border-radius: ${roundLeft} ${roundRight} ${roundRight} ${roundLeft}; box-shadow: 0 2px 6px rgba(225, 29, 72, 0.32); display: flex; align-items: center; padding: 0 8px; gap: 6px; font-size: 11.5px; font-weight: 700; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; z-index: 10; border: 1px solid rgba(255,255,255,0.3); transition: transform 0.15s ease, box-shadow 0.15s ease;"
+                                                    onmouseover="this.style.transform='scaleY(1.06)'; this.style.zIndex='15';"
+                                                    onmouseout="this.style.transform='none'; this.style.zIndex='10';">
+                                                    <span style="font-size: 13px;">🧳</span>
+                                                    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                                        ${displayTitle}
+                                                    </span>
+                                                    <span style="opacity: 0.85; font-size: 10.5px; font-weight: 600; margin-left: 2px;">
+                                                        (${nights}n)
+                                                    </span>
+                                                </div>
+                                            `;
+                                        }).join('')}
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- MODAL DE DETALHES DA RESERVA -->
+            <div id="al-timeline-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; padding: 16px;">
+                <div style="background: #ffffff; border-radius: 16px; padding: 24px; max-width: 420px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.25); position: relative; font-family: 'Plus Jakarta Sans', sans-serif;">
+                    <button onclick="window.closeTimelineResModal()" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 20px; cursor: pointer; color: #94a3b8; font-weight: bold;">✕</button>
+                    <div style="font-size: 13px; font-weight: 800; color: #0284c7; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Detalhes da Reserva</div>
+                    <h2 id="modal-res-room" style="margin: 0 0 14px 0; font-size: 22px; font-weight: 800; color: #0f172a;">Quarto</h2>
+
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 10px; font-size: 14px;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: #64748b;">Hóspede / Título:</span>
+                            <strong id="modal-res-summary" style="color: #0f172a; text-align: right;">—</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: #64748b;">Check-in:</span>
+                            <strong id="modal-res-checkin" style="color: #10b981;">—</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: #64748b;">Check-out:</span>
+                            <strong id="modal-res-checkout" style="color: #ef4444;">—</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: #64748b;">Duração:</span>
+                            <strong id="modal-res-nights" style="color: #0f172a;">—</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: #64748b;">Código Airbnb:</span>
+                            <strong id="modal-res-code" style="color: #0284c7; font-family: monospace;">—</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: #64748b;">Telefone (finais):</span>
+                            <strong id="modal-res-phone" style="color: #0f172a;">—</strong>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 8px;">
+                        <button onclick="window.closeTimelineResModal()"
+                            style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: 700; cursor: pointer;">
+                            Fechar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    result.innerHTML = html;
+    window.scrollTimelineToToday();
+}
 
 function showWorkerView() {
     const isEs = workerLanguage === "es";
