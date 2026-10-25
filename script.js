@@ -5051,12 +5051,15 @@ function showPaymentsView() {
     let monthlyAverage = 0;
     let monthlyAverageDetailText = '';
 
-    if (pastMonthTotals.length > 0) {
+    if (projectedCurrentMonth > 0) {
+        const allMonthsToAverage = [...pastMonthTotals, projectedCurrentMonth];
+        monthlyAverage = allMonthsToAverage.reduce((sum, v) => sum + v, 0) / allMonthsToAverage.length;
+        monthlyAverageDetailText = pastMonthTotals.length > 0
+            ? `Baseada em <strong>${pastMonthTotals.length}</strong> meses anteriores + previsão deste mês`
+            : `Baseada na previsão deste mês (${daysInCurrentMonth} dias)`;
+    } else if (pastMonthTotals.length > 0) {
         monthlyAverage = pastMonthTotals.reduce((sum, v) => sum + v, 0) / pastMonthTotals.length;
         monthlyAverageDetailText = `Baseada em <strong>${pastMonthTotals.length}</strong> mês(es) anteriores (com adiantamentos)`;
-    } else if (currentMonthSpent > 0) {
-        monthlyAverage = projectedCurrentMonth;
-        monthlyAverageDetailText = `Baseada na estimativa deste mês (${daysInCurrentMonth} dias)`;
     } else {
         monthlyAverage = 0;
         monthlyAverageDetailText = `Sem histórico de meses`;
