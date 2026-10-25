@@ -4935,70 +4935,131 @@ function showPaymentsView() {
     const formattedPendingBolt = totalPendingBolt.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
     const formattedGrandTotal = grandTotalPending.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
 
-    // Cálculo da Média Mensal Realista (com projeção do mês atual até ao fim do mês)
+    // Cálculo da Média Mensal Realista (incluindo valores negativos como pagamentos positivos e projeção do mês atual)
     const now = new Date();
     const currentMonthKey = formatDateKey(now).substring(0, 7); // "YYYY-MM"
     const currentDay = now.getDate();
     const daysInCurrentMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
 
     const monthlyTotals = {};
+
+    // 1. Lotes Liquidados de Horas (Settlements)
     settlementsList.forEach(s => {
         const m = (s.settledDate || "").substring(0, 7);
-        if (m) {
-            monthlyTotals[m] = (monthlyTotals[m] || 0) + (parseFloat(s.totalAmount) || 0);
+        if (!m) return;
+        const sTotal = parseFloat(s.totalAmount) || 0;
+        
+        // Inclui como positivo qualquer valor negativo que foi pago (ex: adiantamentos em notas, transferências)
+        let negativeItemsSum = 0;
+        if (Array.isArray(s.items)) {
+            s.items.forEach(it => {
+                const itAmt = parseFloat(it.amount) || 0;
+                if (itAmt < 0) {
+                    negativeItemsSum += Math.abs(itAmt);
+                }
+            });
         }
+        const totalPaidInSettlement = sTotal + negativeItemsSum;
+        monthlyTotals[m] = (monthlyTotals[m] || 0) + (totalPaidInSettlement > 0 ? totalPaidInSettlement : Math.abs(totalPaidInSettlement));
     });
+
+    // 2. Horas Pendentes
+    const pendingByMonth = {};
     pendingList.forEach(w => {
         const m = (w.dateKey || "").substring(0, 7);
-        if (m) {
-            monthlyTotals[m] = (monthlyTotals[m] || 0) + (parseFloat(w.amount) || 0);
+        if (!m) return;
+        if (!pendingByMonth[m]) pendingByMonth[m] = { pos: 0, neg: 0 };
+        const itemAmt = (w.amount !== undefined && !isNaN(parseFloat(w.amount)))
+            ? parseFloat(w.amount)
+            : (((parseFloat(w.hours) || 0) * (w.rate || rate)) + (parseFloat(w.extraMoney) || 0));
+        if (itemAmt >= 0) {
+            pendingByMonth[m].pos += itemAmt;
+        } else {
+            pendingByMonth[m].neg += Math.abs(itemAmt);
         }
     });
+    Object.keys(pendingByMonth).forEach(m => {
+        // Considera o total de trabalho (pos) e quaisquer adiantamentos pagos (neg)
+        const pTotal = Math.max(pendingByMonth[m].pos, pendingByMonth[m].neg);
+        monthlyTotals[m] = (monthlyTotals[m] || 0) + pTotal;
+    });
+
+    // 3. Lotes Liquidados de Bolt
     settledBoltList.forEach(s => {
         const m = (s.settledDate || "").substring(0, 7);
-        if (m) {
-            monthlyTotals[m] = (monthlyTotals[m] || 0) + (parseFloat(s.totalAmount) || 0);
+        if (!m) return;
+        let sTotal = parseFloat(s.totalAmount) || 0;
+        let negativeBoltSum = 0;
+        if (Array.isArray(s.items)) {
+            s.items.forEach(it => {
+                const itAmt = parseFloat(it.amount) || 0;
+                if (itAmt < 0) negativeBoltSum += Math.abs(itAmt);
+            });
         }
+        const totalPaidBolt = sTotal + negativeBoltSum;
+        monthlyTotals[m] = (monthlyTotals[m] || 0) + (totalPaidBolt > 0 ? totalPaidBolt : Math.abs(totalPaidBolt));
     });
+
+    // 4. Viagens Pendentes de Bolt
     pendingBoltList.forEach(b => {
         const m = (b.dateKey || "").substring(0, 7);
-        if (m) {
-            monthlyTotals[m] = (monthlyTotals[m] || 0) + (parseFloat(b.amount) || 0);
-        }
+        if (!m) return;
+        const bAmt = parseFloat(b.amount) || 0;
+        monthlyTotals[m] = (monthlyTotals[m] || 0) + Math.abs(bAmt);
     });
 
     const currentMonthSpent = monthlyTotals[currentMonthKey] || 0;
-    // Estimativa / Projeção do mês atual até ao fim do mês com base no ritmo diário decorrido
-    const projectedCurrentMonth = currentDay > 0 ? ((currentMonthSpent / currentDay) * daysInCurrentMonth) : currentMonthSpent;
+
+    // Determina o último dia com atividade registada no mês atual para projeção precisa
+    let lastRecordedDay = 0;
+    pendingList.forEach(w => {
+        if ((w.dateKey || "").startsWith(currentMonthKey)) {
+            const d = parseInt((w.dateKey || "").split("-")[2], 10);
+            if (!isNaN(d) && d > lastRecordedDay) lastRecordedDay = d;
+        }
+    });
+    settlementsList.forEach(s => {
+        if (Array.isArray(s.items)) {
+            s.items.forEach(it => {
+                if ((it.dateKey || "").startsWith(currentMonthKey)) {
+                    const d = parseInt((it.dateKey || "").split("-")[2], 10);
+                    if (!isNaN(d) && d > lastRecordedDay) lastRecordedDay = d;
+                }
+            });
+        }
+    });
+    pendingBoltList.forEach(b => {
+        if ((b.dateKey || "").startsWith(currentMonthKey)) {
+            const d = parseInt((b.dateKey || "").split("-")[2], 10);
+            if (!isNaN(d) && d > lastRecordedDay) lastRecordedDay = d;
+        }
+    });
+
+    const hasTodayWork = (lastRecordedDay >= currentDay);
+    const effectiveDays = hasTodayWork ? currentDay : Math.max(1, Math.min(currentDay, lastRecordedDay > 0 ? lastRecordedDay : currentDay));
+    const projectedCurrentMonth = effectiveDays > 0 ? ((currentMonthSpent / effectiveDays) * daysInCurrentMonth) : currentMonthSpent;
+
+    const currentSpentFmt = currentMonthSpent.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+    const projectedFmt = projectedCurrentMonth.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+    const projectedDetailText = currentMonthSpent > 0
+        ? `Acumulado dia ${effectiveDays}/${daysInCurrentMonth}: <strong>${currentSpentFmt}</strong>`
+        : `Mês a iniciar sem registos ainda`;
 
     const pastMonthKeys = Object.keys(monthlyTotals).filter(k => k !== currentMonthKey && k < currentMonthKey);
     const pastMonthTotals = pastMonthKeys.map(k => monthlyTotals[k]);
 
     let monthlyAverage = 0;
     let monthlyAverageDetailText = '';
-    const currentSpentFmt = currentMonthSpent.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
-    const projectedFmt = projectedCurrentMonth.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
 
-    if (pastMonthTotals.length > 0 && currentMonthSpent > 0) {
-        const allMonthsValues = [...pastMonthTotals, projectedCurrentMonth];
-        monthlyAverage = allMonthsValues.reduce((sum, v) => sum + v, 0) / allMonthsValues.length;
-        monthlyAverageDetailText = `Prev. este mês: <strong>${projectedFmt}</strong> (dia ${currentDay}/${daysInCurrentMonth})`;
-    } else if (pastMonthTotals.length > 0 && currentMonthSpent === 0) {
+    if (pastMonthTotals.length > 0) {
         monthlyAverage = pastMonthTotals.reduce((sum, v) => sum + v, 0) / pastMonthTotals.length;
-        monthlyAverageDetailText = `Baseado em <strong>${pastMonthTotals.length}</strong> mês(es) anteriores`;
+        monthlyAverageDetailText = `Baseada em <strong>${pastMonthTotals.length}</strong> mês(es) anteriores (com adiantamentos)`;
     } else if (currentMonthSpent > 0) {
         monthlyAverage = projectedCurrentMonth;
-        monthlyAverageDetailText = `Acumulado dia ${currentDay}: <strong>${currentSpentFmt}</strong> (${daysInCurrentMonth} dias)`;
+        monthlyAverageDetailText = `Baseada na estimativa deste mês (${daysInCurrentMonth} dias)`;
     } else {
-        const allKeys = Object.keys(monthlyTotals);
-        if (allKeys.length > 0) {
-            const totalAll = Object.values(monthlyTotals).reduce((sum, v) => sum + v, 0);
-            monthlyAverage = totalAll / allKeys.length;
-            monthlyAverageDetailText = `Baseado em <strong>${allKeys.length}</strong> mês/meses`;
-        } else {
-            monthlyAverage = 0;
-            monthlyAverageDetailText = `Sem histórico de meses`;
-        }
+        monthlyAverage = 0;
+        monthlyAverageDetailText = `Sem histórico de meses`;
     }
 
     const formattedMonthlyAverage = monthlyAverage.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
@@ -5023,8 +5084,8 @@ function showPaymentsView() {
             </div>
         </div>
 
-        <!-- Cartões de Resumo no Topo (Horas, Bolt, Total Geral, Média) -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 24px;">
+        <!-- Cartões de Resumo no Topo (Horas, Bolt, Previsão Este Mês, Média Mensal Paga) -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 24px;">
             <div style="background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(124,58,237,0.04)); border: 2px solid ${totalPendingAmount > 0 ? '#8b5cf6' : '#10b981'}; border-radius: 16px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
                 <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: ${totalPendingAmount > 0 ? '#7c3aed' : '#059669'};">
                     ${totalPendingAmount > 0 ? '⏳ Horas a Pagar' : '✅ Horas em Dia'}
@@ -5049,14 +5110,26 @@ function showPaymentsView() {
                 </div>
             </div>
 
-            <div style="background: rgba(255,255,255,0.7); border: 1px solid rgba(0,0,0,0.1); border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
-                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #6d28d9;">
-                    📊 Média / Previsão Mensal
+            <div style="background: linear-gradient(135deg, rgba(14,165,233,0.08), rgba(99,102,241,0.04)); border: 2px solid #0284c7; border-radius: 16px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #0284c7;">
+                    🔮 Previsão Este Mês
                 </div>
-                <div style="font-size: 26px; font-weight: 900; color: #6d28d9; margin: 4px 0 2px 0;">
+                <div style="font-size: 26px; font-weight: 900; color: #0369a1; margin: 4px 0 2px 0;">
+                    ${projectedFmt}
+                </div>
+                <div style="font-size: 12px; opacity: 0.85; color: #475569;">
+                    ${projectedDetailText}
+                </div>
+            </div>
+
+            <div style="background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(5,150,105,0.04)); border: 2px solid #10b981; border-radius: 16px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #059669;">
+                    📊 Média Mensal Paga
+                </div>
+                <div style="font-size: 26px; font-weight: 900; color: #047857; margin: 4px 0 2px 0;">
                     ${formattedMonthlyAverage}
                 </div>
-                <div style="font-size: 12px; opacity: 0.85;">
+                <div style="font-size: 12px; opacity: 0.85; color: #475569;">
                     ${monthlyAverageDetailText}
                 </div>
             </div>
