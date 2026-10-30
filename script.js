@@ -690,7 +690,7 @@
             gap: 16px !important;
             width: 100% !important;
             margin-top: 10px !important;
-            margin-bottom: 20px !important;
+            margin-bottom: 18px !important;
             position: relative !important;
             box-sizing: border-box !important;
         }
@@ -866,7 +866,7 @@
             padding-top: 0 !important;
             flex-shrink: 0 !important;
             width: 46px !important;
-            height: auto !important;
+            height: 46px !important;
         }
         .menu-trigger-btn {
             background: none !important;
@@ -899,6 +899,9 @@
             padding: 0 !important;
         }
         .calendar-quick-btn {
+            position: absolute !important;
+            top: 54px !important;
+            right: 0 !important;
             background: #ffffff !important;
             border: 1px solid rgba(0,0,0,0.12) !important;
             border-radius: 11px !important;
@@ -912,12 +915,10 @@
             outline: none !important;
             box-shadow: 0 4px 14px rgba(0,0,0,0.15) !important;
             transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease !important;
-            margin-top: 8px !important;
-            margin-left: 0 !important;
-            margin-right: 0 !important;
-            margin-bottom: 0 !important;
+            margin: 0 !important;
             padding: 0 !important;
             flex-shrink: 0 !important;
+            z-index: 100 !important;
         }
         .calendar-quick-btn:hover {
             transform: scale(1.08);
@@ -934,7 +935,7 @@
         }
         .floating-sub-items {
             position: absolute !important;
-            top: 108px !important;
+            top: 54px !important;
             left: 50% !important;
             transform: translateX(-50%) !important;
             right: auto !important;
@@ -945,6 +946,9 @@
             transition: opacity 0.25s ease, transform 0.25s ease, max-height 0.25s ease !important;
             transform-origin: top center !important;
             z-index: 101 !important;
+        }
+        .floating-sub-items.with-calendar {
+            top: 108px !important;
         }
         .floating-sub-items.menu-collapsed {
             opacity: 0 !important;
@@ -1758,7 +1762,7 @@ function renderNavigation() {
             <button onclick="window.toggleTimelineCalendar(event)" class="calendar-quick-btn ${isCalendar?'active':''}" title="${isCalendar?'Voltar ao Início':'Calendário Geral (Estadias)'}">
                 📅
             </button>
-            <div id="al-floating-sub-items" class="floating-sub-items ${showFloatingSubMenu ? 'menu-expanded' : 'menu-collapsed'}">
+            <div id="al-floating-sub-items" class="floating-sub-items with-calendar ${showFloatingSubMenu ? 'menu-expanded' : 'menu-collapsed'}">
                 <div class="theme-popup-wrapper">
                     <button onclick="window.toggleThemePopup(event)" class="clock-btn" title="Mudar Estilo">${themeEmoji}</button>
                     ${buildThemePopupHTML()}
@@ -1772,7 +1776,7 @@ function renderNavigation() {
 
     // Linha de topo: [ 🏡 Casas do Martim ] à esquerda e [ Ícone Quadrado ] à direita
     const topBar = `
-        <div class="top-navbar-row" style="margin-bottom: 20px;">
+        <div class="top-navbar-row" style="margin-bottom: 18px;">
             <div onclick="window.toggleNavButtons(event)" class="al-badge-title" role="button" tabindex="0" title="Ver / Ocultar Menu de Limpezas e Casas">
                 🏡 Casas do Martim
             </div>
@@ -1786,7 +1790,6 @@ function renderNavigation() {
         navButtonsHtml = `
             <div style="margin-bottom: 24px; width: 100%; display: flex; flex-direction: column; gap: 8px; clear: both;">
                 <button onclick="window.switchMainView('cleaning')" class="segment-btn ${isCleaning?'active-cleaning':''}">🧹 Limpezas</button>
-                <button onclick="window.switchMainView('calendar')" class="segment-btn ${isCalendar?'active-calendar':''}">📅 Calendário Geral</button>
                 <button onclick="window.switchMainView('occupancy')" class="segment-btn ${isOccupancy?'active-occupancy':''}">📊 Disponibilidade</button>
                 <button onclick="window.switchMainView('laundry')" class="segment-btn ${isLaundry?'active-laundry':''}">🧺 Stock Lavandaria</button>
                 <button onclick="window.switchMainView('payments')" class="segment-btn ${isPayments?'active-payments':''}">💶 Pagamentos</button>
@@ -1795,7 +1798,6 @@ function renderNavigation() {
         navButtonsHtml = `
             <div style="margin-bottom: 20px; width: 100%; display: flex; gap: 10px; flex-wrap: wrap; clear: both;">
                 <button onclick="window.switchMainView('cleaning')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #007bff; background-color: ${isCleaning?'#007bff':'#ffffff'}; color: ${isCleaning?'#ffffff':'#007bff'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">🧹 Plano de Limpezas</button>
-                <button onclick="window.switchMainView('calendar')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #e11d48; background-color: ${isCalendar?'#e11d48':'#ffffff'}; color: ${isCalendar?'#ffffff':'#e11d48'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">📅 Calendário Geral</button>
                 <button onclick="window.switchMainView('occupancy')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #28a745; background-color: ${isOccupancy?'#28a745':'#ffffff'}; color: ${isOccupancy?'#ffffff':'#28a745'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">📊 Disponibilidade da Casa</button>
                 <button onclick="window.switchMainView('laundry')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #0284c7; background-color: ${isLaundry?'#0284c7':'#ffffff'}; color: ${isLaundry?'#ffffff':'#0284c7'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">🧺 Stock Lavandaria</button>
                 <button onclick="window.switchMainView('payments')" style="padding: 12px 18px; font-size: 15px; cursor: pointer; border-radius: 8px; border: 2px solid #8b5cf6; background-color: ${isPayments?'#8b5cf6':'#ffffff'}; color: ${isPayments?'#ffffff':'#8b5cf6'}; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">💶 Pagamentos</button>
@@ -2985,7 +2987,7 @@ function showCleaningPlan() {
             ? 'border: 2px solid #8b5cf6; background-color: rgba(139,92,246,0.12); color: #7c3aed; box-shadow: 0 2px 6px rgba(139,92,246,0.15);'
             : 'border: 2px solid #8b5cf6; background-color: rgba(139,92,246,0.06); color: #7c3aed;';
 
-    html += `<div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+    html += `<div style="margin-bottom: 18px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; padding-right: 52px; box-sizing: border-box;">
         <button onclick="window.toggleHistoryView()" style="padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 6px; border: 1.5px solid #10b981; background: linear-gradient(135deg, #10b981, #059669); color: white; font-weight: bold; box-shadow: 0 3px 8px rgba(16,185,129,0.25);">
             ${showHistoryMode ? "📅 Ver Próximas Limpezas" : "📜 Ver Dias Anteriores"}
         </button>
@@ -6222,23 +6224,26 @@ function showTimelineCalendarView() {
 
             <!-- CONTAINER DA TIMELINE COM SCROLL HORIZONTAL (2 ANOS: 365d passados + 365d futuros) -->
             <div id="timeline-scroll-container" style="overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #cbd5e1; border-radius: 12px; background: #ffffff; box-shadow: 0 4px 16px rgba(0,0,0,0.06); position: relative; max-width: 100%;">
-                <table style="border-collapse: collapse; table-layout: fixed; min-width: ${CALENDAR_ROOM_COL_WIDTH + CALENDAR_TOTAL_DAYS * CALENDAR_COL_WIDTH}px; width: 100%;">
+                <table style="border-collapse: separate; border-spacing: 0; table-layout: fixed; min-width: ${CALENDAR_ROOM_COL_WIDTH + CALENDAR_TOTAL_DAYS * CALENDAR_COL_WIDTH}px; width: 100%;">
                     <thead>
-                        <!-- Linha 1: Mês -->
+                        <!-- Linha 1: Mês (Acompanha o scroll na horizontal) -->
                         <tr style="background: #f1f5f9; border-bottom: 1px solid #cbd5e1;">
-                            <th style="width: ${CALENDAR_ROOM_COL_WIDTH}px; min-width: ${CALENDAR_ROOM_COL_WIDTH}px; max-width: ${CALENDAR_ROOM_COL_WIDTH}px; position: sticky; left: 0; z-index: 30; background: #e2e8f0; border-right: 2px solid #cbd5e1; padding: 6px 4px; font-size: 11px; font-weight: 800; color: #334155; text-align: center;">
+                            <th style="width: ${CALENDAR_ROOM_COL_WIDTH}px; min-width: ${CALENDAR_ROOM_COL_WIDTH}px; max-width: ${CALENDAR_ROOM_COL_WIDTH}px; position: -webkit-sticky; position: sticky; left: 0; z-index: 30; background: #e2e8f0; border-right: 2px solid #cbd5e1; border-bottom: 1px solid #cbd5e1; padding: 6px 4px; font-size: 11px; font-weight: 800; color: #334155; text-align: center; box-sizing: border-box;">
                                 Quartos
                             </th>
                             ${monthsGrouped.map(m => `
-                                <th colspan="${m.count}" style="border-right: 1px solid #cbd5e1; padding: 6px 8px; font-size: 12px; font-weight: 800; text-transform: capitalize; color: #1e293b; text-align: center; background: #f1f5f9;">
-                                    ${m.label}
+                                <th colspan="${m.count}" style="border-right: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1; padding: 4px 6px; font-size: 12px; font-weight: 800; text-transform: capitalize; color: #1e293b; text-align: left; background: #f1f5f9; position: relative; box-sizing: border-box;">
+                                    <div class="timeline-sticky-month" style="position: -webkit-sticky; position: sticky; left: ${CALENDAR_ROOM_COL_WIDTH + 8}px; display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; font-size: 12.5px; font-weight: 800; text-transform: capitalize; color: #0f172a; white-space: nowrap; z-index: 25; background: rgba(241, 245, 249, 0.9); border-radius: 6px;">
+                                        <span>📅</span>
+                                        <span>${m.label}</span>
+                                    </div>
                                 </th>
                             `).join('')}
                         </tr>
 
                         <!-- Linha 2: Dia da Semana -->
                         <tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
-                            <th style="width: ${CALENDAR_ROOM_COL_WIDTH}px; min-width: ${CALENDAR_ROOM_COL_WIDTH}px; max-width: ${CALENDAR_ROOM_COL_WIDTH}px; position: sticky; left: 0; z-index: 30; background: #f1f5f9; border-right: 2px solid #cbd5e1; padding: 4px 2px; font-size: 10px; color: #64748b; text-align: center;">
+                            <th style="width: ${CALENDAR_ROOM_COL_WIDTH}px; min-width: ${CALENDAR_ROOM_COL_WIDTH}px; max-width: ${CALENDAR_ROOM_COL_WIDTH}px; position: -webkit-sticky; position: sticky; left: 0; z-index: 30; background: #f1f5f9; border-right: 2px solid #cbd5e1; border-bottom: 1px solid #e2e8f0; padding: 4px 2px; font-size: 10px; color: #64748b; text-align: center; box-sizing: border-box;">
                                 ${displayRooms.length} q.
                             </th>
                             ${days.map(d => {
@@ -6246,7 +6251,7 @@ function showTimelineCalendarView() {
                                 const isW = d.getDay() === 0 || d.getDay() === 6;
                                 const wStr = d.toLocaleDateString('pt-PT', { weekday: 'narrow' }).toUpperCase();
                                 return `
-                                    <th style="width: ${CALENDAR_COL_WIDTH}px; min-width: ${CALENDAR_COL_WIDTH}px; max-width: ${CALENDAR_COL_WIDTH}px; text-align: center; font-size: 10.5px; font-weight: 700; padding: 4px 0; border-right: 1px solid #e2e8f0; ${isT ? 'background: rgba(2, 132, 199, 0.15); color: #0284c7;' : (isW ? 'background: #f1f5f9; color: #94a3b8;' : 'color: #64748b;')}">
+                                    <th style="width: ${CALENDAR_COL_WIDTH}px; min-width: ${CALENDAR_COL_WIDTH}px; max-width: ${CALENDAR_COL_WIDTH}px; text-align: center; font-size: 10.5px; font-weight: 700; padding: 4px 0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; box-sizing: border-box; ${isT ? 'background: rgba(2, 132, 199, 0.15); color: #0284c7;' : (isW ? 'background: #f1f5f9; color: #94a3b8;' : 'color: #64748b;')}">
                                         ${wStr}
                                     </th>
                                 `;
@@ -6255,7 +6260,7 @@ function showTimelineCalendarView() {
 
                         <!-- Linha 3: Número do Dia -->
                         <tr style="background: #ffffff; border-bottom: 2px solid #cbd5e1;">
-                            <th style="width: ${CALENDAR_ROOM_COL_WIDTH}px; min-width: ${CALENDAR_ROOM_COL_WIDTH}px; max-width: ${CALENDAR_ROOM_COL_WIDTH}px; position: sticky; left: 0; z-index: 30; background: #ffffff; border-right: 2px solid #cbd5e1; padding: 6px 0; text-align: center;">
+                            <th style="width: ${CALENDAR_ROOM_COL_WIDTH}px; min-width: ${CALENDAR_ROOM_COL_WIDTH}px; max-width: ${CALENDAR_ROOM_COL_WIDTH}px; position: -webkit-sticky; position: sticky; left: 0; z-index: 30; background: #ffffff; border-right: 2px solid #cbd5e1; border-bottom: 2px solid #cbd5e1; padding: 6px 0; text-align: center; box-sizing: border-box;">
                                 
                             </th>
                             ${days.map(d => {
@@ -6263,7 +6268,7 @@ function showTimelineCalendarView() {
                                 const isW = d.getDay() === 0 || d.getDay() === 6;
                                 const dNum = String(d.getDate()).padStart(2, '0');
                                 return `
-                                    <th ${isT ? 'id="timeline-today-cell"' : ''} style="width: ${CALENDAR_COL_WIDTH}px; min-width: ${CALENDAR_COL_WIDTH}px; max-width: ${CALENDAR_COL_WIDTH}px; text-align: center; font-size: 12.5px; font-weight: 800; padding: 6px 0; border-right: 1px solid #e2e8f0; ${isT ? 'background: rgba(2, 132, 199, 0.18); color: #0284c7;' : (isW ? 'background: #f8fafc; color: #475569;' : 'color: #1e293b;')}">
+                                    <th ${isT ? 'id="timeline-today-cell"' : ''} style="width: ${CALENDAR_COL_WIDTH}px; min-width: ${CALENDAR_COL_WIDTH}px; max-width: ${CALENDAR_COL_WIDTH}px; text-align: center; font-size: 12.5px; font-weight: 800; padding: 6px 0; border-right: 1px solid #e2e8f0; border-bottom: 2px solid #cbd5e1; box-sizing: border-box; ${isT ? 'background: rgba(2, 132, 199, 0.18); color: #0284c7;' : (isW ? 'background: #f8fafc; color: #475569;' : 'color: #1e293b;')}">
                                         ${isT ? `<span style="background: #0284c7; color: white; border-radius: 50%; padding: 2px 6px; font-size: 11.5px; display: inline-block;">${dNum}</span>` : dNum}
                                     </th>
                                 `;
@@ -6276,11 +6281,11 @@ function showTimelineCalendarView() {
                             const houseStyle = getHouseTheme(rm.house);
 
                             return `
-                                <tr style="height: 54px; border-bottom: 1px solid #e2e8f0; position: relative;">
+                                <tr style="height: 54px; position: relative;">
                                     <!-- Coluna Fixa do Quarto (Clicável para Filtrar) -->
                                     <td onclick="window.toggleRoomHouseFilter('${rm.house}')"
                                         title="Filtrar quartos de ${rm.label} (ou mostrar todos)"
-                                        style="width: ${CALENDAR_ROOM_COL_WIDTH}px; min-width: ${CALENDAR_ROOM_COL_WIDTH}px; max-width: ${CALENDAR_ROOM_COL_WIDTH}px; position: sticky; left: 0; z-index: 20; background: ${calendarSelectedHouse === rm.house ? '#f0fdf4' : '#ffffff'}; border-right: 2px solid #cbd5e1; border-left: 4px solid ${rm.color}; padding: 0 6px; font-size: 11.5px; font-weight: 750; color: #1e293b; white-space: nowrap; cursor: pointer; user-select: none; box-sizing: border-box; transition: background 0.15s ease;"
+                                        style="width: ${CALENDAR_ROOM_COL_WIDTH}px; min-width: ${CALENDAR_ROOM_COL_WIDTH}px; max-width: ${CALENDAR_ROOM_COL_WIDTH}px; position: -webkit-sticky; position: sticky; left: 0; z-index: 20; background: ${calendarSelectedHouse === rm.house ? '#f0fdf4' : '#ffffff'}; border-right: 2px solid #cbd5e1; border-bottom: 1px solid #e2e8f0; border-left: 4px solid ${rm.color}; padding: 0 6px; font-size: 11.5px; font-weight: 750; color: #1e293b; white-space: nowrap; cursor: pointer; user-select: none; box-sizing: border-box; transition: background 0.15s ease;"
                                         onmouseover="this.style.background='#f1f5f9'"
                                         onmouseout="this.style.background='${calendarSelectedHouse === rm.house ? '#f0fdf4' : '#ffffff'}'">
                                         <div style="display: flex; align-items: center; justify-content: flex-start; gap: 4px; overflow: hidden; white-space: nowrap;">
@@ -6290,7 +6295,7 @@ function showTimelineCalendarView() {
                                     </td>
 
                                     <!-- Área de Timeline das Células e Estadias -->
-                                    <td colspan="${CALENDAR_TOTAL_DAYS}" style="padding: 0; position: relative; height: 54px; background-size: ${CALENDAR_COL_WIDTH}px 100%; background-image: linear-gradient(to right, #f1f5f9 1px, transparent 1px); border-right: 1px solid #cbd5e1;">
+                                    <td colspan="${CALENDAR_TOTAL_DAYS}" style="padding: 0; position: relative; height: 54px; background-size: ${CALENDAR_COL_WIDTH}px 100%; background-image: linear-gradient(to right, #f1f5f9 1px, transparent 1px); border-right: 1px solid #cbd5e1; border-bottom: 1px solid #e2e8f0; box-sizing: border-box;">
                                         <!-- Marcação do dia de hoje -->
                                         <div style="position: absolute; left: ${todayIndex * CALENDAR_COL_WIDTH}px; width: ${CALENDAR_COL_WIDTH}px; top: 0; bottom: 0; background: rgba(2, 132, 199, 0.08); border-left: 2px solid #0284c7; border-right: 2px solid #0284c7; pointer-events: none; z-index: 2;"></div>
 
