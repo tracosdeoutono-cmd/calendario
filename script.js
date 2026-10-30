@@ -971,23 +971,24 @@
             display: block !important;
             width: 100% !important;
             clear: both !important;
-            transition: max-height 0.3s ease, opacity 0.25s ease, transform 0.25s ease, margin-bottom 0.25s ease;
-            overflow: hidden;
-            transform-origin: top left;
+            transition: max-height 0.22s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.2s ease, transform 0.22s cubic-bezier(0.25, 1, 0.5, 1), margin-bottom 0.22s ease !important;
+            overflow: hidden !important;
+            transform-origin: top left !important;
+            will-change: max-height, opacity, transform;
         }
         .collapsible-header-section.header-collapsed {
             max-height: 0 !important;
             opacity: 0 !important;
             margin-bottom: 0 !important;
             pointer-events: none !important;
-            transform: translateY(-10px);
+            transform: translateY(-8px) !important;
         }
         .collapsible-header-section.header-expanded {
-            max-height: 350px;
-            opacity: 1;
-            margin-bottom: 20px;
-            pointer-events: auto;
-            transform: translateY(0);
+            max-height: 250px !important;
+            opacity: 1 !important;
+            margin-bottom: 18px !important;
+            pointer-events: auto !important;
+            transform: translateY(0) !important;
         }
     `;
     document.head.appendChild(style);
@@ -6223,7 +6224,7 @@ function showTimelineCalendarView() {
             </div>
 
             <!-- CONTAINER DA TIMELINE COM SCROLL HORIZONTAL (2 ANOS: 365d passados + 365d futuros) -->
-            <div id="timeline-scroll-container" style="overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #cbd5e1; border-radius: 12px; background: #ffffff; box-shadow: 0 4px 16px rgba(0,0,0,0.06); position: relative; max-width: 100%;">
+            <div id="timeline-scroll-container" style="overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #cbd5e1; border-radius: 12px; background: #ffffff; box-shadow: 0 4px 16px rgba(0,0,0,0.06); position: relative; max-width: 100%; contain: layout; transform: translateZ(0); will-change: transform;">
                 <table style="border-collapse: separate; border-spacing: 0; table-layout: fixed; min-width: ${CALENDAR_ROOM_COL_WIDTH + CALENDAR_TOTAL_DAYS * CALENDAR_COL_WIDTH}px; width: 100%;">
                     <thead>
                         <!-- Linha 1: Mês (Acompanha o scroll na horizontal) -->
