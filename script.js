@@ -5162,15 +5162,45 @@ function showPaymentsView() {
     // Nota: O Bolt é gerido estritamente em separado (Card "Bolt a Pagar"), não sendo misturado no total de horas de trabalho
 
     const currentMonthSpent = monthlyTotals[currentMonthKey] || 0;
-    // O ritmo diário baseia-se nos dias de calendário decorridos do mês atual (evita duplicar/inflacionar a previsão)
-    const effectiveDays = Math.max(1, currentDay);
-    const projectedCurrentMonth = (currentMonthSpent / effectiveDays) * daysInCurrentMonth;
+
+    // Estimador realista baseado em dias de trabalho (Segunda a Sábado, não trabalha aos Domingos)
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    const todayKey = formatDateKey(now);
+
+    let totalWorkDaysInMonth = 0;
+    for (let d = 1; d <= daysInCurrentMonth; d++) {
+        const dayOfWeek = new Date(currentYear, currentMonth, d).getDay();
+        if (dayOfWeek !== 0) { // Exclui Domingos (0)
+            totalWorkDaysInMonth++;
+        }
+    }
+
+    // Verifica se hoje já tem trabalho registado
+    const hasWorkToday = pendingList.some(w => w.dateKey === todayKey && ((parseFloat(w.hours) || 0) > 0 || (parseFloat(w.amount) || 0) > 0));
+
+    let elapsedWorkDays = 0;
+    for (let d = 1; d <= currentDay; d++) {
+        const dayOfWeek = new Date(currentYear, currentMonth, d).getDay();
+        if (dayOfWeek !== 0) {
+            // Se for o próprio dia de hoje e ainda não tiver trabalho registado, não o conta como concluído
+            if (d === currentDay && !hasWorkToday) {
+                continue;
+            }
+            elapsedWorkDays++;
+        }
+    }
+
+    const effectiveWorkDays = Math.max(1, elapsedWorkDays);
+    const dailyRate = currentMonthSpent > 0 ? (currentMonthSpent / effectiveWorkDays) : 0;
+    const projectedCurrentMonth = currentMonthSpent > 0 ? (dailyRate * totalWorkDaysInMonth) : 0;
 
     const currentSpentFmt = currentMonthSpent.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
     const projectedFmt = projectedCurrentMonth.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+    const dailyRateFmt = dailyRate.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
     const projectedDetailText = currentMonthSpent > 0
-        ? `Acumulado dia ${effectiveDays}/${daysInCurrentMonth}: <strong>${currentSpentFmt}</strong>`
-        : `Mês a iniciar sem registos ainda`;
+        ? `Acumulado: <strong>${currentSpentFmt}</strong> (${effectiveWorkDays}/${totalWorkDaysInMonth} dias úteis • ~${dailyRateFmt}/dia)`
+        : `Mês a iniciar sem registos (${totalWorkDaysInMonth} dias úteis)`;
 
     const pastMonthKeys = Object.keys(monthlyTotals).filter(k => k !== currentMonthKey && k < currentMonthKey && monthlyTotals[k] > 0);
     const pastMonthTotals = pastMonthKeys.map(k => monthlyTotals[k]);
@@ -5183,7 +5213,7 @@ function showPaymentsView() {
         monthlyAverage = allMonthsToAverage.reduce((sum, v) => sum + v, 0) / allMonthsToAverage.length;
         monthlyAverageDetailText = pastMonthTotals.length > 0
             ? `Baseada em <strong>${pastMonthTotals.length}</strong> meses anteriores + previsão deste mês`
-            : `Baseada na previsão deste mês (${daysInCurrentMonth} dias)`;
+            : `Baseada na previsão deste mês (${totalWorkDaysInMonth} dias úteis)`;
     } else if (pastMonthTotals.length > 0) {
         monthlyAverage = pastMonthTotals.reduce((sum, v) => sum + v, 0) / pastMonthTotals.length;
         monthlyAverageDetailText = `Baseada em <strong>${pastMonthTotals.length}</strong> mês(es) anteriores`;
