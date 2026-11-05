@@ -5159,24 +5159,7 @@ function showPaymentsView() {
         addMonthAmount(m, Math.abs(itemAmt));
     });
 
-    // 3. Lotes Liquidados de Bolt - agrupa pelo mês das viagens
-    settledBoltList.forEach(s => {
-        if (Array.isArray(s.items) && s.items.length > 0) {
-            s.items.forEach(it => {
-                const m = (it.dateKey || s.cutoffDate || s.settledDate || "").substring(0, 7);
-                addMonthAmount(m, Math.abs(parseFloat(it.amount) || 0));
-            });
-        } else {
-            const m = (s.cutoffDate || s.settledDate || "").substring(0, 7);
-            addMonthAmount(m, Math.abs(parseFloat(s.totalAmount) || 0));
-        }
-    });
-
-    // 4. Viagens Pendentes de Bolt - agrupa pelo mês da viagem
-    pendingBoltList.forEach(b => {
-        const m = (b.dateKey || "").substring(0, 7);
-        addMonthAmount(m, Math.abs(parseFloat(b.amount) || 0));
-    });
+    // Nota: O Bolt é gerido estritamente em separado (Card "Bolt a Pagar"), não sendo misturado no total de horas de trabalho
 
     const currentMonthSpent = monthlyTotals[currentMonthKey] || 0;
     // O ritmo diário baseia-se nos dias de calendário decorridos do mês atual (evita duplicar/inflacionar a previsão)
