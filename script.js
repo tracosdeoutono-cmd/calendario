@@ -5121,102 +5121,67 @@ function showPaymentsView() {
     const daysInCurrentMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
 
     const monthlyTotals = {};
+    function addMonthAmount(monthKey, amount) {
+        if (!monthKey || !/^\d{4}-\d{2}$/.test(monthKey)) return;
+        const val = parseFloat(amount) || 0;
+        if (isNaN(val)) return;
+        monthlyTotals[monthKey] = (monthlyTotals[monthKey] || 0) + val;
+    }
 
-    // 1. Lotes Liquidados de Horas (Settlements)
+    // 1. Lotes Liquidados de Horas (Settlements) - agrupa pelo mês do trabalho realizado
     settlementsList.forEach(s => {
-        const m = (s.settledDate || "").substring(0, 7);
-        if (!m) return;
-        const sTotal = parseFloat(s.totalAmount) || 0;
-        
-        // Inclui como positivo qualquer valor negativo que foi pago (ex: adiantamentos em notas, transferências)
-        let negativeItemsSum = 0;
-        if (Array.isArray(s.items)) {
+        if (Array.isArray(s.items) && s.items.length > 0) {
             s.items.forEach(it => {
-                const itAmt = parseFloat(it.amount) || 0;
-                if (itAmt < 0) {
-                    negativeItemsSum += Math.abs(itAmt);
-                }
+                const m = (it.dateKey || s.settledDate || "").substring(0, 7);
+                const itHoursVal = parseFloat(it.hours) || 0;
+                const itMoneyVal = parseFloat(it.extraMoney) || 0;
+                const itAmt = (it.amount !== undefined && !isNaN(parseFloat(it.amount)))
+                    ? parseFloat(it.amount)
+                    : ((itHoursVal * (s.rate || rate)) + itMoneyVal);
+                // Valores negativos pagos (adiantamentos/acertos) contam como positivos no total pago
+                addMonthAmount(m, Math.abs(itAmt));
             });
+        } else {
+            const m = (s.settledDate || "").substring(0, 7);
+            addMonthAmount(m, Math.abs(parseFloat(s.totalAmount) || 0));
         }
-        const totalPaidInSettlement = sTotal + negativeItemsSum;
-        monthlyTotals[m] = (monthlyTotals[m] || 0) + (totalPaidInSettlement > 0 ? totalPaidInSettlement : Math.abs(totalPaidInSettlement));
     });
 
-    // 2. Horas Pendentes
-    const pendingByMonth = {};
+    // 2. Horas Pendentes - agrupa pelo mês da atividade
     pendingList.forEach(w => {
         const m = (w.dateKey || "").substring(0, 7);
-        if (!m) return;
-        if (!pendingByMonth[m]) pendingByMonth[m] = { pos: 0, neg: 0 };
+        const wHoursVal = parseFloat(w.hours) || 0;
+        const wMoneyVal = parseFloat(w.extraMoney) || 0;
         const itemAmt = (w.amount !== undefined && !isNaN(parseFloat(w.amount)))
             ? parseFloat(w.amount)
-            : (((parseFloat(w.hours) || 0) * (w.rate || rate)) + (parseFloat(w.extraMoney) || 0));
-        if (itemAmt >= 0) {
-            pendingByMonth[m].pos += itemAmt;
-        } else {
-            pendingByMonth[m].neg += Math.abs(itemAmt);
-        }
-    });
-    Object.keys(pendingByMonth).forEach(m => {
-        // Considera o total de trabalho (pos) e quaisquer adiantamentos pagos (neg)
-        const pTotal = Math.max(pendingByMonth[m].pos, pendingByMonth[m].neg);
-        monthlyTotals[m] = (monthlyTotals[m] || 0) + pTotal;
+            : ((wHoursVal * (w.rate || rate)) + wMoneyVal);
+        // Valores negativos pagos (adiantamentos/acertos) contam como positivos no total pago
+        addMonthAmount(m, Math.abs(itemAmt));
     });
 
-    // 3. Lotes Liquidados de Bolt
+    // 3. Lotes Liquidados de Bolt - agrupa pelo mês das viagens
     settledBoltList.forEach(s => {
-        const m = (s.settledDate || "").substring(0, 7);
-        if (!m) return;
-        let sTotal = parseFloat(s.totalAmount) || 0;
-        let negativeBoltSum = 0;
-        if (Array.isArray(s.items)) {
+        if (Array.isArray(s.items) && s.items.length > 0) {
             s.items.forEach(it => {
-                const itAmt = parseFloat(it.amount) || 0;
-                if (itAmt < 0) negativeBoltSum += Math.abs(itAmt);
+                const m = (it.dateKey || s.cutoffDate || s.settledDate || "").substring(0, 7);
+                addMonthAmount(m, Math.abs(parseFloat(it.amount) || 0));
             });
+        } else {
+            const m = (s.cutoffDate || s.settledDate || "").substring(0, 7);
+            addMonthAmount(m, Math.abs(parseFloat(s.totalAmount) || 0));
         }
-        const totalPaidBolt = sTotal + negativeBoltSum;
-        monthlyTotals[m] = (monthlyTotals[m] || 0) + (totalPaidBolt > 0 ? totalPaidBolt : Math.abs(totalPaidBolt));
     });
 
-    // 4. Viagens Pendentes de Bolt
+    // 4. Viagens Pendentes de Bolt - agrupa pelo mês da viagem
     pendingBoltList.forEach(b => {
         const m = (b.dateKey || "").substring(0, 7);
-        if (!m) return;
-        const bAmt = parseFloat(b.amount) || 0;
-        monthlyTotals[m] = (monthlyTotals[m] || 0) + Math.abs(bAmt);
+        addMonthAmount(m, Math.abs(parseFloat(b.amount) || 0));
     });
 
     const currentMonthSpent = monthlyTotals[currentMonthKey] || 0;
-
-    // Determina o último dia com atividade registada no mês atual para projeção precisa
-    let lastRecordedDay = 0;
-    pendingList.forEach(w => {
-        if ((w.dateKey || "").startsWith(currentMonthKey)) {
-            const d = parseInt((w.dateKey || "").split("-")[2], 10);
-            if (!isNaN(d) && d > lastRecordedDay) lastRecordedDay = d;
-        }
-    });
-    settlementsList.forEach(s => {
-        if (Array.isArray(s.items)) {
-            s.items.forEach(it => {
-                if ((it.dateKey || "").startsWith(currentMonthKey)) {
-                    const d = parseInt((it.dateKey || "").split("-")[2], 10);
-                    if (!isNaN(d) && d > lastRecordedDay) lastRecordedDay = d;
-                }
-            });
-        }
-    });
-    pendingBoltList.forEach(b => {
-        if ((b.dateKey || "").startsWith(currentMonthKey)) {
-            const d = parseInt((b.dateKey || "").split("-")[2], 10);
-            if (!isNaN(d) && d > lastRecordedDay) lastRecordedDay = d;
-        }
-    });
-
-    const hasTodayWork = (lastRecordedDay >= currentDay);
-    const effectiveDays = hasTodayWork ? currentDay : Math.max(1, Math.min(currentDay, lastRecordedDay > 0 ? lastRecordedDay : currentDay));
-    const projectedCurrentMonth = effectiveDays > 0 ? ((currentMonthSpent / effectiveDays) * daysInCurrentMonth) : currentMonthSpent;
+    // O ritmo diário baseia-se nos dias de calendário decorridos do mês atual (evita duplicar/inflacionar a previsão)
+    const effectiveDays = Math.max(1, currentDay);
+    const projectedCurrentMonth = (currentMonthSpent / effectiveDays) * daysInCurrentMonth;
 
     const currentSpentFmt = currentMonthSpent.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
     const projectedFmt = projectedCurrentMonth.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
@@ -5224,7 +5189,7 @@ function showPaymentsView() {
         ? `Acumulado dia ${effectiveDays}/${daysInCurrentMonth}: <strong>${currentSpentFmt}</strong>`
         : `Mês a iniciar sem registos ainda`;
 
-    const pastMonthKeys = Object.keys(monthlyTotals).filter(k => k !== currentMonthKey && k < currentMonthKey);
+    const pastMonthKeys = Object.keys(monthlyTotals).filter(k => k !== currentMonthKey && k < currentMonthKey && monthlyTotals[k] > 0);
     const pastMonthTotals = pastMonthKeys.map(k => monthlyTotals[k]);
 
     let monthlyAverage = 0;
@@ -5238,7 +5203,7 @@ function showPaymentsView() {
             : `Baseada na previsão deste mês (${daysInCurrentMonth} dias)`;
     } else if (pastMonthTotals.length > 0) {
         monthlyAverage = pastMonthTotals.reduce((sum, v) => sum + v, 0) / pastMonthTotals.length;
-        monthlyAverageDetailText = `Baseada em <strong>${pastMonthTotals.length}</strong> mês(es) anteriores (com adiantamentos)`;
+        monthlyAverageDetailText = `Baseada em <strong>${pastMonthTotals.length}</strong> mês(es) anteriores`;
     } else {
         monthlyAverage = 0;
         monthlyAverageDetailText = `Sem histórico de meses`;
