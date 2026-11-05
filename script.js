@@ -4800,29 +4800,51 @@ window.deleteBoltEntry = function(boltId) {
 
 window.settleAllBolt = function() {
     const bData = getBoltData();
-    if (bData.pending.length === 0) {
+    if (!bData.pending || bData.pending.length === 0) {
         alert("Não existem viagens de Bolt pendentes para liquidar.");
         return;
     }
 
-    const totalAmount = bData.pending.reduce((sum, b) => sum + (parseFloat(b.amount) || 0), 0);
-    const formattedAmount = totalAmount.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+    const now = new Date();
+    // Último dia do último mês (ex: dia 31 de Outubro se hoje for Novembro)
+    const lastDayOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+    const cutoffDateKey = formatDateKey(lastDayOfPrevMonth);
 
-    if (!confirm(`Confirmas a liquidação total de ${formattedAmount} correspondente a ${bData.pending.length} viagem(ns) de Bolt acumuladas?\n\nEste lote será arquivado no Histórico de Bolt com todas as viagens detalhadas.`)) {
+    // Filtra apenas as viagens até ao dia 31 inclusive do último mês
+    const toPay = bData.pending.filter(b => b.dateKey && b.dateKey <= cutoffDateKey);
+    const toKeep = bData.pending.filter(b => !b.dateKey || b.dateKey > cutoffDateKey);
+
+    if (toPay.length === 0) {
+        const lastDayFmt = lastDayOfPrevMonth.toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' });
+        alert(`Não existem viagens de Bolt pendentes até ao dia 31 inclusive do último mês (${lastDayFmt}).\n\nAs viagens existentes foram registadas no mês atual.`);
         return;
     }
 
-    const now = new Date();
+    const totalAmount = toPay.reduce((sum, b) => sum + (parseFloat(b.amount) || 0), 0);
+    const formattedAmount = totalAmount.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+    const lastDayLabel = lastDayOfPrevMonth.toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    let confirmMsg = `Confirmas o pagamento de ${formattedAmount} correspondente a ${toPay.length} viagem(ns) de Bolt realizadas até ao dia 31 inclusive (${lastDayLabel})?`;
+    if (toKeep.length > 0) {
+        confirmMsg += `\n\nNota: As ${toKeep.length} viagem(ns) deste mês continuarão pendentes.`;
+    }
+    confirmMsg += `\n\nEste lote será arquivado no Histórico de Bolt com todas as viagens detalhadas.`;
+
+    if (!confirm(confirmMsg)) {
+        return;
+    }
+
     const newSettlement = {
         id: "bolt_settle_" + Date.now(),
         settledDate: formatDateKey(now),
         settledTimestamp: now.toISOString(),
+        cutoffDate: cutoffDateKey,
         totalAmount: Math.round(totalAmount * 100) / 100,
-        items: [...bData.pending]
+        items: [...toPay]
     };
 
     bData.settlements.unshift(newSettlement);
-    bData.pending = [];
+    bData.pending = toKeep;
 
     try { localStorage.setItem("al_bolt_backup", JSON.stringify(bData)); } catch(e) {}
     try { localStorage.setItem("al_cloud_history_backup", JSON.stringify(cloudHistory)); } catch(e) {}
@@ -5085,8 +5107,15 @@ function showPaymentsView() {
     const formattedPendingBolt = totalPendingBolt.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
     const formattedGrandTotal = grandTotalPending.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
 
-    // Cálculo da Média Mensal Realista (incluindo valores negativos como pagamentos positivos e projeção do mês atual)
+    // Cálculo das viagens de Bolt a pagar até ao fim do último mês (dia 31 inclusive)
     const now = new Date();
+    const lastDayOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+    const cutoffDateKey = formatDateKey(lastDayOfPrevMonth);
+
+    const pendingBoltPayable = pendingBoltList.filter(b => b.dateKey && b.dateKey <= cutoffDateKey);
+    const pendingBoltCurrentMonth = pendingBoltList.filter(b => !b.dateKey || b.dateKey > cutoffDateKey);
+    const totalPendingBoltPayable = pendingBoltPayable.reduce((sum, b) => sum + (parseFloat(b.amount) || 0), 0);
+    const formattedPendingBoltPayable = totalPendingBoltPayable.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
     const currentMonthKey = formatDateKey(now).substring(0, 7); // "YYYY-MM"
     const currentDay = now.getDate();
     const daysInCurrentMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
@@ -5408,9 +5437,10 @@ function showPaymentsView() {
                         ` : ''}
                         ${pendingBoltList.length > 0 ? `
                             <button onclick="window.settleAllBolt()"
-                                style="padding: 10px 18px; font-size: 13px; cursor: pointer; border-radius: 10px; border: none; background: linear-gradient(135deg, #0284c7, #0369a1); color: white; font-weight: bold; box-shadow: 0 3px 10px rgba(2,132,199,0.3); display: inline-flex; align-items: center; gap: 6px;">
+                                title="Liquidar viagens até ao dia 31 inclusive do último mês"
+                                style="padding: 10px 18px; font-size: 13px; cursor: pointer; border-radius: 10px; border: none; background: ${pendingBoltPayable.length > 0 ? 'linear-gradient(135deg, #0284c7, #0369a1)' : '#94a3b8'}; color: white; font-weight: bold; box-shadow: 0 3px 10px rgba(2,132,199,0.3); display: inline-flex; align-items: center; gap: 6px;">
                                 <span>✓ Já Paguei Bolt</span>
-                                <span style="background: rgba(255,255,255,0.25); padding: 2px 7px; border-radius: 8px; font-size: 12px;">${formattedPendingBolt}</span>
+                                <span style="background: rgba(255,255,255,0.25); padding: 2px 7px; border-radius: 8px; font-size: 12px;">${pendingBoltPayable.length > 0 ? formattedPendingBoltPayable : formattedPendingBolt}</span>
                             </button>
                         ` : ''}
                     </div>
@@ -5587,18 +5617,23 @@ function showPaymentsView() {
                 </div>
             </div>
 
-            <!-- Barra de Ações: Já Paguei Todos os Bolt -->
+            <!-- Barra de Ações: Já Paguei Bolt -->
             ${pendingBoltList.length > 0 ? `
                 <div style="margin-bottom: 22px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; background: rgba(2,132,199,0.06); border: 1.5px dashed #0284c7; border-radius: 14px; padding: 16px 18px;">
                     <div>
-                        <strong style="font-size: 15px; color: #0369a1;">🚗 Liquidação de Bolt</strong>
-                        <div style="font-size: 12px; color: #555;">Marca as viagens de Bolt como liquidadas para arquivar no histórico (${formattedPendingBolt}).</div>
+                        <strong style="font-size: 15px; color: #0369a1;">🚗 Liquidação de Bolt (Até ao dia 31 do último mês)</strong>
+                        <div style="font-size: 12px; color: #555;">
+                            ${pendingBoltPayable.length > 0
+                                ? `Liquidará <strong>${pendingBoltPayable.length}</strong> viagem(ns) até ao dia 31 inclusive (<strong>${formattedPendingBoltPayable}</strong>).${pendingBoltCurrentMonth.length > 0 ? ` <em>(${pendingBoltCurrentMonth.length} viagem(ns) deste mês continuarão pendentes)</em>` : ''}`
+                                : `As ${pendingBoltList.length} viagem(ns) pendentes pertencem ao mês atual (não são liquidadas agora).`
+                            }
+                        </div>
                     </div>
                     <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                         <button onclick="window.settleAllBolt()"
-                            style="padding: 10px 18px; font-size: 13px; cursor: pointer; border-radius: 10px; border: none; background: linear-gradient(135deg, #0284c7, #0369a1); color: white; font-weight: bold; box-shadow: 0 3px 10px rgba(2,132,199,0.3); display: inline-flex; align-items: center; gap: 6px;">
-                            <span>✓ Já Paguei Todos os Bolt</span>
-                            <span style="background: rgba(255,255,255,0.25); padding: 2px 7px; border-radius: 8px; font-size: 12px;">${formattedPendingBolt}</span>
+                            style="padding: 10px 18px; font-size: 13px; cursor: pointer; border-radius: 10px; border: none; background: ${pendingBoltPayable.length > 0 ? 'linear-gradient(135deg, #0284c7, #0369a1)' : '#94a3b8'}; color: white; font-weight: bold; box-shadow: 0 3px 10px rgba(2,132,199,0.3); display: inline-flex; align-items: center; gap: 6px;">
+                            <span>✓ Já Paguei Bolt</span>
+                            <span style="background: rgba(255,255,255,0.25); padding: 2px 7px; border-radius: 8px; font-size: 12px;">${pendingBoltPayable.length > 0 ? formattedPendingBoltPayable : formattedPendingBolt}</span>
                         </button>
                     </div>
                 </div>
